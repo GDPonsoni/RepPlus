@@ -19,20 +19,33 @@ Bem-vindo à documentação do **Escala**, sistema de gestão e rodízio de esca
 ```
 escala/
 ├── backend/
-│   ├── data/
-│   │   ├── store.js              # Acesso às tabelas do Supabase (integrantes, comodos, escalas...)
-│   │   └── supabaseClient.js     # Cliente Supabase (lê SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY)
-│   ├── lib/
-│   │   ├── rodizio.js            # Algoritmo do rodízio semanal (folgas, suíte, cômodos)
-│   │   └── storage.js            # Upload/listagem/remoção de imagens no Supabase Storage
-│   └── server.js                 # Servidor Express e endpoints REST
+│   ├── core/                     # Núcleo: usado por todos os módulos
+│   │   ├── auth/                 # Sessão (req.contexto) e permissões (exigirPermissao)
+│   │   ├── configuracao/         # Aparência: cores, logo e fundo (tabela config)
+│   │   ├── db/                   # Cliente Supabase e helpers de consulta (paginação etc.)
+│   │   ├── moradores/            # Integrantes da república
+│   │   ├── http.js               # asyncHandler, HttpError, upload (multer) e erros
+│   │   ├── modulos.js            # Contrato e montagem dos módulos em /api
+│   │   ├── semana.js             # Semana ISO no horário de Brasília
+│   │   ├── sistema.js            # /api/versao e /api/sessao
+│   │   └── storage.js            # Imagens no Supabase Storage
+│   ├── modules/
+│   │   └── escala/               # Módulo da escala de limpeza
+│   │       ├── rotas/            # Cômodos, escala, infrações e motivação
+│   │       ├── rodizio.js        # Algoritmo do rodízio semanal (folgas, suíte, cômodos)
+│   │       ├── store.js          # Tabelas comodos, escalas e infracoes
+│   │       └── index.js          # Definição do módulo (permissões e rotas)
+│   ├── app.js                    # Monta o Express com os módulos (lista MODULOS)
+│   └── server.js                 # Ponto de entrada (local e Vercel)
 ├── frontend/
 │   ├── css/
 │   │   └── style.css             # Estilos responsivos e tema com variáveis CSS
 │   ├── js/
-│   │   ├── app.js                # Lógica da SPA, requisições fetch e renderização
-│   │   └── modal.js              # Modais de confirmação e de texto
-│   └── index.html                # Estrutura HTML da aplicação
+│   │   ├── core/                 # Núcleo: api, sessão, abas, ações, moradores, aparência...
+│   │   ├── modules/
+│   │   │   └── escala/           # Abas e seções de Config do módulo da escala
+│   │   └── main.js               # Inicialização (lista MODULOS)
+│   └── index.html                # Casca da aplicação (cabeçalho, abas e conteúdo)
 ├── docs/                         # Esta documentação
 ├── package.json                  # Dependências e scripts (npm start)
 ├── vercel.json                   # Deploy na Vercel

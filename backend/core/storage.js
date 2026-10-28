@@ -1,6 +1,6 @@
 import { randomUUID } from 'crypto';
 import path from 'path';
-import { supabase } from '../data/supabaseClient.js';
+import { supabase } from './db/supabaseClient.js';
 
 const BUCKET = 'uploads';
 

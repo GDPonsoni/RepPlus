@@ -19,7 +19,7 @@ function fecharOverlay(overlay) {
     setTimeout(() => overlay.remove(), 150);
 }
 
-function mostrarConfirmacao(mensagem, { titulo = 'Confirmar ação', confirmarTexto = 'Confirmar', cancelarTexto = 'Cancelar' } = {}) {
+export function mostrarConfirmacao(mensagem, { titulo = 'Confirmar ação', confirmarTexto = 'Confirmar', cancelarTexto = 'Cancelar' } = {}) {
     return new Promise((resolve) => {
         const { overlay, card } = criarOverlay();
 
@@ -57,7 +57,7 @@ function mostrarConfirmacao(mensagem, { titulo = 'Confirmar ação', confirmarTe
     });
 }
 
-function mostrarPrompt(mensagem, valorInicial = '', { titulo = 'Informe um valor', confirmarTexto = 'Confirmar', cancelarTexto = 'Cancelar', placeholder = '' } = {}) {
+export function mostrarPrompt(mensagem, valorInicial = '', { titulo = 'Informe um valor', confirmarTexto = 'Confirmar', cancelarTexto = 'Cancelar', placeholder = '' } = {}) {
     return new Promise((resolve) => {
         const { overlay, card } = criarOverlay();
 

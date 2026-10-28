@@ -1,6 +1,6 @@
 # 🗄️ Modelos de Dados
 
-Os dados ficam no **Supabase**: tabelas no Postgres e imagens no Storage. O acesso passa por `backend/data/store.js`, que converte os nomes de coluna (`snake_case`) para os campos da API (`camelCase`).
+Os dados ficam no **Supabase**: tabelas no Postgres e imagens no Storage. O acesso passa pelos `store.js` do núcleo (`backend/core/moradores/`, `backend/core/configuracao/`) e de cada módulo (`backend/modules/escala/store.js`), que converte os nomes de coluna (`snake_case`) para os campos da API (`camelCase`).
 
 ---
 

@@ -2,6 +2,8 @@
 
 O backend expõe a API sob o prefixo `/api`. Requisições com corpo usam `Content-Type: application/json`, exceto os uploads, que usam `multipart/form-data`. Erros de validação retornam `400` com `{ "error": string }`.
 
+Cada rota exige uma permissão (veja [Módulos e Permissões](architecture.md#-módulos-e-permissões)). No modo atual (`AUTH_MODO=aberto`, sem login) todo acesso tem todas as permissões; quando houver login, a falta de login retorna `401` e a falta de permissão retorna `403`.
+
 ---
 
 ## 👥 Integrantes (`/api/integrantes`)
@@ -70,6 +72,7 @@ Ao gerar, cada integrante ativo recebe uma linha. Quem está de folga tem `comod
 | `GET` | `/api/uploads/motivacao` | Lista a galeria de motivação (sem logo e fundo) | Array de `{ "filename", "path" }` |
 | `POST` | `/api/config/motivacao-destaque` | Define a imagem em destaque na escala | `{ "path": string }` |
 | `DELETE` | `/api/uploads/motivacao/:filename` | Remove uma imagem da galeria | `{ "success": true }` |
+| `GET` | `/api/sessao` | Sessão atual: usuário, papel, permissões e módulos ativos | `{ "modo", "autenticado", "usuario", "papel", "permissoes", "modulos" }` |
 | `GET` | `/api/versao` | Commit em execução (na Vercel, lido das variáveis `VERCEL_GIT_*`; localmente, do git) | `{ "ambiente", "sha", "branch", "mensagem", "autor", "data", "url" }` |
 
 A cada geração de escala, uma nova imagem da galeria é sorteada como destaque.

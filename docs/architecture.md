@@ -2,6 +2,8 @@
 
 O **Escala** é uma aplicação monolítica leve: um servidor Node.js/Express expõe uma API REST e serve o frontend em JavaScript puro. Dados e imagens ficam no Supabase.
 
+O código é dividido em **núcleo** (o que todo módulo usa: moradores, aparência, sessão/permissões, semana, uploads) e **módulos** de funcionalidade. Hoje existe um módulo, a escala de limpeza; novos módulos (financeiro, eventos...) entram sem mexer no núcleo. Veja [Módulos e Permissões](#-módulos-e-permissões).
+
 ---
 
 ## 📐 Visão Geral
@@ -9,18 +11,22 @@ O **Escala** é uma aplicação monolítica leve: um servidor Node.js/Express ex
 ```
 +-------------------------------------------------------+
 |                   Navegador (SPA)                     |
-|     index.html + style.css + app.js + modal.js        |
+|  index.html (casca) + js/main.js                      |
+|  js/core/  (api, sessão, abas, moradores, aparência)  |
+|  js/modules/escala/  (abas e seções do módulo)        |
 +---------------------------+---------------------------+
                             |
                     HTTP / JSON (REST /api)
                             |
 +---------------------------v---------------------------+
-|                Backend Node.js (server.js)            |
+|        Backend Node.js (server.js -> app.js)          |
 |                                                       |
-|  Express Router ── lib/rodizio.js (gera a escala)     |
+|  core/auth (req.contexto + exigirPermissao)           |
+|  core/modulos.js monta cada módulo em /api:           |
+|    sistema · moradores · configuracao · escala        |
 |        │                                              |
-|        ├── data/store.js ──────┐                      |
-|        └── lib/storage.js ──┐  │   Multer (memória)   |
+|        ├── */store.js ─────────┐                      |
+|        └── core/storage.js ─┐  │   Multer (memória)   |
 +-----------------------------|--|----------------------+
                               |  |
                +--------------v--v--------------+
@@ -38,14 +44,19 @@ Em produção, a Vercel roda `backend/server.js` como função serverless para `
 
 - **Runtime**: Node.js com ES Modules (`"type": "module"`).
 - **Framework**: Express, na porta `3000` ou na variável `PORT`.
-- **Persistência** (`backend/data/store.js`): um objeto por tabela (`IntegrantesStore`, `ComodosStore`, `EscalasStore`, `InfracoesStore`, `ConfigStore`) que converte entre o formato do banco (`snake_case`) e o da API (`camelCase`).
+- **Estrutura** (`backend/`):
+  - `server.js`: ponto de entrada (sobe o servidor localmente; na Vercel, exporta o app).
+  - `app.js`: monta o Express, a sessão e a lista de módulos (`MODULOS`).
+  - `core/`: `http.js` (asyncHandler, HttpError, upload, tratamento de erros), `semana.js` (semana ISO no horário de Brasília), `storage.js` (imagens), `db/` (cliente Supabase e helpers de consulta), `auth/` (sessão e permissões), `modulos.js` (contrato e montagem dos módulos) e os módulos do núcleo `sistema.js`, `moradores/` e `configuracao/`.
+  - `modules/escala/`: rotas (`rotas/`), acesso às tabelas (`store.js`) e o rodízio (`rodizio.js`).
+- **Persistência** (`store.js` de cada módulo): um objeto por tabela (`IntegrantesStore`, `ComodosStore`, `EscalasStore`, `InfracoesStore`, `ConfigStore`) que converte entre o formato do banco (`snake_case`) e o da API (`camelCase`).
   - A troca da escala de uma semana (`replaceSemana`) usa a função Postgres `replace_semana_escala`, que apaga e insere numa única transação.
   - Trocas e renomeações gravam várias linhas num único `upsert`.
   - O Supabase devolve no máximo 1000 linhas por consulta, então as listagens são paginadas (`selectAll`) até vir uma página vazia. A listagem de imagens do Storage também é paginada.
-- **Imagens** (`backend/lib/storage.js`): o Multer recebe o arquivo em memória (png, jpg, jpeg, webp ou gif, até 5MB) e ele é enviado ao bucket `uploads` do Supabase Storage. O banco guarda a URL pública.
+- **Imagens** (`backend/core/storage.js`): o Multer recebe o arquivo em memória (png, jpg, jpeg, webp ou gif, até 5MB) e ele é enviado ao bucket `uploads` do Supabase Storage. O banco guarda a URL pública.
 - **Fuso horário**: a "semana atual" é calculada no horário de Brasília (`America/Sao_Paulo`), seguindo a semana ISO 8601 (segunda a domingo). A Vercel roda em UTC, então isso não depende do servidor.
 
-### Algoritmo do Rodízio (`backend/lib/rodizio.js`)
+### Algoritmo do Rodízio (`backend/modules/escala/rodizio.js`)
 
 Nada é sorteado: cada semana é calculada a partir do histórico das anteriores.
 
@@ -64,11 +75,64 @@ O histórico identifica cômodos pelo **nome**: por isso não é permitido ter d
 
 ## 🎨 Frontend
 
-- **SPA**: uma página HTML com navegação por abas, sem recarregar.
-- **Abas**:
-  - `escala`: escala da semana, imagem motivacional em destaque e botão de gerar.
-  - `historico`: escalas das semanas anteriores.
-  - `infracoes`: resumo por integrante e registro de infrações.
-  - `config`: integrantes, cômodos, imagens motivacionais, logo, fundo e cores.
+- **SPA**: uma página HTML com navegação por abas, sem recarregar e sem etapa de build (módulos JS nativos, `<script type="module">`).
+- **Estrutura** (`frontend/js/`):
+  - `main.js`: carrega a sessão, monta a interface com os módulos ativos, aplica a configuração e inicia cada módulo.
+  - `core/`: `api.js` (cliente único da API), `sessao.js` (usuário, permissões e `data-permissao`), `shell.js` (abas, seções de Config e navegação por endereço `#/aba`), `acoes.js` (cliques via `data-acao`), `eventos.js` (avisos entre módulos), `ui.js`, `modal.js` e os módulos do núcleo `moradores.js`, `aparencia.js` e `sistema.js`.
+  - `modules/escala/`: abas `escala` (Atual), `historico` e `infracoes`, e as seções Cômodos e Galeria em Config.
+- **Abas**: geradas a partir dos módulos; a aba `config` é do núcleo e reúne as seções de configuração de todos os módulos.
+- **Botões**: usam `data-acao="..."` (o módulo registra o que cada ação faz) em vez de `onclick` com funções globais.
 - **Tema**: cores aplicadas via variáveis CSS (`style.setProperty()`).
 - **Segurança de renderização**: todo texto vindo do banco passa por `escaparHtml` antes de entrar em `innerHTML`.
+
+---
+
+## 🧩 Módulos e Permissões
+
+### Contrato de um módulo
+
+**Backend** (`backend/modules/<nome>/index.js`, registrado em `MODULOS` no `backend/app.js`):
+
+```js
+export default {
+  id: 'financeiro',
+  nome: 'Financeiro',
+  permissoes: {
+    'financeiro:ver':     { descricao: 'Ver gastos e saldos', papeis: ['morador'] },
+    'financeiro:lancar':  { descricao: 'Lançar gastos',       papeis: ['morador'] },
+    'financeiro:gerenciar': { descricao: 'Editar e apagar lançamentos', papeis: [] }
+  },
+  rotas(router) {
+    router.get('/financeiro/gastos', exigirPermissao('financeiro:ver'), asyncHandler(async (req, res) => { ... }));
+  }
+};
+```
+
+**Frontend** (`frontend/js/modules/<nome>/index.js`, registrado em `MODULOS` no `frontend/js/main.js`):
+
+```js
+export default {
+  id: 'financeiro',                       // mesmo id do backend
+  abas: [{ id: 'financeiro', titulo: 'Contas', icone: 'fa-solid fa-wallet', html: '...', aoAbrir: carregarGastos }],
+  secoesConfig: [{ id: 'acc-financeiro', titulo: 'Contas da casa', icone: 'fa-solid fa-wallet', cor: 'icon-green', html: '...', permissao: 'financeiro:gerenciar' }],
+  iniciar() { /* liga eventos, registrarAcoes(...), carrega dados */ }
+};
+```
+
+A aba aparece na navegação e as seções aparecem em Config automaticamente. Um módulo lê os moradores com `obterIntegrantes()` e reage a mudanças com `ouvir('moradores:atualizados', ...)`, sem depender de outros módulos.
+
+### Sessão e permissões (pontes para o login)
+
+- Toda requisição em `/api` recebe `req.contexto = { modo, autenticado, usuario, republicaId, permissoes }` (`backend/core/auth/sessao.js`).
+- Cada rota declara a permissão que exige com `exigirPermissao('modulo:acao')`. Usar uma permissão que nenhum módulo declarou derruba o servidor na subida, para o erro aparecer cedo.
+- Papéis: `admin` (pode tudo) e `morador` (recebe as permissões marcadas com `papeis: ['morador']`).
+- **Modo atual: `AUTH_MODO=aberto` (padrão)**. Não há login; todo acesso é tratado como admin, exatamente como o app sempre funcionou.
+- `GET /api/sessao` informa ao frontend o usuário, as permissões e os módulos ativos. O frontend esconde os elementos com `data-permissao="..."` que o usuário não pode usar. Isso é só conveniência visual: quem barra de verdade é o backend (401 sem login, 403 sem permissão).
+- `republicaId` fica reservado (hoje `null`) para quando o app atender mais de uma república.
+
+**Para ligar o login no futuro:**
+
+1. Backend: criar um novo resolvedor em `core/auth/sessao.js` (ex.: `supabase`, que lê o token `Authorization: Bearer` com `supabase.auth.getUser` e busca o papel do usuário numa tabela de perfis ligada a `integrantes`), e definir `AUTH_MODO` com ele.
+2. Frontend: criar a tela de login, chamar `definirToken()` (`core/api.js`) após entrar e tratar o evento `sessao:expirada` (hoje só mostra um aviso, em `main.js`).
+
+As rotas e as telas dos módulos não precisam mudar.
