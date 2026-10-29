@@ -2884,6 +2884,308 @@ button.evento-card:hover {
     }
 }
 
+/* ===== ANOTAÇÕES ===== */
+.acat-internet { --cat: #2563eb; }
+.acat-streaming { --cat: #dc2626; }
+.acat-consumo { --cat: #d97706; }
+.acat-banco { --cat: #16a34a; }
+.acat-compras { --cat: #9333ea; }
+.acat-outros { --cat: #6b7280; }
+
+.anotacoes-busca {
+    margin-bottom: 12px;
+}
+
+.anotacoes-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.anotacoes-lista .card {
+    margin-bottom: 0;
+}
+
+.anotacoes-lista > section + section {
+    margin-top: 6px;
+}
+
+.anotacoes-grupo-titulo {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0 2px 6px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+}
+
+.anotacoes-grupo-total {
+    padding: 1px 7px;
+    border-radius: 999px;
+    background: var(--subtle);
+    font-size: 0.7rem;
+}
+
+.cofre-barra {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    margin-bottom: 12px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    background: var(--surface);
+    font-size: 0.82rem;
+}
+
+.cofre-barra > i {
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
+.cofre-barra span {
+    flex: 1;
+    min-width: 0;
+}
+
+.cofre-barra .btn {
+    flex-shrink: 0;
+}
+
+.cofre-trancado > i { color: #d97706; }
+.cofre-aberto { border-color: color-mix(in srgb, var(--success-color) 45%, var(--border)); }
+.cofre-aberto > i { color: var(--success-color); }
+.cofre-novo { border-style: dashed; }
+.cofre-novo > i { color: var(--primary-text); }
+.cofre-indisponivel > i { color: #d97706; }
+
+.anotacao-card {
+    padding: 4px 12px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.anotacao-topo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0 0;
+    border: 0;
+    background: transparent;
+    color: var(--text);
+    text-align: left;
+}
+
+.anotacao-icone {
+    width: 38px;
+    height: 38px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+    background: color-mix(in srgb, var(--cat, var(--primary-color)) 14%, var(--surface));
+    color: var(--cat, var(--primary-text));
+}
+
+.contato-icone {
+    --cat: #0891b2;
+}
+
+.anotacao-titulos {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.anotacao-titulo {
+    font-weight: 700;
+    overflow-wrap: anywhere;
+}
+
+.anotacao-sub {
+    font-size: 0.75rem;
+    color: var(--muted);
+}
+
+.anotacao-editar {
+    font-size: 0.75rem;
+    color: var(--muted);
+}
+
+.anotacao-link {
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-decoration: none;
+    overflow-wrap: anywhere;
+}
+
+.anotacao-obs {
+    font-size: 0.8rem;
+    color: var(--muted);
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.segredos {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 4px 8px;
+    border-radius: var(--radius-sm);
+    background: var(--subtle);
+}
+
+.segredo-linha {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-height: 40px;
+}
+
+.segredo-rotulo {
+    width: 48px;
+    flex-shrink: 0;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+.segredo-valor {
+    flex: 1;
+    min-width: 0;
+    font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+    font-size: 0.88rem;
+    overflow-wrap: anywhere;
+    user-select: all;
+}
+
+.segredo-valor.mascarado {
+    letter-spacing: 0.1em;
+    user-select: none;
+}
+
+.segredo-extra {
+    padding: 4px 0 6px;
+    font-size: 0.8rem;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.segredo-trancado {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 40px;
+    padding: 8px 10px;
+    border: 1px dashed var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--subtle);
+    color: var(--muted);
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-align: left;
+}
+
+.segredo-trancado i {
+    color: #d97706;
+}
+
+.segredo-erro {
+    font-size: 0.8rem;
+    color: var(--primary-text);
+}
+
+.contato-acoes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.btn-whatsapp {
+    color: #15803d;
+}
+
+.nota-texto {
+    font-size: 0.88rem;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    line-height: 1.5;
+}
+
+.nota-card.fixada {
+    border-color: var(--secondary-line);
+    background: var(--secondary-soft);
+}
+
+.nota-fixada {
+    color: var(--secondary-text);
+    font-size: 0.8rem;
+}
+
+.nota-secreta {
+    color: #d97706;
+    font-size: 0.8rem;
+}
+
+.form-grupo-cofre {
+    border-style: solid;
+    border-color: color-mix(in srgb, #d97706 40%, var(--border));
+    background: color-mix(in srgb, #d97706 6%, var(--surface));
+}
+
+.form-grupo-cofre legend {
+    color: #b45309;
+}
+
+#campos-cofre {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.cofre-campos-trancados {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 0.85rem;
+    color: var(--muted);
+}
+
+.cofre-explicacao {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 0.82rem;
+    color: var(--muted);
+    line-height: 1.45;
+}
+
+.cofre-explicacao i {
+    margin-right: 4px;
+}
+
+.campo-whatsapp {
+    align-self: end;
+    min-height: 44px;
+}
+
+@media (min-width: 900px) {
+    #aba-anotacoes-senhas.active,
+    #aba-anotacoes-contatos.active,
+    #aba-anotacoes-notas.active {
+        max-width: 680px;
+        margin: 0 auto;
+    }
+}
+
 /* ===== TEMA ESCURO: cores fixas que não derivam do tema ===== */
 :root[data-tema="escuro"] .icon-blue { background: rgba(37, 99, 235, 0.22); color: #93c5fd; }
 :root[data-tema="escuro"] .icon-green { background: rgba(22, 163, 74, 0.22); color: #86efac; }
@@ -2907,6 +3209,14 @@ button.evento-card:hover {
 :root[data-tema="escuro"] .cat-visita { --cat: #4ade80; }
 :root[data-tema="escuro"] .cat-manutencao { --cat: #fb923c; }
 :root[data-tema="escuro"] .cat-aniversario { --cat: #f472b6; }
+:root[data-tema="escuro"] .form-grupo-cofre legend,
+:root[data-tema="escuro"] .segredo-trancado i,
+:root[data-tema="escuro"] .nota-secreta,
+:root[data-tema="escuro"] .cofre-trancado > i { color: #fcd34d; }
+:root[data-tema="escuro"] .btn-whatsapp { color: #86efac; }
+:root[data-tema="escuro"] .acat-streaming { --cat: #f87171; }
+:root[data-tema="escuro"] .acat-internet { --cat: #60a5fa; }
+:root[data-tema="escuro"] .acat-compras { --cat: #c084fc; }
 :root[data-tema="escuro"] .cstatus-acabando { --cat: #f59e0b; --status: #fcd34d; }
 :root[data-tema="escuro"] .compras-secao-acabando .compras-secao-titulo i { color: #fcd34d; }
 

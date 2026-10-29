@@ -13,6 +13,7 @@ uma vez sem efeito colateral (`if not exists`).
 | `20261029_moradores_contato_emergencia.sql` | Contato de emergência dos moradores (nome, parentesco, telefone) |
 | `20261029_config_personalizacao.sql` | Personalização da interface: nome da república, rodapé, fonte, cantos, cabeçalho, fundo |
 | `20261030_compras.sql` | Módulo Lista de Compras: tabela `compras_itens` |
+| `20261030_anotacoes.sql` | Módulo Anotações: tabelas `anotacoes` e `anotacoes_cofre` |
 
 As tabelas anteriores (`integrantes`, `comodos`, `escalas`, `infracoes`, `config` e a função
 `replace_semana_escala`) foram criadas antes deste controle e ainda não têm migração aqui.

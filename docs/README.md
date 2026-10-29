@@ -31,6 +31,7 @@ escala/
 │   │   └── storage.js            # Imagens no Supabase Storage
 │   ├── modules/
 │   │   ├── agenda/               # Módulo da agenda (eventos)
+│   │   ├── anotacoes/            # Módulo de anotações (contas, contatos, notas e cofre)
 │   │   ├── compras/              # Módulo da lista de compras
 │   │   └── escala/               # Módulo da escala de limpeza
 │   │       ├── rotas/            # Cômodos, escala, infrações e motivação
@@ -46,6 +47,7 @@ escala/
 │   │   ├── core/                 # Núcleo: api, sessão, abas, ações, moradores, aparência...
 │   │   ├── modules/
 │   │   │   ├── agenda/           # Mês, semana e formulário de evento
+│   │   │   ├── anotacoes/        # Senhas (cofre criptografado), contatos e notas
 │   │   │   ├── compras/          # Lista, itens salvos e formulário de item
 │   │   │   └── escala/           # Abas da escala (atual, histórico, infrações, ajustes)
 │   │   └── main.js               # Inicialização (lista MODULOS)

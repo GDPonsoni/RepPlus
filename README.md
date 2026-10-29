@@ -1,6 +1,6 @@
 # 🏠 Escala - Sistema de Escalas de Limpeza
 
-Aplicação web para organizar a república, dividida em módulos: **escala de limpeza** (rodízio automático de cômodos e folgas, regra do banheiro da suíte, infrações), **agenda conjunta** (eventos e aniversários), **lista de compras** e **cadastro de moradores**, com personalização visual.
+Aplicação web para organizar a república, dividida em módulos: **escala de limpeza** (rodízio automático de cômodos e folgas, regra do banheiro da suíte, infrações), **agenda conjunta** (eventos e aniversários), **lista de compras**, **anotações** (senhas num cofre criptografado, contatos de prestadores, notas) e **cadastro de moradores**, com personalização visual.
 
 ## ⚡ Como Rodar
 
@@ -31,6 +31,7 @@ Em produção o app roda na Vercel (`vercel.json`), com as mesmas variáveis de 
 - 📅 **Histórico** das escalas de semanas anteriores.
 - 🗓️ **Agenda conjunta**: eventos com data, hora, local e descrição, em visão mensal e semanal; aniversários dos moradores entram sozinhos.
 - 🛒 **Lista de compras**: o que acabou ou está acabando, sugestões dos itens já comprados, marcar como comprado no mercado e enviar a lista para o grupo.
+- 🔐 **Anotações**: senhas e contas num cofre criptografado no próprio aparelho (AES-256, senha da casa), contatos de prestadores com ligar/WhatsApp/mapa e notas da casa.
 - 👥 **Cadastro de moradores** global: contatos, contato de emergência, nascimento, data de entrada, documentos e observações.
 - 🧩 **Módulos**: seletor de módulos no topo; novos módulos entram sem mexer no núcleo.
 

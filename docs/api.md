@@ -52,6 +52,26 @@ Nomes de integrantes não podem se repetir (sem diferenciar maiúsculas).
 
 ---
 
+## 🔐 Anotações (`/api/anotacoes`)
+
+| Método | Endpoint | Descrição | Corpo / Retorno |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/api/anotacoes` | Todas as anotações (segredos vêm cifrados) | Array de `Anotacao` |
+| `POST` | `/api/anotacoes` | Cria | `{ "tipo", "titulo", "categoria"?, "dados"?, "segredo"?, "fixado"?, "provaCofre"? }` |
+| `PUT` | `/api/anotacoes/:id` | Edita (só os campos enviados; o tipo não muda) | Mesmos campos, sem `tipo` |
+| `DELETE` | `/api/anotacoes/:id` | Apaga | `{ "success": true }` |
+| `GET` | `/api/anotacoes/cofre` | Dados para destrancar o cofre no navegador | `{ "existe": false }` ou `{ "existe": true, "salt", "iteracoes", "chaveCifrada" }` |
+| `POST` | `/api/anotacoes/cofre` | Cria o cofre (409 se já existe) | `{ "salt", "iteracoes", "chaveCifrada", "prova" }` |
+| `PUT` | `/api/anotacoes/cofre` | Troca a senha do cofre (exige a `prova` atual) | `{ "salt", "iteracoes", "chaveCifrada", "prova" }` |
+| `DELETE` | `/api/anotacoes/cofre` | Apaga o cofre e todos os segredos (senha esquecida) | `{ "success": true, "segredosApagados" }` |
+
+- `tipo`: `conta`, `contato` ou `nota`. Campos aceitos em `dados` (o resto é descartado): conta `site`, `observacao`; contato `telefone`, `whatsapp` (boolean), `email`, `site`, `endereco`, `observacao`; nota `texto`.
+- `categoria`: na conta, `internet`, `streaming`, `consumo`, `banco`, `compras` ou `outros`; no contato, o serviço em texto livre (ex.: "Eletricista").
+- **`segredo`** é texto já cifrado pelo navegador (`v1.<iv>.<conteúdo>`, base64). Gravar, trocar ou remover um segredo exige `provaCofre`, que só quem destrancou o cofre consegue calcular (senão, 403).
+- **Criptografia (no navegador, `frontend/js/modules/anotacoes/cofre.js`)**: senha do cofre → PBKDF2-SHA256 (600 mil iterações) → chave que cifra, com AES-256-GCM, a chave aleatória dos segredos. A prova é o SHA-256 dessa chave mais um texto fixo; o servidor guarda só o hash da prova. Trocar a senha re-cifra apenas a chave, não os segredos.
+
+---
+
 ## 🚪 Cômodos (`/api/comodos`)
 
 | Método | Endpoint | Descrição | Corpo / Retorno |

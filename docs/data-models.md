@@ -155,6 +155,23 @@ Os itens nunca somem ao serem comprados: voltam para `ok` e viram o catálogo de
 
 ---
 
-## 🖼️ 8. Imagens (Storage, bucket `uploads`)
+## 🔐 8. Anotações (tabelas `anotacoes` e `anotacoes_cofre`)
+
+| Coluna | Campo na API | Tipo | Descrição |
+| :--- | :--- | :--- | :--- |
+| `id` | `id` | UUID | Identificador |
+| `tipo` | `tipo` | texto | `conta`, `contato` ou `nota` |
+| `titulo` | `titulo` | texto | Nome da conta, do prestador ou da nota |
+| `categoria` | `categoria` | texto | Tipo de conta ou serviço do contato |
+| `dados` | `dados` | jsonb | Campos abertos (site, telefone, observação, texto...) |
+| `segredo` | `segredo` | texto | Login, senha, dados extras ou texto da nota secreta, **cifrados no navegador** |
+| `fixado` | `fixado` | boolean | Nota fixada no topo |
+| `criado_em` / `atualizado_em` | `criadoEm` / `atualizadoEm` | timestamptz | Datas |
+
+`anotacoes_cofre` tem uma linha só (`id = 1`): `salt`, `iteracoes`, `chave_cifrada` (a chave dos segredos, cifrada com a senha do cofre) e `verificador_hash` (SHA-256 da prova). Sem a senha do cofre, nada disso permite ler os segredos.
+
+---
+
+## 🖼️ 9. Imagens (Storage, bucket `uploads`)
 
 Fotos de cômodos, logo, fundo e galeria de motivação ficam no bucket público `uploads`, cada uma com um nome aleatório (UUID + extensão). A galeria de motivação é tudo o que está no bucket, exceto o logo e o fundo atuais.

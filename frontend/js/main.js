@@ -9,11 +9,12 @@ import sistema from './core/sistema.js';
 import escala from './modules/escala/index.js';
 import agenda from './modules/agenda/index.js';
 import compras from './modules/compras/index.js';
+import anotacoes from './modules/anotacoes/index.js';
 
 // Ordem dos módulos = ordem no seletor de módulos e das seções na página de Ajustes.
 // Para adicionar um módulo novo: criar modules/<nome>/index.js e incluí-lo aqui
 // (e o módulo correspondente no backend, em backend/app.js).
-const MODULOS = [escala, agenda, compras, moradores, aparencia, sistema];
+const MODULOS = [escala, agenda, compras, anotacoes, moradores, aparencia, sistema];
 
 async function iniciar() {
     // Sessão primeiro: define quais módulos aparecem e quais botões cada usuário vê

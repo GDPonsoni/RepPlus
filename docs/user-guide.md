@@ -21,6 +21,7 @@ O app é dividido em **módulos**. Toque no nome do módulo no topo (ou no botã
 - **Escala de Limpeza**: rodízio semanal, histórico, infrações e os ajustes da escala.
 - **Agenda**: eventos da casa, visitas e aniversários.
 - **Lista de Compras**: o que acabou ou está acabando, para quem for ao mercado.
+- **Anotações**: senhas e contas (num cofre criptografado), contatos de prestadores e notas da casa.
 - **Moradores**: cadastro de todos os moradores (usado por todos os módulos).
 - **Ajustes**: nome da república, aparência (logo, fundo, cores, fonte, estilo), tema claro/escuro deste aparelho e versão do sistema.
 
@@ -98,7 +99,20 @@ A semana vai de segunda a domingo e vira à 0h de segunda, no horário de Brasí
 
 ---
 
-## 🎨 8. Personalização Visual
+## 🔐 8. Anotações
+
+- **Senhas**: Wi-Fi, streaming, conta de luz, banco/caixinha... Login, senha e dados sigilosos (PIN, nº do cliente) ficam no **cofre**; site e observação ficam visíveis para todos.
+  - **Cofre**: na primeira vez, toque em **Criar** e defina a senha do cofre (mínimo 8 caracteres). Combine com a casa e guarde fora do app: **não dá para recuperar**.
+  - Para ver as senhas, toque em **Destrancar** e digite a senha do cofre. O cofre tranca sozinho depois de 10 minutos parado, ao recarregar a página ou no botão **Trancar**.
+  - Com o cofre aberto: o **olho** mostra a senha, o botão de **copiar** copia login ou senha, e o **dado** no formulário gera uma senha forte.
+  - Os segredos são criptografados **no aparelho** antes de ir para o servidor: nem quem acessa o banco de dados consegue lê-los. O cofre só funciona pelo endereço seguro (https) ou em localhost.
+- **Contatos**: eletricista, encanador, gás, imobiliária... agrupados por serviço, com botões de **Ligar**, **WhatsApp**, **E-mail**, **Site** e **Mapa**. A busca procura também nas observações (ex.: "chuveiro").
+- **Notas**: regras da casa, onde fica o registro... **Fixar no topo** destaca a nota. **Nota secreta** guarda o texto no cofre (ex.: código do portão, alarme).
+- **Ajustes → Cofre de Senhas**: trocar a senha do cofre ou, se ninguém lembrar, **apagar o cofre** (as senhas guardadas são perdidas; títulos, sites e contatos ficam).
+
+---
+
+## 🎨 9. Personalização Visual
 
 - **Escala de Limpeza → Ajustes → Galeria de Imagens**: envie imagens para a galeria. A cada escala gerada, uma delas é sorteada como destaque; você também pode escolher uma na galeria.
 - **Ajustes → Nome e Estilo** (vale para todos):
