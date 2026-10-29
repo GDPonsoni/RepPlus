@@ -5,6 +5,8 @@ import { mostrarNotificacao } from '../../core/ui.js';
 import { estado, carregarAtas, marcarTarefa } from './dados.js';
 import { HTML_ABA_ATAS, HTML_ABA_PENDENCIAS, renderizarTudo, renderizarLista, renderizarPendencias, htmlTarefa } from './telas.js';
 import { abrirAta, abrirFormularioAta } from './formulario.js';
+import inicio from './inicio.js';
+import avisos from './avisos.js';
 
 async function recarregar() {
     try {
@@ -38,9 +40,12 @@ async function alternarTarefa({ ata: ataId, tarefa: tarefaId, feito }, botao) {
 export default {
     id: 'atas',
     nome: 'Atas de Reunião',
+    nomeCurto: 'Atas',
     descricao: 'O que foi discutido e decidido',
     icone: 'fa-solid fa-file-signature',
     cor: 'icon-teal',
+    inicio,
+    avisos,
     abas: [
         { id: 'lista', titulo: 'Atas', icone: 'fa-solid fa-file-lines', html: HTML_ABA_ATAS, permissao: 'atas:ver', aoAbrir: recarregar },
         { id: 'pendencias', titulo: 'Pendências', icone: 'fa-solid fa-list-check', html: HTML_ABA_PENDENCIAS, permissao: 'atas:ver', aoAbrir: recarregar }

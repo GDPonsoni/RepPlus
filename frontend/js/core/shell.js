@@ -1,28 +1,46 @@
-import { escaparHtml, definirAccordionAberto } from './ui.js';
-import { aplicarPermissoes, temPermissao } from './sessao.js';
+import { escaparHtml, iniciais, definirAccordionAberto } from './ui.js';
+import { aplicarPermissoes, temPermissao, obterSessao } from './sessao.js';
 import { registrarAcoes } from './acoes.js';
 import { abrirPainel } from './painel.js';
 import { nomeDaRepublica } from './aparencia.js';
 
-// Monta a interface a partir dos módulos e cuida da navegação (seletor de módulos + abas).
+// Monta a interface a partir dos módulos e cuida da navegação.
 //
 // Contrato de um módulo do frontend (veja modules/agenda/index.js):
 //   {
 //     id: 'agenda',                     // mesmo id do módulo no backend
-//     nome, descricao, icone, cor,      // como aparece no seletor de módulos (cor = classe icon-*)
-//     global: false,                    // true = grupo "Geral" do seletor (moradores, ajustes)
+//     nome, descricao, icone, cor,      // como aparece na navegação (cor = classe icon-*)
+//     menu: 'usuario',                  // opcional: vai para o menu do canto (moradores, ajustes) em vez da navegação principal
 //     abas: [{ id, titulo, icone, html | secoes, permissao?, aoAbrir() }],
 //     secoesAjustes: [{ id, titulo, icone, cor, html, permissao? }],  // vão para a página global Ajustes
+//     inicio: { titulo, rota, permissao, conteudo(), aoMontar? },    // cartão de resumo no Início (core/inicio.js)
+//     avisos: async () => [{ id, texto, icone?, tipo?, rota? }],      // avisos do sino (core/avisos.js)
 //     iniciar()                         // liga eventos e carrega os dados iniciais (pode ser async)
 //   }
 //
+// Navegação: no computador, menu lateral com todos os módulos principais; no celular, barra
+// inferior com os primeiros e "Mais" para o resto. Moradores e Ajustes ficam no menu do usuário
+// (canto superior direito), onde também entrarão perfil e sair quando houver login.
+//
 // Uma aba com `secoes` vira uma lista de seções recolhíveis (como a página de Ajustes).
 // Endereços: #/<modulo>/<aba>. Módulos sem abas (ex.: aparência) só contribuem com secoesAjustes.
+// Sem endereço, abre o primeiro módulo da lista (o Início).
 
-const CHAVE_ULTIMA_ROTA = 'escala:ultima-rota';
+// Quantos itens cabem na barra inferior do celular (contando o "Mais", quando houver)
+const ITENS_BARRA_INFERIOR = 5;
 
 let modulos = [];
 let rotaAtual = null;
+
+const principais = () => modulos.filter(modulo => modulo.menu !== 'usuario');
+const doMenuUsuario = () => modulos.filter(modulo => modulo.menu === 'usuario');
+
+// Na barra inferior: se todos cabem, mostra todos; senão, os primeiros e o "Mais"
+function divisaoBarraInferior() {
+    const lista = principais();
+    if (lista.length <= ITENS_BARRA_INFERIOR) return { naBarra: lista, noMais: [] };
+    return { naBarra: lista.slice(0, ITENS_BARRA_INFERIOR - 1), noMais: lista.slice(ITENS_BARRA_INFERIOR - 1) };
+}
 
 function htmlSecao(secao) {
     return `
@@ -45,10 +63,118 @@ function htmlAba(modulo, aba) {
     return `<section id="aba-${modulo.id}-${aba.id}" class="tab-content ${aba.secoes ? 'pagina-estreita' : ''}">${conteudo}</section>`;
 }
 
+// ===== NAVEGAÇÃO PRINCIPAL =====
+function renderizarNavegacao() {
+    document.getElementById('menu-lateral').innerHTML = `
+        <div class="menu-lateral-itens">
+            ${principais().map(modulo => `
+                <button type="button" class="menu-lateral-item" data-acao="ir-para" data-rota="${modulo.id}" data-modulo="${modulo.id}">
+                    <span class="acc-icon ${modulo.cor}"><i class="${modulo.icone}"></i></span>
+                    <span>${escaparHtml(modulo.nome)}</span>
+                </button>
+            `).join('')}
+        </div>
+    `;
+
+    const { naBarra, noMais } = divisaoBarraInferior();
+    document.getElementById('nav-inferior').innerHTML = `
+        ${naBarra.map(modulo => `
+            <button type="button" class="nav-inferior-item" data-acao="ir-para" data-rota="${modulo.id}" data-modulo="${modulo.id}">
+                <i class="${modulo.icone}"></i><span>${escaparHtml(modulo.nomeCurto || modulo.nome)}</span>
+            </button>
+        `).join('')}
+        ${noMais.length ? `
+            <button type="button" class="nav-inferior-item" data-acao="abrir-mais" data-modulo="mais">
+                <i class="fa-solid fa-grip"></i><span>Mais</span>
+            </button>
+        ` : ''}
+    `;
+    document.body.classList.toggle('com-nav-inferior', principais().length > 1);
+}
+
+function marcarAtivo(modulo) {
+    const { noMais } = divisaoBarraInferior();
+    document.querySelectorAll('.menu-lateral-item, .nav-inferior-item').forEach(item => {
+        const ativo = item.dataset.modulo === modulo.id || (item.dataset.modulo === 'mais' && noMais.includes(modulo));
+        item.classList.toggle('ativo', ativo);
+        if (ativo) item.setAttribute('aria-current', 'page');
+        else item.removeAttribute('aria-current');
+    });
+    document.querySelector('.header-usuario').classList.toggle('ativo', modulo.menu === 'usuario');
+}
+
+function htmlBlocoModulo(modulo) {
+    const atual = rotaAtual?.modulo.id === modulo.id;
+    return `
+        <button type="button" class="modulo-bloco ${atual ? 'atual' : ''}" data-modulo="${modulo.id}" ${atual ? 'aria-current="true"' : ''}>
+            <span class="modulo-bloco-icone ${modulo.cor}"><i class="${modulo.icone}"></i></span>
+            <span class="modulo-bloco-nome">${escaparHtml(modulo.nome)}</span>
+            <span class="modulo-bloco-descricao">${escaparHtml(modulo.descricao || '')}</span>
+        </button>
+    `;
+}
+
+// Painel com blocos de módulos; tocar em um navega até ele
+function painelDeModulos({ titulo, classe, html }) {
+    const { corpo, fechar } = abrirPainel({ titulo, classe, html });
+    corpo.querySelectorAll('.modulo-bloco').forEach(bloco => {
+        bloco.addEventListener('click', () => {
+            fechar();
+            if (bloco.dataset.modulo !== rotaAtual?.modulo.id) navegar(bloco.dataset.modulo);
+        });
+    });
+    return { corpo, fechar };
+}
+
+function abrirMais() {
+    painelDeModulos({
+        titulo: 'Mais módulos',
+        classe: 'painel-seletor',
+        html: `<div class="modulo-grade">${divisaoBarraInferior().noMais.map(htmlBlocoModulo).join('')}</div>`
+    });
+}
+
+// ===== MENU DO USUÁRIO (canto superior direito) =====
+// Hoje mostra o acesso aberto; com login, aqui entram "Meu perfil" e "Sair".
+function abrirMenuUsuario() {
+    const { usuario, papel, modo } = obterSessao();
+    const nome = usuario?.nome || 'Visitante';
+    painelDeModulos({
+        titulo: nomeDaRepublica(),
+        classe: 'painel-canto painel-usuario',
+        html: `
+            <div class="usuario-cartao">
+                <span class="avatar avatar-lg">${usuario?.id ? escaparHtml(iniciais(nome)) : '<i class="fa-solid fa-user"></i>'}</span>
+                <span class="usuario-info">
+                    <strong>${escaparHtml(nome)}</strong>
+                    <span>${escaparHtml(papel?.nome || '')}${modo === 'aberto' ? ' · sem login' : ''}</span>
+                </span>
+            </div>
+            <div class="menu-usuario-itens">${doMenuUsuario().map(modulo => `
+                <button type="button" class="modulo-bloco menu-usuario-item ${rotaAtual?.modulo.id === modulo.id ? 'atual' : ''}" data-modulo="${modulo.id}">
+                    <span class="modulo-bloco-icone ${modulo.cor}"><i class="${modulo.icone}"></i></span>
+                    <span class="menu-usuario-texto">
+                        <span class="modulo-bloco-nome">${escaparHtml(modulo.nome)}</span>
+                        <span class="modulo-bloco-descricao">${escaparHtml(modulo.descricao || '')}</span>
+                    </span>
+                    <i class="fa-solid fa-chevron-right"></i>
+                </button>
+            `).join('')}</div>
+            ${modo === 'aberto' ? '<p class="menu-usuario-nota"><i class="fa-solid fa-circle-info"></i> O app ainda não tem login: todos acessam como administrador.</p>' : ''}
+        `
+    });
+}
+
+function atualizarAvatar() {
+    const { usuario } = obterSessao();
+    if (usuario?.id) document.getElementById('usuario-avatar').textContent = iniciais(usuario.nome);
+}
+
+// ===== MONTAGEM =====
 export function montarInterface(modulosAtivos) {
     // A página de Ajustes é do núcleo: reúne as seções globais de todos os módulos
     const ajustes = {
-        id: 'ajustes', nome: 'Ajustes', descricao: 'Aparência e sistema', icone: 'fa-solid fa-gear', cor: 'icon-gray', global: true,
+        id: 'ajustes', nome: 'Ajustes', descricao: 'Aparência, módulos e sistema', icone: 'fa-solid fa-gear', cor: 'icon-gray', menu: 'usuario',
         abas: [{ id: 'geral', titulo: 'Ajustes', tituloPagina: 'Ajustes do Sistema', icone: 'fa-solid fa-gear', secoes: modulosAtivos.flatMap(m => m.secoesAjustes || []) }]
     };
 
@@ -67,8 +193,12 @@ export function montarInterface(modulosAtivos) {
         });
     });
 
+    renderizarNavegacao();
+    atualizarAvatar();
+
     registrarAcoes({
-        'abrir-seletor': abrirSeletorModulos,
+        'abrir-mais': abrirMais,
+        'abrir-menu-usuario': abrirMenuUsuario,
         'ir-para': ({ rota }) => navegar(rota)
     });
 
@@ -92,12 +222,12 @@ function mostrarRota(rota) {
     const { modulo, aba } = resolverRota(rota);
     const mudouModulo = rotaAtual?.modulo !== modulo;
     rotaAtual = { modulo, aba };
-    try { localStorage.setItem(CHAVE_ULTIMA_ROTA, `${modulo.id}/${aba.id}`); } catch { /* sem armazenamento: só não lembra */ }
 
     // Cabeçalho: nome e ícone do módulo atual
     document.getElementById('modulo-atual-icone').className = modulo.icone;
     document.getElementById('modulo-atual-nome').textContent = modulo.nome;
     document.title = `${modulo.nome} · ${nomeDaRepublica()}`;
+    marcarAtivo(modulo);
 
     // Abas do módulo (a barra some quando o módulo tem uma aba só)
     const nav = document.getElementById('nav-abas');
@@ -123,44 +253,5 @@ function mostrarRota(rota) {
 export function iniciarNavegacao() {
     const rotaDoEndereco = () => location.hash.replace(/^#\/?/, '');
     window.addEventListener('hashchange', () => mostrarRota(rotaDoEndereco()));
-
-    let inicial = rotaDoEndereco();
-    if (!inicial) {
-        try { inicial = localStorage.getItem(CHAVE_ULTIMA_ROTA) || ''; } catch { inicial = ''; }
-    }
-    mostrarRota(inicial);
-}
-
-// ===== SELETOR DE MÓDULOS =====
-function htmlBlocoModulo(modulo) {
-    const atual = rotaAtual?.modulo.id === modulo.id;
-    return `
-        <button type="button" class="modulo-bloco ${atual ? 'atual' : ''}" data-modulo="${modulo.id}" ${atual ? 'aria-current="true"' : ''}>
-            <span class="modulo-bloco-icone ${modulo.cor}"><i class="${modulo.icone}"></i></span>
-            <span class="modulo-bloco-nome">${escaparHtml(modulo.nome)}</span>
-            <span class="modulo-bloco-descricao">${escaparHtml(modulo.descricao || '')}</span>
-        </button>
-    `;
-}
-
-function abrirSeletorModulos() {
-    const funcionalidades = modulos.filter(m => !m.global);
-    const gerais = modulos.filter(m => m.global);
-
-    const { corpo, fechar } = abrirPainel({
-        titulo: 'Módulos',
-        classe: 'painel-seletor',
-        html: `
-            ${funcionalidades.length ? `<p class="seletor-grupo">Módulos</p><div class="modulo-grade">${funcionalidades.map(htmlBlocoModulo).join('')}</div>` : ''}
-            ${gerais.length ? `<p class="seletor-grupo">Geral</p><div class="modulo-grade">${gerais.map(htmlBlocoModulo).join('')}</div>` : ''}
-        `
-    });
-
-    corpo.querySelectorAll('.modulo-bloco').forEach(bloco => {
-        bloco.addEventListener('click', () => {
-            fechar();
-            if (bloco.dataset.modulo !== rotaAtual?.modulo.id) navegar(bloco.dataset.modulo);
-        });
-    });
-    corpo.querySelector('.modulo-bloco.atual')?.focus();
+    mostrarRota(rotaDoEndereco());
 }

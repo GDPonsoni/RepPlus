@@ -11,6 +11,8 @@ import {
     CATEGORIAS, STATUS, estado, itensComStatus, compradosRecentes, sugestoes, buscarItem, haQuantoTempo,
     carregarItens, adicionarItem, atualizarItem, comprarItem, desfazerCompra, excluirItem
 } from './dados.js';
+import inicio from './inicio.js';
+import avisos from './avisos.js';
 
 const HTML_ABA_LISTA = `
     <div class="card card-padded compras-adicionar" data-permissao="compras:editar">
@@ -392,9 +394,12 @@ async function recarregar() {
 export default {
     id: 'compras',
     nome: 'Lista de Compras',
+    nomeCurto: 'Compras',
     descricao: 'O que acabou e o que está acabando',
     icone: 'fa-solid fa-cart-shopping',
     cor: 'icon-green',
+    inicio,
+    avisos,
     abas: [
         // Cada vez que a aba abre, busca de novo: outra pessoa pode ter mexido na lista
         { id: 'lista', titulo: 'Lista', icone: 'fa-solid fa-list-check', html: HTML_ABA_LISTA, permissao: 'compras:ver', aoAbrir: recarregar },

@@ -6,6 +6,7 @@ import { cofreDisponivel, cofreExiste, cofreDestrancado, carregarCofre, trancarC
 import { estado, carregarAnotacoes } from './dados.js';
 import { HTML_ABA_SENHAS, HTML_ABA_CONTATOS, HTML_ABA_NOTAS, renderizarTudo, renderizarTipo } from './telas.js';
 import { abrirFormularioAnotacao, abrirCriarCofre, pedirSenhaDoCofre, abrirTrocarSenha } from './formulario.js';
+import inicio from './inicio.js';
 
 const HTML_AJUSTES_COFRE = `
     <div id="cofre-status" class="form-stack"></div>
@@ -89,6 +90,7 @@ export default {
     descricao: 'Senhas, contatos de serviço e notas',
     icone: 'fa-solid fa-book-bookmark',
     cor: 'icon-orange',
+    inicio,
     abas: [
         { id: 'senhas', titulo: 'Senhas', icone: 'fa-solid fa-key', html: HTML_ABA_SENHAS, permissao: 'anotacoes:ver', aoAbrir: recarregar },
         { id: 'contatos', titulo: 'Contatos', icone: 'fa-solid fa-address-book', html: HTML_ABA_CONTATOS, permissao: 'anotacoes:ver', aoAbrir: recarregar },

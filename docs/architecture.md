@@ -126,11 +126,26 @@ export default {
     { id: 'ajustes', titulo: 'Ajustes', icone: 'fa-solid fa-sliders', secoes: [{ id: 'acc-contas', titulo: 'Contas fixas', icone: '...', cor: 'icon-green', html: '...', permissao: 'financeiro:gerenciar' }] }
   ],
   secoesAjustes: [],                      // opcional: seções na página global de Ajustes
+  // opcional: cartão de resumo no Início (core/inicio.js); conteudo() busca os dados e devolve o HTML
+  inicio: { titulo: 'Gastos do mês', rota: 'financeiro/gastos', permissao: 'financeiro:ver', async conteudo() { return '...'; }, aoMontar(elemento, atualizar) {} },
   iniciar() { /* liga eventos, registrarAcoes(...), carrega dados */ }
 };
 ```
 
 O módulo aparece no seletor e suas abas na navegação automaticamente (endereços `#/financeiro/gastos`). Para formulários, use `abrirPainel()` (`core/painel.js`); para datas, `core/datas.js`. Um módulo lê os moradores com `obterIntegrantes()` e reage a mudanças com `ouvir('moradores:atualizados', ...)`, sem depender de outros módulos.
+
+### Início
+
+- `core/inicio.js` é a página de abertura (`#/inicio`, primeiro módulo da lista): mostra um cartão para cada módulo ativo que exporta `inicio` e cuja `permissao` o usuário tem.
+- Cada cartão carrega sozinho (`conteudo()`); se um falhar, os outros continuam. `aoMontar(elemento, atualizar)` liga eventos do cartão (ex.: o campo rápido da lista de compras) e `atualizar()` recarrega só ele.
+- Quais cartões aparecem e a ordem ficam no `localStorage` (`escala:inicio`), por aparelho.
+- Módulos só do frontend, como o Início, usam `semBackend: true` para não depender de `GET /api/sessao`.
+
+### Navegação e avisos
+
+- `core/shell.js` monta a navegação a partir da lista de módulos: **menu lateral** (≥ 900px) e **barra inferior** no celular (até 5 itens; a partir do 6º módulo, os últimos vão para "Mais"). A ordem é a de `MODULOS` no `main.js`; `nomeCurto` é o rótulo na barra inferior.
+- Módulos com `menu: 'usuario'` (Moradores e Ajustes) ficam no **menu do canto superior direito**, junto do avatar. É o lugar previsto para perfil e "sair" quando o login existir (`obterSessao().usuario`).
+- `core/avisos.js` junta os `avisos()` dos módulos ativos no **sino**. Cada aviso tem `id` estável; os já vistos ficam no `localStorage` (`escala:avisos-vistos`) e o contador mostra só os novos. A lista é recarregada a cada 5 minutos e ao abrir o sino.
 
 ### Ligar e desligar módulos
 

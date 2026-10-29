@@ -22,37 +22,48 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <!-- HEADER -->
+    <!-- CABEÇALHO: logo (volta ao Início), nome do módulo atual e, no canto, avisos e menu do usuário -->
     <header class="header">
         <div class="header-content">
-            <div class="logo-ring">
+            <button type="button" class="logo-ring" data-acao="ir-para" data-rota="inicio" aria-label="Ir para o início">
                 <img id="logo-top" class="logo-top" alt="Logo da República" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'><circle cx='100' cy='100' r='95' fill='%23FFD700' stroke='%23000' stroke-width='4'/><rect x='40' y='50' width='120' height='100' fill='%23DC0000'/><text x='100' y='130' font-size='80' font-weight='bold' text-anchor='middle' font-family='Arial' fill='%23FFD700'>B</text><circle cx='75' cy='75' r='15' fill='%23FFF'/><circle cx='125' cy='75' r='15' fill='%23FFF'/><circle cx='75' cy='80' r='8' fill='%23000'/><circle cx='125' cy='80' r='8' fill='%23000'/></svg>">
+            </button>
+            <div class="header-titulo">
+                <span class="subtitle" id="nome-republica">República</span>
+                <h1 class="modulo-atual-nome"><i id="modulo-atual-icone" class="fa-solid fa-house"></i> <span id="modulo-atual-nome">Carregando...</span></h1>
             </div>
-            <button type="button" class="modulo-atual" data-acao="abrir-seletor" aria-label="Trocar de módulo">
-                <span class="modulo-atual-texto">
-                    <span class="subtitle" id="nome-republica">República</span>
-                    <span class="modulo-atual-nome"><i id="modulo-atual-icone" class="fa-solid fa-house-user"></i> <span id="modulo-atual-nome">Carregando...</span></span>
-                </span>
-                <i class="fa-solid fa-chevron-down modulo-atual-seta"></i>
-            </button>
-            <button type="button" class="btn-modulos" data-acao="abrir-seletor" aria-label="Abrir módulos">
-                <i class="fa-solid fa-grip"></i><span>Módulos</span>
-            </button>
+            <div class="header-acoes">
+                <button type="button" class="header-btn" data-acao="abrir-avisos" aria-label="Avisos">
+                    <i class="fa-solid fa-bell"></i><span id="avisos-contador" class="header-contador" hidden></span>
+                </button>
+                <button type="button" class="header-btn header-usuario" data-acao="abrir-menu-usuario" aria-label="Menu: moradores, ajustes e conta">
+                    <span id="usuario-avatar" class="avatar-mini"><i class="fa-solid fa-user"></i></span>
+                </button>
+            </div>
         </div>
     </header>
 
-    <!-- NAVEGAÇÃO (fixa no topo ao rolar): botões gerados a partir dos módulos (js/core/shell.js) -->
-    <nav class="nav-tabs">
-        <div class="nav-tabs-inner" id="nav-abas"></div>
-    </nav>
+    <div class="app-corpo">
+        <!-- MENU LATERAL (computador): módulos, gerado em js/core/shell.js -->
+        <nav class="menu-lateral" id="menu-lateral" aria-label="Módulos"></nav>
 
-    <!-- CONTEÚDO PRINCIPAL: cada módulo injeta suas abas e suas seções de configuração -->
-    <main class="main-content" id="conteudo"></main>
+        <div class="app-conteudo">
+            <!-- ABAS do módulo atual (fixas no topo ao rolar) -->
+            <nav class="nav-tabs">
+                <div class="nav-tabs-inner" id="nav-abas"></div>
+            </nav>
 
-    <!-- FOOTER -->
-    <footer class="footer">
-        <p id="rodape-texto">República · Organização com responsabilidade! 🏠</p>
-    </footer>
+            <!-- CONTEÚDO PRINCIPAL: cada módulo injeta suas abas e suas seções de configuração -->
+            <main class="main-content" id="conteudo"></main>
+
+            <footer class="footer">
+                <p id="rodape-texto">República · Organização com responsabilidade! 🏠</p>
+            </footer>
+        </div>
+    </div>
+
+    <!-- BARRA INFERIOR (celular): Início, módulos principais e "Mais" -->
+    <nav class="nav-inferior" id="nav-inferior" aria-label="Módulos"></nav>
 
     <div id="toast-area" class="toast-area" aria-live="polite"></div>
 

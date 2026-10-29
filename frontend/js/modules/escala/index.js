@@ -8,14 +8,19 @@ import { carregarHistorico, deletarHistoricoSemana } from './historico.js';
 import { carregarInfracoes, registrarInfracao, marcarInfracaoRapido, deletarInfracao, atualizarSelectInfracao } from './infracoes.js';
 import { carregarComodos, adicionarOuEditarComodo, editarComodo, cancelarEdicaoComodo, deletarComodo, uploadImagemComodo, removerImagemComodo } from './comodos.js';
 import { uploadMotivacao, mostrarNomeArquivoMotivacao, definirMotivacaoDestaque, excluirMotivacao } from './motivacao.js';
+import inicio from './inicio.js';
+import avisos from './avisos.js';
 
 // Módulo: escala de limpeza
 export default {
     id: 'escala',
     nome: 'Escala de Limpeza',
+    nomeCurto: 'Escala',
     descricao: 'Rodízio semanal e infrações',
     icone: 'fa-solid fa-broom',
     cor: 'icon-red',
+    inicio,
+    avisos,
     abas: [
         { id: 'atual', titulo: 'Atual', icone: 'fa-regular fa-clipboard', html: HTML_ABA_ESCALA, permissao: 'escala:ver', aoAbrir: carregarEscalaAtual },
         { id: 'historico', titulo: 'Histórico', icone: 'fa-solid fa-clock-rotate-left', html: HTML_ABA_HISTORICO, permissao: 'escala:ver', aoAbrir: carregarHistorico },

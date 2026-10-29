@@ -1,6 +1,8 @@
 import { carregarSessao, moduloAtivo } from './core/sessao.js';
 import { carregarConfig } from './core/aparencia.js';
 import { montarInterface, iniciarNavegacao } from './core/shell.js';
+import inicio, { definirModulosDoInicio } from './core/inicio.js';
+import { definirModulosDosAvisos, iniciarAvisos } from './core/avisos.js';
 import { ouvir } from './core/eventos.js';
 import { mostrarNotificacao } from './core/ui.js';
 import moradores from './core/moradores.js';
@@ -15,13 +17,16 @@ import atas from './modules/atas/index.js';
 // Ordem dos módulos = ordem no seletor de módulos e das seções na página de Ajustes.
 // Para adicionar um módulo novo: criar modules/<nome>/index.js e incluí-lo aqui
 // (e o módulo correspondente no backend, em backend/app.js).
-const MODULOS = [escala, agenda, compras, anotacoes, atas, moradores, aparencia, sistema];
+const MODULOS = [inicio, escala, agenda, compras, anotacoes, atas, moradores, aparencia, sistema];
 
 async function iniciar() {
     // Sessão primeiro: define quais módulos aparecem e quais botões cada usuário vê
     await carregarSessao();
-    const ativos = MODULOS.filter(modulo => moduloAtivo(modulo.id));
+    // Módulos só do frontend (semBackend, ex.: Início) estão sempre ativos
+    const ativos = MODULOS.filter(modulo => modulo.semBackend || moduloAtivo(modulo.id));
     definirCatalogoModulos(MODULOS);
+    definirModulosDoInicio(ativos);
+    definirModulosDosAvisos(ativos);
 
     montarInterface(ativos);
     await carregarConfig();
@@ -33,6 +38,7 @@ async function iniciar() {
     });
 
     iniciarNavegacao();
+    iniciarAvisos();
 }
 
 // Ponte para o login: quando o backend responder 401, aqui entrará o redirecionamento para a tela de entrada

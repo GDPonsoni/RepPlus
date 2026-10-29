@@ -5,7 +5,7 @@ import { aplicarPermissoes, temPermissao } from './sessao.js';
 import { mostrarConfirmacao } from './modal.js';
 import { abrirPainel } from './painel.js';
 import { escaparHtml, iniciais, mostrarNotificacao, definirCarregando } from './ui.js';
-import { formatarDia, idadeEm, proximoAniversario } from './datas.js';
+import { hoje, formatarDia, idadeEm, proximoAniversario } from './datas.js';
 
 // Moradores (integrantes) são do núcleo: cadastro global usado por todos os módulos.
 // Outros módulos leem com obterIntegrantes() e reagem a mudanças com ouvir('moradores:atualizados').
@@ -285,6 +285,32 @@ function abrirFormulario(id = null) {
     });
 }
 
+// Resumo no Início: aniversários dos próximos 30 dias e quem está sem contato de emergência
+const inicio = {
+    titulo: 'Moradores',
+    rota: 'moradores/lista',
+    permissao: 'moradores:ver',
+
+    async conteudo() {
+        const ativos = estado.integrantes.filter(i => i.ativo !== false);
+        const aniversarios = ativos
+            .filter(i => i.dataNascimento)
+            .map(i => ({ integrante: i, ...proximoAniversario(i.dataNascimento) }))
+            .filter(a => a.emDias <= 30)
+            .sort((a, b) => a.emDias - b.emDias)
+            .slice(0, 3);
+        const semEmergencia = ativos.filter(i => !i.emergenciaTelefone).length;
+
+        return `
+            <p class="inicio-sub"><strong>${ativos.length}</strong> moradores ativos</p>
+            ${aniversarios.length ? `<ul class="inicio-aniversarios">${aniversarios.map(({ integrante, emDias, idade }) => `
+                <li><i class="fa-solid fa-cake-candles"></i> <strong>${escaparHtml(integrante.nome)}</strong> faz ${idade} ${emDias === 0 ? '<em>hoje! 🎉</em>' : emDias === 1 ? 'amanhã' : `em ${emDias} dias`}</li>
+            `).join('')}</ul>` : '<p class="inicio-vazio">Nenhum aniversário nos próximos 30 dias.</p>'}
+            ${semEmergencia ? `<p class="inicio-alerta"><i class="fa-solid fa-triangle-exclamation"></i> ${semEmergencia} sem contato de emergência</p>` : ''}
+        `;
+    }
+};
+
 export default {
     id: 'moradores',
     nome: 'Moradores',
@@ -292,6 +318,14 @@ export default {
     icone: 'fa-solid fa-users',
     cor: 'icon-blue',
     global: true,
+    menu: 'usuario',
+    inicio,
+    // Aviso do sino: aniversário hoje
+    async avisos() {
+        return estado.integrantes
+            .filter(i => i.ativo !== false && i.dataNascimento && proximoAniversario(i.dataNascimento).emDias === 0)
+            .map(i => ({ id: `moradores:aniversario:${i.id}:${hoje().slice(0, 4)}`, icone: 'fa-solid fa-cake-candles', texto: `Hoje é aniversário de ${i.nome}! 🎉`, rota: 'moradores/lista' }));
+    },
     abas: [
         { id: 'lista', titulo: 'Moradores', icone: 'fa-solid fa-users', html: HTML_PAGINA, permissao: 'moradores:ver' }
     ],

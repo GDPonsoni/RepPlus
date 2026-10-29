@@ -3,6 +3,8 @@ import { ouvir } from '../../core/eventos.js';
 import { estado, buscarEvento } from './dados.js';
 import { HTML_ABA_MES, HTML_ABA_SEMANA, renderizarMes, renderizarSemana, selecionarDia, navegarPeriodo, irParaHoje, atualizarVisao } from './visualizacao.js';
 import { abrirFormularioEvento } from './formulario.js';
+import inicio from './inicio.js';
+import avisos from './avisos.js';
 
 // Depois de salvar: na visão mensal, seleciona o dia do evento salvo
 function aposSalvar(dia) {
@@ -20,6 +22,8 @@ export default {
     descricao: 'Eventos, visitas e aniversários',
     icone: 'fa-solid fa-calendar-days',
     cor: 'icon-purple',
+    inicio,
+    avisos,
     abas: [
         { id: 'mes', titulo: 'Mês', icone: 'fa-regular fa-calendar', html: HTML_ABA_MES, permissao: 'agenda:ver', aoAbrir: () => { estado.visao = 'mes'; renderizarMes(); } },
         { id: 'semana', titulo: 'Semana', icone: 'fa-solid fa-list-ul', html: HTML_ABA_SEMANA, permissao: 'agenda:ver', aoAbrir: () => { estado.visao = 'semana'; renderizarSemana(); } }

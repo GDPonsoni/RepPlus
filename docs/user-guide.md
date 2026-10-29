@@ -17,16 +17,36 @@ Este guia explica como operar o **Escala** no dia a dia.
 
 ## 🧭 2. Navegação
 
-O app é dividido em **módulos**. Toque no nome do módulo no topo (ou no botão **Módulos**) para trocar:
+O app abre no **Início**, com um resumo de cada módulo ligado. Toque na **logo** para voltar a ele de qualquer lugar.
+
+- **No celular**: a **barra inferior** troca de módulo (Início e os primeiros módulos; se não couberem todos, o resto fica em **Mais**).
+- **No computador**: o **menu lateral** à esquerda lista todos os módulos.
+- **Canto superior direito**:
+  - 🔔 **Avisos**: encaminhamentos atrasados ou vencendo, o que acabou na lista de compras, eventos de hoje, aniversários do dia e escala da semana não gerada. O número mostra os avisos que você ainda não viu; tocar num aviso leva até ele.
+  - 👤 **Menu**: **Moradores** e **Ajustes**. Quando houver login, o perfil e o "sair" também ficarão aqui.
+- Dentro de cada módulo, as **abas** ficam logo abaixo do topo.
+
+Os módulos:
+- **Início**: o mais importante de cada módulo numa tela só.
 - **Escala de Limpeza**: rodízio semanal, histórico, infrações e os ajustes da escala.
 - **Agenda**: eventos da casa, visitas e aniversários.
 - **Lista de Compras**: o que acabou ou está acabando, para quem for ao mercado.
 - **Atas de Reunião**: o que foi discutido e decidido nas reuniões, e as pendências de cada um.
 - **Anotações**: senhas e contas (num cofre criptografado), contatos de prestadores e notas da casa.
-- **Moradores**: cadastro de todos os moradores (usado por todos os módulos).
-- **Ajustes**: nome da república, aparência (logo, fundo, cores, fonte, estilo), tema claro/escuro deste aparelho e versão do sistema.
+- **Moradores** (menu do canto): cadastro de todos os moradores (usado por todos os módulos).
+- **Ajustes** (menu do canto): nome da república, aparência (logo, fundo, cores, fonte, estilo), tema claro/escuro deste aparelho e versão do sistema.
 
-Cada módulo tem suas abas na barra logo abaixo do topo. O app lembra o último módulo aberto.
+
+### Início
+
+- **Escala da semana**: quem faz o quê e quem está de folga.
+- **Próximos 7 dias**: eventos e aniversários que vêm pela frente.
+- **Lista de compras**: o que acabou e o que está acabando, com um campo para avisar na hora que algo acabou.
+- **Pendências das reuniões**: encaminhamentos em aberto (atrasados primeiro) e o link para a última ata.
+- **Anotações**: notas fixadas e atalhos para senhas, contatos e notas.
+- **Moradores**: aniversários dos próximos 30 dias e quem está sem contato de emergência.
+- **Abrir** leva ao módulo completo. **Personalizar início** (no fim da página) escolhe quais resumos aparecem e em que ordem; vale só para o seu aparelho.
+- Só aparecem resumos de módulos ligados (Ajustes → Módulos).
 
 ---
 
@@ -126,6 +146,7 @@ A semana vai de segunda a domingo e vira à 0h de segunda, no horário de Brasí
 ## 🎨 10. Personalização Visual
 
 - **Ajustes → Módulos**: liga e desliga cada módulo (Escala, Agenda, Lista de Compras, Anotações, Atas). Desligado, ele some do menu para todos e as rotas dele param de responder, mas **nada é apagado**: religando, tudo volta como estava. Moradores e Ajustes fazem parte do núcleo e estão sempre ligados.
+
 - **Escala de Limpeza → Ajustes → Galeria de Imagens**: envie imagens para a galeria. A cada escala gerada, uma delas é sorteada como destaque; você também pode escolher uma na galeria.
 - **Ajustes → Nome e Estilo** (vale para todos):
   - **Nome da república**: aparece no topo, no rodapé e no título da aba do navegador.

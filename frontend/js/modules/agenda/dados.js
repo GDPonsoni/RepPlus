@@ -32,7 +32,7 @@ export const estado = {
 };
 
 // Aniversários dos moradores ativos dentro de [de, ate) como eventos de dia inteiro, só leitura
-function aniversariosNoPeriodo(de, ate) {
+export function aniversariosNoPeriodo(de, ate) {
     const anos = [Number(de.slice(0, 4)), Number(ate.slice(0, 4))];
     const eventos = [];
     obterIntegrantes()
