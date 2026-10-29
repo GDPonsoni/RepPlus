@@ -40,7 +40,7 @@ async function carregarVersao() {
 
 export default {
     id: 'sistema',
-    secoesConfig: [
+    secoesAjustes: [
         { id: 'acc-versao', titulo: 'Versão em Execução', icone: 'fa-solid fa-code-branch', cor: 'icon-gray', html: HTML_SECAO }
     ],
 

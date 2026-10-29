@@ -30,6 +30,7 @@ escala/
 │   │   ├── sistema.js            # /api/versao e /api/sessao
 │   │   └── storage.js            # Imagens no Supabase Storage
 │   ├── modules/
+│   │   ├── agenda/               # Módulo da agenda (eventos)
 │   │   └── escala/               # Módulo da escala de limpeza
 │   │       ├── rotas/            # Cômodos, escala, infrações e motivação
 │   │       ├── rodizio.js        # Algoritmo do rodízio semanal (folgas, suíte, cômodos)
@@ -43,9 +44,12 @@ escala/
 │   ├── js/
 │   │   ├── core/                 # Núcleo: api, sessão, abas, ações, moradores, aparência...
 │   │   ├── modules/
-│   │   │   └── escala/           # Abas e seções de Config do módulo da escala
+│   │   │   ├── agenda/           # Mês, semana e formulário de evento
+│   │   │   └── escala/           # Abas da escala (atual, histórico, infrações, ajustes)
 │   │   └── main.js               # Inicialização (lista MODULOS)
 │   └── index.html                # Casca da aplicação (cabeçalho, abas e conteúdo)
+├── db/
+│   └── migrations/               # Alterações no esquema do Supabase (aplicar antes do deploy)
 ├── docs/                         # Esta documentação
 ├── package.json                  # Dependências e scripts (npm start)
 ├── vercel.json                   # Deploy na Vercel

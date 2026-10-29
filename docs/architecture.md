@@ -23,7 +23,7 @@ O código é dividido em **núcleo** (o que todo módulo usa: moradores, aparên
 |                                                       |
 |  core/auth (req.contexto + exigirPermissao)           |
 |  core/modulos.js monta cada módulo em /api:           |
-|    sistema · moradores · configuracao · escala        |
+|  sistema · moradores · configuracao · escala · agenda |
 |        │                                              |
 |        ├── */store.js ─────────┐                      |
 |        └── core/storage.js ─┐  │   Multer (memória)   |
@@ -78,9 +78,10 @@ O histórico identifica cômodos pelo **nome**: por isso não é permitido ter d
 - **SPA**: uma página HTML com navegação por abas, sem recarregar e sem etapa de build (módulos JS nativos, `<script type="module">`).
 - **Estrutura** (`frontend/js/`):
   - `main.js`: carrega a sessão, monta a interface com os módulos ativos, aplica a configuração e inicia cada módulo.
-  - `core/`: `api.js` (cliente único da API), `sessao.js` (usuário, permissões e `data-permissao`), `shell.js` (abas, seções de Config e navegação por endereço `#/aba`), `acoes.js` (cliques via `data-acao`), `eventos.js` (avisos entre módulos), `ui.js`, `modal.js` e os módulos do núcleo `moradores.js`, `aparencia.js` e `sistema.js`.
-  - `modules/escala/`: abas `escala` (Atual), `historico` e `infracoes`, e as seções Cômodos e Galeria em Config.
-- **Abas**: geradas a partir dos módulos; a aba `config` é do núcleo e reúne as seções de configuração de todos os módulos.
+  - `core/`: `api.js` (cliente único da API), `sessao.js` (usuário, permissões e `data-permissao`), `shell.js` (seletor de módulos, abas e navegação por endereço `#/modulo/aba`), `painel.js` (painel deslizante para formulários), `datas.js` (datas no horário de Brasília), `acoes.js` (cliques via `data-acao`), `eventos.js` (avisos entre módulos), `ui.js`, `modal.js` e os módulos do núcleo `moradores.js` (cadastro global), `aparencia.js` e `sistema.js`.
+  - `modules/escala/`: abas Atual, Histórico, Infrações e Ajustes (cômodos e galeria).
+  - `modules/agenda/`: abas Mês e Semana, formulário de evento e os aniversários vindos do cadastro.
+- **Navegação**: o nome do módulo no topo abre o **seletor de módulos**; a barra de abas mostra só as abas do módulo atual. Moradores e Ajustes são páginas globais (grupo "Geral" do seletor).
 - **Botões**: usam `data-acao="..."` (o módulo registra o que cada ação faz) em vez de `onclick` com funções globais.
 - **Tema**: cores aplicadas via variáveis CSS (`style.setProperty()`).
 - **Segurança de renderização**: todo texto vindo do banco passa por `escaparHtml` antes de entrar em `innerHTML`.
@@ -113,13 +114,19 @@ export default {
 ```js
 export default {
   id: 'financeiro',                       // mesmo id do backend
-  abas: [{ id: 'financeiro', titulo: 'Contas', icone: 'fa-solid fa-wallet', html: '...', aoAbrir: carregarGastos }],
-  secoesConfig: [{ id: 'acc-financeiro', titulo: 'Contas da casa', icone: 'fa-solid fa-wallet', cor: 'icon-green', html: '...', permissao: 'financeiro:gerenciar' }],
+  nome: 'Financeiro', descricao: 'Gastos e divisão de contas',   // como aparece no seletor de módulos
+  icone: 'fa-solid fa-wallet', cor: 'icon-green',
+  abas: [
+    { id: 'gastos', titulo: 'Gastos', icone: 'fa-solid fa-receipt', html: '...', permissao: 'financeiro:ver', aoAbrir: carregarGastos },
+    // uma aba com `secoes` vira uma lista de seções recolhíveis (ajustes do próprio módulo)
+    { id: 'ajustes', titulo: 'Ajustes', icone: 'fa-solid fa-sliders', secoes: [{ id: 'acc-contas', titulo: 'Contas fixas', icone: '...', cor: 'icon-green', html: '...', permissao: 'financeiro:gerenciar' }] }
+  ],
+  secoesAjustes: [],                      // opcional: seções na página global de Ajustes
   iniciar() { /* liga eventos, registrarAcoes(...), carrega dados */ }
 };
 ```
 
-A aba aparece na navegação e as seções aparecem em Config automaticamente. Um módulo lê os moradores com `obterIntegrantes()` e reage a mudanças com `ouvir('moradores:atualizados', ...)`, sem depender de outros módulos.
+O módulo aparece no seletor e suas abas na navegação automaticamente (endereços `#/financeiro/gastos`). Para formulários, use `abrirPainel()` (`core/painel.js`); para datas, `core/datas.js`. Um módulo lê os moradores com `obterIntegrantes()` e reage a mudanças com `ouvir('moradores:atualizados', ...)`, sem depender de outros módulos.
 
 ### Sessão e permissões (pontes para o login)
 

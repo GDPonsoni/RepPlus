@@ -10,12 +10,13 @@ import sistema from './core/sistema.js';
 import moradores from './core/moradores/index.js';
 import configuracao from './core/configuracao/index.js';
 import escala from './modules/escala/index.js';
+import agenda from './modules/agenda/index.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 // Núcleo primeiro, depois os módulos de funcionalidade. Para adicionar um módulo novo
 // (financeiro, eventos...), crie modules/<nome>/index.js e inclua-o aqui.
-const MODULOS = [sistema, moradores, configuracao, escala];
+const MODULOS = [sistema, moradores, configuracao, escala, agenda];
 
 export function createApp() {
   const app = express();

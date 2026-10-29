@@ -12,14 +12,21 @@ import { uploadMotivacao, mostrarNomeArquivoMotivacao, definirMotivacaoDestaque,
 // Módulo: escala de limpeza
 export default {
     id: 'escala',
+    nome: 'Escala de Limpeza',
+    descricao: 'Rodízio semanal e infrações',
+    icone: 'fa-solid fa-broom',
+    cor: 'icon-red',
     abas: [
-        { id: 'escala', titulo: 'Atual', icone: 'fa-regular fa-clipboard', html: HTML_ABA_ESCALA, aoAbrir: carregarEscalaAtual },
-        { id: 'historico', titulo: 'Histórico', icone: 'fa-solid fa-clock-rotate-left', html: HTML_ABA_HISTORICO, aoAbrir: carregarHistorico },
-        { id: 'infracoes', titulo: 'Infrações', icone: 'fa-solid fa-triangle-exclamation', html: HTML_ABA_INFRACOES, aoAbrir: carregarInfracoes }
-    ],
-    secoesConfig: [
-        { id: 'acc-comodos', titulo: 'Cômodos e Tarefas', icone: 'fa-solid fa-broom', cor: 'icon-green', html: HTML_SECAO_COMODOS },
-        { id: 'acc-imagens', titulo: 'Galeria de Imagens', icone: 'fa-regular fa-image', cor: 'icon-purple', html: HTML_SECAO_GALERIA, permissao: 'motivacao:gerenciar' }
+        { id: 'atual', titulo: 'Atual', icone: 'fa-regular fa-clipboard', html: HTML_ABA_ESCALA, permissao: 'escala:ver', aoAbrir: carregarEscalaAtual },
+        { id: 'historico', titulo: 'Histórico', icone: 'fa-solid fa-clock-rotate-left', html: HTML_ABA_HISTORICO, permissao: 'escala:ver', aoAbrir: carregarHistorico },
+        { id: 'infracoes', titulo: 'Infrações', icone: 'fa-solid fa-triangle-exclamation', html: HTML_ABA_INFRACOES, permissao: 'infracoes:ver', aoAbrir: carregarInfracoes },
+        {
+            id: 'ajustes', titulo: 'Ajustes', tituloPagina: 'Ajustes da Escala', icone: 'fa-solid fa-sliders',
+            secoes: [
+                { id: 'acc-comodos', titulo: 'Cômodos e Tarefas', icone: 'fa-solid fa-broom', cor: 'icon-green', html: HTML_SECAO_COMODOS },
+                { id: 'acc-imagens', titulo: 'Galeria de Imagens', icone: 'fa-regular fa-image', cor: 'icon-purple', html: HTML_SECAO_GALERIA, permissao: 'motivacao:gerenciar' }
+            ]
+        }
     ],
 
     async iniciar() {

@@ -11,11 +11,29 @@ Cada rota exige uma permissão (veja [Módulos e Permissões](architecture.md#-m
 | Método | Endpoint | Descrição | Corpo / Retorno |
 | :--- | :--- | :--- | :--- |
 | `GET` | `/api/integrantes` | Lista todos os integrantes | Array de `Integrante` |
-| `POST` | `/api/integrantes` | Cria um integrante (sempre ativo) | `{ "nome": string, "isSuite": boolean }` |
-| `PUT` | `/api/integrantes/:id` | Atualiza um integrante | `{ "nome"?: string, "isSuite"?: boolean, "ativo"?: boolean }` |
+| `POST` | `/api/integrantes` | Cria um integrante | `{ "nome": string, "isSuite"?, "ativo"?, ...cadastro }` |
+| `PUT` | `/api/integrantes/:id` | Atualiza um integrante (só os campos enviados) | `{ "nome"?, "isSuite"?, "ativo"?, ...cadastro }` |
 | `DELETE` | `/api/integrantes/:id` | Remove um integrante | `{ "success": true }` |
 
 Nomes de integrantes não podem se repetir (sem diferenciar maiúsculas).
+
+**Campos do cadastro** (todos opcionais; `""` ou `null` apaga o campo): `nomeCompleto`, `dataNascimento` e `dataEntrada` (`AAAA-MM-DD`), `telefone`, `email`, `observacoes`, `emergenciaNome`, `emergenciaParentesco`, `emergenciaTelefone`, `cpf`, `rg`. `cpf` e `rg` só aparecem nas respostas e só podem ser alterados com a permissão `moradores:documentos`.
+
+---
+
+## 📅 Agenda (`/api/eventos`)
+
+| Método | Endpoint | Descrição | Corpo / Retorno |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/api/eventos?de=...&ate=...` | Eventos que acontecem no período (datas ISO 8601; máximo 62 dias) | Array de `Evento`, em ordem de início |
+| `POST` | `/api/eventos` | Cria um evento | `{ "titulo", "inicio", "fim"?, "diaInteiro"?, "categoria"?, "local"?, "descricao"?, "recorrencia"?, "recorrenciaAte"? }` |
+| `PUT` | `/api/eventos/:id` | Atualiza um evento ou a série inteira de um evento recorrente (só os campos enviados) | Mesmos campos |
+| `POST` | `/api/eventos/:id/excecoes` | Cancela uma única repetição de um evento recorrente | `{ "data": "AAAA-MM-DD" }` |
+| `DELETE` | `/api/eventos/:id` | Exclui um evento (ou a série inteira) | `{ "success": true }` |
+
+`categoria`: `geral` (padrão), `festa`, `reuniao`, `visita` ou `manutencao`. O término não pode ser antes do início, e um evento dura no máximo 31 dias.
+
+**Repetição**: `recorrencia` pode ser `semanal`, `quinzenal`, `mensal` ou `anual` (`null` = não repete); `recorrenciaAte` (`AAAA-MM-DD`, opcional) é o último dia em que ainda repete. No `GET`, cada repetição dentro do período vem como uma entrada separada, com o mesmo `id` da série e os campos extras `ocorrencia` (dia da repetição), `serieInicio` e `serieFim` (datas da primeira). Repetições mensais no dia 29, 30 ou 31 caem no último dia dos meses mais curtos. Cada repetição dura no máximo 6 dias (semanal), 13 (quinzenal), 27 (mensal) ou 31 (anual). Aniversários não são eventos: o frontend os monta a partir do cadastro de moradores.
 
 ---
 

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="theme-color" content="#DC0000">
-    <title>Escala da República</title>
+    <title>República</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -18,10 +18,16 @@
             <div class="logo-ring">
                 <img id="logo-top" class="logo-top" alt="Logo da República" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'><circle cx='100' cy='100' r='95' fill='%23FFD700' stroke='%23000' stroke-width='4'/><rect x='40' y='50' width='120' height='100' fill='%23DC0000'/><text x='100' y='130' font-size='80' font-weight='bold' text-anchor='middle' font-family='Arial' fill='%23FFD700'>B</text><circle cx='75' cy='75' r='15' fill='%23FFF'/><circle cx='125' cy='75' r='15' fill='%23FFF'/><circle cx='75' cy='80' r='8' fill='%23000'/><circle cx='125' cy='80' r='8' fill='%23000'/></svg>">
             </div>
-            <div class="header-text">
-                <h1><i class="fa-solid fa-house-user"></i> Escala</h1>
-                <p class="subtitle">Limpeza da República</p>
-            </div>
+            <button type="button" class="modulo-atual" data-acao="abrir-seletor" aria-label="Trocar de módulo">
+                <span class="modulo-atual-texto">
+                    <span class="subtitle">República</span>
+                    <span class="modulo-atual-nome"><i id="modulo-atual-icone" class="fa-solid fa-house-user"></i> <span id="modulo-atual-nome">Carregando...</span></span>
+                </span>
+                <i class="fa-solid fa-chevron-down modulo-atual-seta"></i>
+            </button>
+            <button type="button" class="btn-modulos" data-acao="abrir-seletor" aria-label="Abrir módulos">
+                <i class="fa-solid fa-grip"></i><span>Módulos</span>
+            </button>
         </div>
     </header>
 
@@ -35,7 +41,7 @@
 
     <!-- FOOTER -->
     <footer class="footer">
-        <p>Escala · Limpeza com responsabilidade! 🧹</p>
+        <p>República · Organização com responsabilidade! 🏠</p>
     </footer>
 
     <div id="toast-area" class="toast-area" aria-live="polite"></div>

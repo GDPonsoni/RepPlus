@@ -15,18 +15,31 @@ Este guia explica como operar o **Escala** no dia a dia.
 
 ---
 
-## ⚙️ 2. Configurações Iniciais
+## 🧭 2. Navegação
 
-Na aba **⚙️ Config**, cada assunto fica numa seção que abre ao tocar no título.
+O app é dividido em **módulos**. Toque no nome do módulo no topo (ou no botão **Módulos**) para trocar:
+- **Escala de Limpeza**: rodízio semanal, histórico, infrações e os ajustes da escala.
+- **Agenda**: eventos da casa, visitas e aniversários.
+- **Moradores**: cadastro de todos os moradores (usado por todos os módulos).
+- **Ajustes**: aparência (logo, fundo, cores) e versão do sistema.
 
-### A. Integrantes
-- Abra **Integrantes da República**, informe o nome e toque em **Adicionar Integrante**.
-- Para editar, toque no ✏️: o item fica destacado na lista com a etiqueta **"Editando"** e o formulário vira um card vermelho até você salvar ou cancelar.
+Cada módulo tem suas abas na barra logo abaixo do topo. O app lembra o último módulo aberto.
+
+---
+
+## ⚙️ 3. Configurações Iniciais
+
+### A. Moradores
+- No módulo **Moradores**, toque em **Novo** e preencha o cadastro: nome na casa (apelido), nome completo, nascimento, data de entrada, telefone, e-mail, **contato de emergência** (nome, parentesco e telefone), documentos e observações. Só o apelido é obrigatório.
+- Toque num morador para editar ou excluir. Com o telefone de emergência preenchido, o botão **Ligar** já faz a chamada pelo celular.
+- Moradores ativos sem contato de emergência aparecem com o aviso **"Sem contato de emergência"** na lista.
 - Marque **"É da suíte?"** para quem mora na suíte: só essas pessoas fazem os cômodos "apenas suíte".
 - Desmarque **"Está ativo?"** se alguém estiver viajando ou ausente. A pessoa sai da próxima escala gerada (a da semana atual só muda se você gerar de novo).
+- Com a data de nascimento preenchida, o aniversário aparece em **Próximos aniversários** e na **Agenda**.
+- ⚠️ **Documentos (CPF/RG)**: enquanto o app não tiver login, qualquer pessoa com o link consegue ver esses dados. Só preencha depois que o login estiver ativo.
 
 ### B. Cômodos
-- Em **Cômodos e Tarefas**, cadastre os cômodos da casa (ex.: *Cozinha*, *Sala*, *Lavanderia*, *Sacada*). Os nomes não podem se repetir.
+- Em **Escala de Limpeza → Ajustes → Cômodos e Tarefas**, cadastre os cômodos da casa (ex.: *Cozinha*, *Sala*, *Lavanderia*, *Sacada*). Os nomes não podem se repetir.
 - **Quantas pessoas?**: quantas pessoas o cômodo precisa por semana.
 - **Ordem na rotação**: a sequência que cada pessoa percorre (ordem 0 → 1 → 2...).
 - **Apenas suíte?**: marque no banheiro da suíte.
@@ -36,7 +49,7 @@ Na aba **⚙️ Config**, cada assunto fica numa seção que abre ao tocar no t�
 
 ---
 
-## 📋 3. Gerando a Escala
+## 📋 4. Gerando a Escala
 
 1. Na aba **📋 Atual**, toque em **Gerar Nova Escala**.
 2. O rodízio é previsível e não tem sorteio:
@@ -50,7 +63,7 @@ A semana vai de segunda a domingo e vira à 0h de segunda, no horário de Brasí
 
 ---
 
-## ❌ 4. Registro de Infrações
+## ❌ 5. Registro de Infrações
 
 1. Na escala, toque no **✕** do card da pessoa, ou vá na aba **⚠️ Infrações**.
 2. Selecione o integrante, descreva o que aconteceu e clique em **Registrar Infração**.
@@ -58,11 +71,24 @@ A semana vai de segunda a domingo e vira à 0h de segunda, no horário de Brasí
 
 ---
 
-## 🎨 5. Personalização Visual
+## 📅 6. Agenda
 
-Na aba **⚙️ Config**:
-- **Galeria de Imagens**: envie imagens para a galeria. A cada escala gerada, uma delas é sorteada como destaque; você também pode escolher uma na galeria.
-- **Aparência e Logo**: logo do cabeçalho, imagem de fundo e esquema de cores.
+- **Mês**: calendário com os eventos marcados em cada dia (bolinhas coloridas no celular, etiquetas com o título no computador). Toque num dia para ver a lista detalhada abaixo.
+- **Semana**: os 7 dias com horário, local e descrição de cada evento.
+- **Criar**: botão **+** no canto da tela, o **+ Evento** do dia selecionado ou o **+** de cada dia na semana.
+- **Editar ou excluir**: toque no evento.
+- Cada evento tem título, categoria (Geral, Festa/rolê, Reunião, Visita, Manutenção), data, horário de início e término (ou **dia inteiro**), local e descrição. Eventos podem durar vários dias (até 31).
+- **Repetir**: toda semana, a cada 2 semanas, todo mês ou todo ano, opcionalmente até uma data (ex.: conta de luz todo mês no dia 10; fim do prazo da escala todo domingo). No mensal, quem marca o dia 31 cai no último dia dos meses mais curtos.
+  - Editar um evento que se repete altera **todas** as repetições.
+  - Ao excluir, escolha entre **só aquele dia** (ex.: pular uma semana) ou **todas as repetições**.
+- Os **aniversários** dos moradores aparecem sozinhos, a partir do cadastro.
+
+---
+
+## 🎨 7. Personalização Visual
+
+- **Escala de Limpeza → Ajustes → Galeria de Imagens**: envie imagens para a galeria. A cada escala gerada, uma delas é sorteada como destaque; você também pode escolher uma na galeria.
+- **Ajustes → Aparência e Logo**: logo do cabeçalho, imagem de fundo e esquema de cores.
 - **Logo**: imagem do cabeçalho.
 - **Fundo**: imagem de plano de fundo da aplicação.
 - **Esquema de cores**: cor primária, secundária, clara e escura. **Restaurar Padrão** volta às cores originais.

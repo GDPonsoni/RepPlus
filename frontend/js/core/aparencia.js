@@ -230,7 +230,7 @@ function resetarCores() {
 
 export default {
     id: 'configuracao',
-    secoesConfig: [
+    secoesAjustes: [
         { id: 'acc-aparencia', titulo: 'Aparência e Logo', icone: 'fa-solid fa-palette', cor: 'icon-orange', html: HTML_SECAO, permissao: 'aparencia:gerenciar' }
     ],
 

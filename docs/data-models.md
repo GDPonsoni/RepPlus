@@ -12,9 +12,16 @@ Os dados ficam no **Supabase**: tabelas no Postgres e imagens no Storage. O aces
 | `nome` | `nome` | texto | Nome (único) |
 | `is_suite` | `isSuite` | boolean | Mora na suíte (pode fazer cômodos "apenas suíte") |
 | `ativo` | `ativo` | boolean | Participa da escala |
+| `nome_completo` | `nomeCompleto` | texto | Nome completo |
+| `data_nascimento` | `dataNascimento` | date | Nascimento (vira aniversário na agenda) |
+| `data_entrada` | `dataEntrada` | date | Quando entrou na casa |
+| `telefone` / `email` | `telefone` / `email` | texto | Contato |
+| `observacoes` | `observacoes` | texto | Alergias, medicamentos, plano de saúde... |
+| `emergencia_nome` / `emergencia_parentesco` / `emergencia_telefone` | `emergenciaNome` / `emergenciaParentesco` / `emergenciaTelefone` | texto | Contato de emergência |
+| `cpf` / `rg` | `cpf` / `rg` | texto | Documentos (só com a permissão `moradores:documentos`) |
 
 ```json
-{ "id": "9060c789-...", "nome": "Terezinha", "isSuite": true, "ativo": true }
+{ "id": "9060c789-...", "nome": "Terezinha", "isSuite": true, "ativo": true, "nomeCompleto": "Teresa Cristina Almeida", "dataNascimento": "2001-10-30", "telefone": "(19) 99876-5432" }
 ```
 
 ---
@@ -104,6 +111,27 @@ A função Postgres `replace_semana_escala(p_ano, p_semana, p_linhas)` substitui
 
 ---
 
-## 🖼️ 6. Imagens (Storage, bucket `uploads`)
+## 📅 6. Eventos da agenda (tabela `eventos`)
+
+| Coluna | Campo na API | Tipo | Descrição |
+| :--- | :--- | :--- | :--- |
+| `id` | `id` | UUID | Identificador |
+| `titulo` | `titulo` | texto | Título (obrigatório) |
+| `descricao` / `local` | `descricao` / `local` | texto | Detalhes e local |
+| `categoria` | `categoria` | texto | `geral`, `festa`, `reuniao`, `visita` ou `manutencao` |
+| `inicio` / `fim` | `inicio` / `fim` | timestamptz | Início e término (`fim` opcional) |
+| `dia_inteiro` | `diaInteiro` | boolean | Evento sem horário |
+| `recorrencia` | `recorrencia` | texto | `semanal`, `quinzenal`, `mensal`, `anual` ou `null` (não repete) |
+| `recorrencia_ate` | `recorrenciaAte` | date | Último dia em que ainda repete (`null` = sem fim) |
+| `excecoes` | `excecoes` | date[] | Dias em que uma repetição foi cancelada |
+| `criado_em` | `criadoEm` | timestamptz | Quando foi criado |
+
+Eventos recorrentes são guardados como **uma linha só** (a primeira ocorrência + a regra); as repetições são calculadas na consulta (`backend/modules/agenda/recorrencia.js`).
+
+As mudanças no esquema ficam versionadas em [`db/migrations/`](../db/README.md).
+
+---
+
+## 🖼️ 7. Imagens (Storage, bucket `uploads`)
 
 Fotos de cômodos, logo, fundo e galeria de motivação ficam no bucket público `uploads`, cada uma com um nome aleatório (UUID + extensão). A galeria de motivação é tudo o que está no bucket, exceto o logo e o fundo atuais.

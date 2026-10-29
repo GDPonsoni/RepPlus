@@ -7,11 +7,12 @@ import moradores from './core/moradores.js';
 import aparencia from './core/aparencia.js';
 import sistema from './core/sistema.js';
 import escala from './modules/escala/index.js';
+import agenda from './modules/agenda/index.js';
 
-// Ordem dos módulos = ordem das abas e das seções em Config.
+// Ordem dos módulos = ordem no seletor de módulos e das seções na página de Ajustes.
 // Para adicionar um módulo novo: criar modules/<nome>/index.js e incluí-lo aqui
 // (e o módulo correspondente no backend, em backend/app.js).
-const MODULOS = [moradores, escala, aparencia, sistema];
+const MODULOS = [escala, agenda, moradores, aparencia, sistema];
 
 async function iniciar() {
     // Sessão primeiro: define quais módulos aparecem e quais botões cada usuário vê

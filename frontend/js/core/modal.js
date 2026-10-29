@@ -99,3 +99,41 @@ export function mostrarPrompt(mensagem, valorInicial = '', { titulo = 'Informe u
         setTimeout(() => input.focus(), 0);
     });
 }
+
+// Escolha entre várias opções (ex.: "só este dia" / "todas as repetições").
+// Retorna o `valor` da opção escolhida ou null se cancelar.
+export function mostrarEscolha(mensagem, { titulo = 'Escolha uma opção', opcoes = [], cancelarTexto = 'Cancelar' } = {}) {
+    return new Promise((resolve) => {
+        const { overlay, card } = criarOverlay();
+
+        card.innerHTML = `
+            <h3 class="app-modal-title">${titulo}</h3>
+            <p class="app-modal-message"></p>
+            <div class="app-modal-actions app-modal-escolhas">
+                <button type="button" class="btn btn-secondary" data-action="cancelar">${cancelarTexto}</button>
+                ${opcoes.map((opcao, i) => `<button type="button" class="btn ${opcao.classe || 'btn-secondary'}" data-opcao="${i}">${opcao.texto}</button>`).join('')}
+            </div>
+        `;
+        card.querySelector('.app-modal-message').textContent = mensagem;
+
+        const resolver = (valor) => {
+            fecharOverlay(overlay);
+            document.removeEventListener('keydown', onKeydown);
+            resolve(valor);
+        };
+        const onKeydown = (e) => {
+            if (e.key === 'Escape') resolver(null);
+        };
+
+        card.querySelector('[data-action="cancelar"]').addEventListener('click', () => resolver(null));
+        card.querySelectorAll('[data-opcao]').forEach(botao => {
+            botao.addEventListener('click', () => resolver(opcoes[Number(botao.dataset.opcao)].valor));
+        });
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) resolver(null);
+        });
+        document.addEventListener('keydown', onKeydown);
+
+        card.querySelector('[data-action="cancelar"]').focus();
+    });
+}
