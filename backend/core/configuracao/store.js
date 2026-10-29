@@ -33,7 +33,8 @@ const configFromDb = (row) => ({
   background: row.background,
   motivacaoDestaque: row.motivacao_destaque,
   cores: { ...DEFAULT_CORES, ...(row.cores || {}) },
-  personalizacao: { ...PERSONALIZACAO_PADRAO, ...(row.personalizacao || {}) }
+  personalizacao: { ...PERSONALIZACAO_PADRAO, ...(row.personalizacao || {}) },
+  modulosDesativados: Array.isArray(row.modulos_desativados) ? row.modulos_desativados : []
 });
 
 export const ConfigStore = {
@@ -47,7 +48,8 @@ export const ConfigStore = {
       background: config.background,
       motivacao_destaque: config.motivacaoDestaque,
       cores: { ...DEFAULT_CORES, ...(config.cores || {}) },
-      personalizacao: { ...PERSONALIZACAO_PADRAO, ...(config.personalizacao || {}) }
+      personalizacao: { ...PERSONALIZACAO_PADRAO, ...(config.personalizacao || {}) },
+      modulos_desativados: config.modulosDesativados || []
     }).eq('id', 1).select().single());
     return configFromDb(row);
   }

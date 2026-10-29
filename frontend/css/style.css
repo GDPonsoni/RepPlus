@@ -3610,6 +3610,110 @@ button.evento-card:hover {
     }
 }
 
+/* ===== AJUSTES > MÓDULOS ===== */
+.modulos-ajuda {
+    margin-bottom: 10px;
+    font-size: 0.82rem;
+    color: var(--muted);
+}
+
+.modulos-config {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.modulo-config {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.modulo-config.desligado .acc-icon,
+.modulo-config.desligado .modulo-config-texto {
+    opacity: 0.5;
+}
+
+.modulo-config-texto {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.modulo-config-nome {
+    font-weight: 700;
+    font-size: 0.92rem;
+}
+
+.modulo-config-descricao {
+    font-size: 0.75rem;
+    color: var(--muted);
+}
+
+/* Interruptor liga/desliga (checkbox com role="switch") */
+.interruptor {
+    position: relative;
+    flex-shrink: 0;
+    width: 46px;
+    height: 28px;
+}
+
+.interruptor input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 1;
+}
+
+.interruptor-trilho {
+    position: absolute;
+    inset: 0;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--dark-color) 22%, var(--light-color));
+    transition: background 0.2s;
+}
+
+.interruptor-trilho::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    transition: transform 0.2s;
+}
+
+.interruptor input:checked + .interruptor-trilho {
+    background: var(--success-color);
+}
+
+.interruptor input:checked + .interruptor-trilho::after {
+    transform: translateX(18px);
+}
+
+.interruptor input:focus-visible + .interruptor-trilho {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+.interruptor input:disabled + .interruptor-trilho {
+    opacity: 0.6;
+}
+
 /* ===== TEMA ESCURO: cores fixas que não derivam do tema ===== */
 :root[data-tema="escuro"] .icon-blue { background: rgba(37, 99, 235, 0.22); color: #93c5fd; }
 :root[data-tema="escuro"] .icon-green { background: rgba(22, 163, 74, 0.22); color: #86efac; }

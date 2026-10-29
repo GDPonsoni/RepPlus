@@ -5,7 +5,7 @@ import { ouvir } from './core/eventos.js';
 import { mostrarNotificacao } from './core/ui.js';
 import moradores from './core/moradores.js';
 import aparencia from './core/aparencia.js';
-import sistema from './core/sistema.js';
+import sistema, { definirCatalogoModulos } from './core/sistema.js';
 import escala from './modules/escala/index.js';
 import agenda from './modules/agenda/index.js';
 import compras from './modules/compras/index.js';
@@ -21,6 +21,7 @@ async function iniciar() {
     // Sessão primeiro: define quais módulos aparecem e quais botões cada usuário vê
     await carregarSessao();
     const ativos = MODULOS.filter(modulo => moduloAtivo(modulo.id));
+    definirCatalogoModulos(MODULOS);
 
     montarInterface(ativos);
     await carregarConfig();

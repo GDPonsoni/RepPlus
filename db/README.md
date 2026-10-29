@@ -15,6 +15,7 @@ uma vez sem efeito colateral (`if not exists`).
 | `20261030_compras.sql` | Módulo Lista de Compras: tabela `compras_itens` |
 | `20261030_anotacoes.sql` | Módulo Anotações: tabelas `anotacoes` e `anotacoes_cofre` |
 | `20261030_atas.sql` | Módulo Atas de Reunião: tabela `atas` |
+| `20261030_config_modulos.sql` | Ativar/desativar módulos: coluna `modulos_desativados` em `config` |
 
 As tabelas anteriores (`integrantes`, `comodos`, `escalas`, `infracoes`, `config` e a função
 `replace_semana_escala`) foram criadas antes deste controle e ainda não têm migração aqui.

@@ -34,7 +34,7 @@ Em produção o app roda na Vercel (`vercel.json`), com as mesmas variáveis de 
 - 🔐 **Anotações**: senhas e contas num cofre criptografado no próprio aparelho (AES-256, senha da casa), contatos de prestadores com ligar/WhatsApp/mapa e notas da casa.
 - 📝 **Atas de reunião**: o que foi discutido, decisões e encaminhamentos com responsável e prazo; aba de pendências e sugestão de ata para as reuniões da agenda.
 - 👥 **Cadastro de moradores** global: contatos, contato de emergência, nascimento, data de entrada, documentos e observações.
-- 🧩 **Módulos**: seletor de módulos no topo; novos módulos entram sem mexer no núcleo.
+- 🧩 **Módulos**: seletor de módulos no topo; cada república liga só os módulos que usa (Ajustes → Módulos); novos módulos entram sem mexer no núcleo.
 
 ---
 

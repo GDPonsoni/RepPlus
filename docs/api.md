@@ -6,6 +6,17 @@ Cada rota exige uma permissão (veja [Módulos e Permissões](architecture.md#-m
 
 ---
 
+## 🧩 Módulos (`/api/modulos`)
+
+| Método | Endpoint | Descrição | Corpo / Retorno |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/api/modulos` | Todos os módulos, ativos ou não | `[{ "id", "nome", "nucleo", "ativo" }]` |
+| `PUT` | `/api/modulos/:id` | Liga ou desliga um módulo (os do núcleo não podem ser desligados) | `{ "ativo": boolean }` |
+
+Ambos exigem a permissão `modulos:gerenciar`. Com um módulo desligado, as rotas dele respondem 404 (`{ "error": "Rota não encontrada." }`) e ele some de `GET /api/sessao`; os dados continuam no banco. A mudança é lida com cache de 15 segundos (na Vercel pode levar esse tempo para valer em todas as instâncias).
+
+---
+
 ## 👥 Integrantes (`/api/integrantes`)
 
 | Método | Endpoint | Descrição | Corpo / Retorno |

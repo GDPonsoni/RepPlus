@@ -125,6 +125,7 @@ A semana vai de segunda a domingo e vira à 0h de segunda, no horário de Brasí
 
 ## 🎨 10. Personalização Visual
 
+- **Ajustes → Módulos**: liga e desliga cada módulo (Escala, Agenda, Lista de Compras, Anotações, Atas). Desligado, ele some do menu para todos e as rotas dele param de responder, mas **nada é apagado**: religando, tudo volta como estava. Moradores e Ajustes fazem parte do núcleo e estão sempre ligados.
 - **Escala de Limpeza → Ajustes → Galeria de Imagens**: envie imagens para a galeria. A cada escala gerada, uma delas é sorteada como destaque; você também pode escolher uma na galeria.
 - **Ajustes → Nome e Estilo** (vale para todos):
   - **Nome da república**: aparece no topo, no rodapé e no título da aba do navegador.

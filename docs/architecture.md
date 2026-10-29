@@ -132,6 +132,12 @@ export default {
 
 O módulo aparece no seletor e suas abas na navegação automaticamente (endereços `#/financeiro/gastos`). Para formulários, use `abrirPainel()` (`core/painel.js`); para datas, `core/datas.js`. Um módulo lê os moradores com `obterIntegrantes()` e reage a mudanças com `ouvir('moradores:atualizados', ...)`, sem depender de outros módulos.
 
+### Ligar e desligar módulos
+
+- Módulos com `nucleo: false` podem ser desligados em **Ajustes → Módulos** (`PUT /api/modulos/:id`). A lista fica em `config.modulos_desativados`.
+- `core/modulos.js` monta cada módulo atrás de um filtro: se ele estiver desligado, a requisição pula o router do módulo e termina no 404 da API. `GET /api/sessao` devolve só os módulos ativos, e o frontend (`main.js`) monta apenas esses.
+- Um módulo que usa outro deve checar `moduloAtivo('<id>')` no frontend (ex.: as Atas só sugerem reuniões se a Agenda estiver ligada).
+
 ### Sessão e permissões (pontes para o login)
 
 - Toda requisição em `/api` recebe `req.contexto = { modo, autenticado, usuario, republicaId, permissoes }` (`backend/core/auth/sessao.js`).

@@ -33,6 +33,9 @@ export function createApp() {
   app.use('/api', carregarContexto);
   montarModulos(app, MODULOS);
 
+  // Nenhuma rota respondeu (endereço errado ou módulo desativado)
+  app.use('/api', (req, res) => res.status(404).json({ error: 'Rota não encontrada.' }));
+
   app.use(errorHandler);
   return app;
 }
