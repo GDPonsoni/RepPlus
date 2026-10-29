@@ -136,6 +136,25 @@ As mudanças no esquema ficam versionadas em [`db/migrations/`](../db/README.md)
 
 ---
 
-## 🖼️ 7. Imagens (Storage, bucket `uploads`)
+## 🛒 7. Lista de compras (tabela `compras_itens`)
+
+| Coluna | Campo na API | Tipo | Descrição |
+| :--- | :--- | :--- | :--- |
+| `id` | `id` | UUID | Identificador |
+| `nome` | `nome` | texto | Nome do item (único, ignorando maiúsculas, acentos e espaços) |
+| `categoria` | `categoria` | texto | `mercado`, `limpeza`, `higiene`, `bebidas`, `casa` ou `outros` |
+| `status` | `status` | texto | `falta` (acabou), `acabando` ou `ok` (em casa) |
+| `quantidade` / `observacao` | `quantidade` / `observacao` | texto | Ex.: "2 un", "folha dupla" |
+| `pedido_por` | `pedidoPor` | UUID | Morador que pediu (`integrantes.id`, opcional) |
+| `pedido_em` | `pedidoEm` | timestamptz | Quando entrou na lista |
+| `comprado_em` | `compradoEm` | timestamptz | Última compra |
+| `vezes_comprado` | `vezesComprado` | inteiro | Quantas vezes foi comprado pelo app (ordena as sugestões) |
+| `criado_em` | `criadoEm` | timestamptz | Quando foi salvo pela primeira vez |
+
+Os itens nunca somem ao serem comprados: voltam para `ok` e viram o catálogo de "já compramos antes".
+
+---
+
+## 🖼️ 8. Imagens (Storage, bucket `uploads`)
 
 Fotos de cômodos, logo, fundo e galeria de motivação ficam no bucket público `uploads`, cada uma com um nome aleatório (UUID + extensão). A galeria de motivação é tudo o que está no bucket, exceto o logo e o fundo atuais.

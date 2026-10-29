@@ -23,7 +23,8 @@ O código é dividido em **núcleo** (o que todo módulo usa: moradores, aparên
 |                                                       |
 |  core/auth (req.contexto + exigirPermissao)           |
 |  core/modulos.js monta cada módulo em /api:           |
-|  sistema · moradores · configuracao · escala · agenda |
+|  sistema · moradores · configuracao · escala ·        |
+|  agenda · compras                                     |
 |        │                                              |
 |        ├── */store.js ─────────┐                      |
 |        └── core/storage.js ─┐  │   Multer (memória)   |
@@ -81,6 +82,7 @@ O histórico identifica cômodos pelo **nome**: por isso não é permitido ter d
   - `core/`: `api.js` (cliente único da API), `sessao.js` (usuário, permissões e `data-permissao`), `shell.js` (seletor de módulos, abas e navegação por endereço `#/modulo/aba`), `painel.js` (painel deslizante para formulários), `datas.js` (datas no horário de Brasília), `acoes.js` (cliques via `data-acao`), `eventos.js` (avisos entre módulos), `ui.js`, `modal.js` e os módulos do núcleo `moradores.js` (cadastro global), `aparencia.js` e `sistema.js`.
   - `modules/escala/`: abas Atual, Histórico, Infrações e Ajustes (cômodos e galeria).
   - `modules/agenda/`: abas Mês e Semana, formulário de evento e os aniversários vindos do cadastro.
+  - `modules/compras/`: abas Lista e Itens salvos; `dados.js` guarda o estado e fala com a API, `index.js` desenha as telas e o formulário.
 - **Navegação**: o nome do módulo no topo abre o **seletor de módulos**; a barra de abas mostra só as abas do módulo atual. Moradores e Ajustes são páginas globais (grupo "Geral" do seletor).
 - **Botões**: usam `data-acao="..."` (o módulo registra o que cada ação faz) em vez de `onclick` com funções globais.
 - **Tema**: cores aplicadas via variáveis CSS (`style.setProperty()`); o resto da paleta deriva delas com `color-mix`. Estilo por atributos no `<html>`: `data-tema` (claro/escuro, do aparelho), `data-texto`, `data-cantos` e `data-cabecalho`. O `index.html` aplica o tema do aparelho antes de desenhar a tela, para não piscar.

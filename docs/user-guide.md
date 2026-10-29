@@ -20,6 +20,7 @@ Este guia explica como operar o **Escala** no dia a dia.
 O app é dividido em **módulos**. Toque no nome do módulo no topo (ou no botão **Módulos**) para trocar:
 - **Escala de Limpeza**: rodízio semanal, histórico, infrações e os ajustes da escala.
 - **Agenda**: eventos da casa, visitas e aniversários.
+- **Lista de Compras**: o que acabou ou está acabando, para quem for ao mercado.
 - **Moradores**: cadastro de todos os moradores (usado por todos os módulos).
 - **Ajustes**: nome da república, aparência (logo, fundo, cores, fonte, estilo), tema claro/escuro deste aparelho e versão do sistema.
 
@@ -85,7 +86,19 @@ A semana vai de segunda a domingo e vira à 0h de segunda, no horário de Brasí
 
 ---
 
-## 🎨 7. Personalização Visual
+## 🛒 7. Lista de Compras
+
+- **Acabou alguma coisa?** Digite no campo do topo (ex.: "detergente"), escolha **Acabou** ou **Tá acabando** e toque em **+**.
+- **Já compramos antes**: os itens que a casa costuma comprar aparecem como sugestão; um toque coloca na lista. O campo também completa o nome sozinho.
+- **No mercado**: abra a lista e toque no **círculo** de cada item ao pegá-lo. Ele vai para **Comprados agora há pouco**, onde dá para **Desfazer** um toque errado.
+- **Está acabando**: aviso para quem passar no mercado; o botão **Acabou** muda o item para a lista principal.
+- **Enviar lista**: manda a lista em texto para o grupo da casa (no computador, copia para colar).
+- **Toque no item** para editar: quantidade, quem pediu, observação (marca, tamanho...) e categoria.
+- **Itens salvos**: tudo que já passou pela lista, por categoria, com a última compra e quantas vezes foi comprado. **+ Lista** coloca de volta; **Novo** cadastra um item sem pôr na lista.
+
+---
+
+## 🎨 8. Personalização Visual
 
 - **Escala de Limpeza → Ajustes → Galeria de Imagens**: envie imagens para a galeria. A cada escala gerada, uma delas é sorteada como destaque; você também pode escolher uma na galeria.
 - **Ajustes → Nome e Estilo** (vale para todos):

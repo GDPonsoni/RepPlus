@@ -553,6 +553,7 @@ input[type="date"],
 input[type="time"],
 input[type="tel"],
 input[type="email"],
+input[type="search"],
 select,
 textarea {
     width: 100%;
@@ -574,6 +575,7 @@ input[type="date"]:focus,
 input[type="time"]:focus,
 input[type="tel"]:focus,
 input[type="email"]:focus,
+input[type="search"]:focus,
 select:focus,
 textarea:focus {
     border-color: var(--primary-text);
@@ -2601,6 +2603,287 @@ button.evento-card:hover {
     }
 }
 
+/* ===== LISTA DE COMPRAS ===== */
+.ccat-mercado { --cat: #ea580c; --ccat: #ea580c; }
+.ccat-limpeza { --cat: #0891b2; --ccat: #0891b2; }
+.ccat-higiene { --cat: #9333ea; --ccat: #9333ea; }
+.ccat-bebidas { --cat: #2563eb; --ccat: #2563eb; }
+.ccat-casa { --cat: #65a30d; --ccat: #65a30d; }
+.ccat-outros { --cat: #6b7280; --ccat: #6b7280; }
+.cstatus-falta { --cat: var(--primary-color); --status: var(--primary-text); }
+.cstatus-acabando { --cat: #d97706; --status: #b45309; }
+.cstatus-ok { --cat: var(--success-color); --status: var(--success-color); }
+
+.compras-adicionar {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.compra-rapida {
+    display: flex;
+    gap: 8px;
+}
+
+.compra-rapida input {
+    flex: 1;
+    min-width: 0;
+}
+
+.compra-rapida .btn {
+    flex-shrink: 0;
+    width: 48px;
+    padding: 0;
+    font-size: 1.1rem;
+}
+
+.compras-sugestoes {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    scrollbar-width: none;
+    align-items: center;
+}
+
+.compras-sugestoes:empty {
+    display: none;
+}
+
+.compras-sugestoes-rotulo {
+    flex-shrink: 0;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--muted);
+}
+
+.compra-sugestao {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    min-height: 32px;
+    padding: 4px 10px;
+    border: 1px dashed var(--border);
+    border-radius: 999px;
+    background: var(--subtle);
+    color: var(--text);
+    font-size: 0.78rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.compra-sugestao i {
+    font-size: 0.65rem;
+    color: var(--muted);
+}
+
+.compra-sugestao:hover {
+    border-color: var(--primary-color);
+}
+
+.compras-resumo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    min-height: 36px;
+    margin-bottom: 8px;
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+.compras-resumo i {
+    color: var(--primary-text);
+    margin-right: 4px;
+}
+
+.compras-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.compras-secao-titulo {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0 2px 6px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+}
+
+.compras-secao-falta .compras-secao-titulo i { color: var(--primary-text); }
+.compras-secao-acabando .compras-secao-titulo i { color: #d97706; }
+.compras-secao-recentes .compras-secao-titulo i { color: var(--success-color); }
+
+.compras-secao-total {
+    padding: 1px 7px;
+    border-radius: 999px;
+    background: var(--subtle);
+    font-size: 0.7rem;
+}
+
+.compras-itens {
+    overflow: hidden;
+}
+
+.compra-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-height: 56px;
+    padding: 4px 10px 4px 6px;
+    border-bottom: 1px solid var(--border);
+}
+
+.compra-item:last-child {
+    border-bottom: 0;
+}
+
+/* Círculo grande para marcar "comprei" com o polegar no mercado */
+.compra-check {
+    flex-shrink: 0;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    background: transparent;
+    color: transparent;
+    position: relative;
+}
+
+.compra-check::before {
+    content: '';
+    position: absolute;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 2px solid var(--cat, var(--border));
+    transition: background 0.15s;
+}
+
+.compra-check i {
+    position: relative;
+    font-size: 0.8rem;
+}
+
+.compra-check:hover {
+    color: var(--muted);
+}
+
+.compra-check.marcado {
+    color: #fff;
+}
+
+.compra-check.marcado::before {
+    background: var(--success-color);
+    border-color: var(--success-color);
+}
+
+.cstatus-falta .compra-check::before { border-color: var(--primary-color); }
+.cstatus-acabando .compra-check::before { border-color: #d97706; border-style: dashed; }
+
+.compra-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 6px 4px;
+    border: 0;
+    background: transparent;
+    color: var(--text);
+    text-align: left;
+}
+
+.compra-nome {
+    font-weight: 600;
+    font-size: 0.95rem;
+    overflow-wrap: anywhere;
+}
+
+.compra-cat-icone {
+    color: var(--ccat, var(--muted));
+    font-size: 0.8rem;
+    width: 1.1em;
+    text-align: center;
+}
+
+.compra-meta {
+    font-size: 0.75rem;
+    color: var(--muted);
+    overflow-wrap: anywhere;
+}
+
+.compra-meta strong {
+    color: var(--text);
+}
+
+.compra-item.comprado .compra-nome {
+    text-decoration: line-through;
+    color: var(--muted);
+}
+
+.compra-acabou {
+    flex-shrink: 0;
+    color: var(--primary-text);
+}
+
+.compra-status-tag {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--cat) 12%, var(--surface));
+    color: var(--status);
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+
+.compras-vazio {
+    padding: 28px 16px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.85rem;
+}
+
+.compras-vazio i {
+    font-size: 2rem;
+    color: var(--success-color);
+    margin-bottom: 8px;
+}
+
+.compras-vazio strong {
+    color: var(--text);
+    font-size: 1rem;
+}
+
+.compras-busca {
+    margin-bottom: 12px;
+}
+
+.compra-historico {
+    font-size: 0.78rem;
+    color: var(--muted);
+}
+
+@media (min-width: 900px) {
+    #aba-compras-lista.active,
+    #aba-compras-itens.active {
+        max-width: 640px;
+        margin: 0 auto;
+    }
+}
+
 /* ===== TEMA ESCURO: cores fixas que não derivam do tema ===== */
 :root[data-tema="escuro"] .icon-blue { background: rgba(37, 99, 235, 0.22); color: #93c5fd; }
 :root[data-tema="escuro"] .icon-green { background: rgba(22, 163, 74, 0.22); color: #86efac; }
@@ -2624,6 +2907,8 @@ button.evento-card:hover {
 :root[data-tema="escuro"] .cat-visita { --cat: #4ade80; }
 :root[data-tema="escuro"] .cat-manutencao { --cat: #fb923c; }
 :root[data-tema="escuro"] .cat-aniversario { --cat: #f472b6; }
+:root[data-tema="escuro"] .cstatus-acabando { --cat: #f59e0b; --status: #fcd34d; }
+:root[data-tema="escuro"] .compras-secao-acabando .compras-secao-titulo i { color: #fcd34d; }
 
 /* ===== PERSONALIZAÇÃO (Ajustes) ===== */
 .opcoes-visuais {

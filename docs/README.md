@@ -31,6 +31,7 @@ escala/
 │   │   └── storage.js            # Imagens no Supabase Storage
 │   ├── modules/
 │   │   ├── agenda/               # Módulo da agenda (eventos)
+│   │   ├── compras/              # Módulo da lista de compras
 │   │   └── escala/               # Módulo da escala de limpeza
 │   │       ├── rotas/            # Cômodos, escala, infrações e motivação
 │   │       ├── rodizio.js        # Algoritmo do rodízio semanal (folgas, suíte, cômodos)
@@ -45,6 +46,7 @@ escala/
 │   │   ├── core/                 # Núcleo: api, sessão, abas, ações, moradores, aparência...
 │   │   ├── modules/
 │   │   │   ├── agenda/           # Mês, semana e formulário de evento
+│   │   │   ├── compras/          # Lista, itens salvos e formulário de item
 │   │   │   └── escala/           # Abas da escala (atual, histórico, infrações, ajustes)
 │   │   └── main.js               # Inicialização (lista MODULOS)
 │   └── index.html                # Casca da aplicação (cabeçalho, abas e conteúdo)

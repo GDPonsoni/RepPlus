@@ -37,6 +37,21 @@ Nomes de integrantes não podem se repetir (sem diferenciar maiúsculas).
 
 ---
 
+## 🛒 Lista de Compras (`/api/compras/itens`)
+
+| Método | Endpoint | Descrição | Corpo / Retorno |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/api/compras/itens` | Todos os itens salvos (na lista e em casa) | Array de `ItemCompra` |
+| `POST` | `/api/compras/itens` | Adiciona à lista. Se já existe um item com o mesmo nome (ignorando maiúsculas, acentos e espaços), reaproveita esse registro | `{ "nome", "status"? (padrão `falta`), "categoria"?, "quantidade"?, "observacao"?, "pedidoPor"? }`. Retorna o item, com `reaproveitado` e `jaEstavaNaLista` quando reaproveitou |
+| `PUT` | `/api/compras/itens/:id` | Edita (só os campos enviados) | Mesmos campos |
+| `POST` | `/api/compras/itens/:id/comprar` | Marca como comprado: volta para `ok`, grava `compradoEm`, soma 1 em `vezesComprado` e limpa o pedido | `ItemCompra` |
+| `POST` | `/api/compras/itens/:id/desfazer-compra` | Desfaz um "comprei" | `{ "anterior": { "status", "compradoEm"?, "pedidoEm"?, "pedidoPor"?, "quantidade"? } }` |
+| `DELETE` | `/api/compras/itens/:id` | Apaga o item dos salvos (permissão `compras:gerenciar`) | `{ "success": true }` |
+
+`status`: `falta` (acabou, comprar), `acabando` (avisado, ainda tem) ou `ok` (em casa). `categoria`: `mercado` (padrão), `limpeza`, `higiene`, `bebidas`, `casa` ou `outros`. `pedidoPor` é o `id` de um morador. Ao entrar na lista, `pedidoEm` recebe a hora atual; ao voltar para `ok`, o pedido (quem, quando, quantidade) é limpo.
+
+---
+
 ## 🚪 Cômodos (`/api/comodos`)
 
 | Método | Endpoint | Descrição | Corpo / Retorno |
