@@ -24,7 +24,7 @@ O código é dividido em **núcleo** (o que todo módulo usa: moradores, aparên
 |  core/auth (req.contexto + exigirPermissao)           |
 |  core/modulos.js monta cada módulo em /api:           |
 |  sistema · moradores · configuracao · escala ·        |
-|  agenda · compras · anotacoes                         |
+|  agenda · compras · anotacoes · atas                  |
 |        │                                              |
 |        ├── */store.js ─────────┐                      |
 |        └── core/storage.js ─┐  │   Multer (memória)   |
@@ -83,6 +83,7 @@ O histórico identifica cômodos pelo **nome**: por isso não é permitido ter d
   - `modules/escala/`: abas Atual, Histórico, Infrações e Ajustes (cômodos e galeria).
   - `modules/agenda/`: abas Mês e Semana, formulário de evento e os aniversários vindos do cadastro.
   - `modules/anotacoes/`: abas Senhas, Contatos e Notas; `cofre.js` faz toda a criptografia no navegador (Web Crypto), `dados.js` o estado e a API, `telas.js` as listas e `formulario.js` os formulários e as janelas do cofre.
+  - `modules/atas/`: abas Atas e Pendências; `dados.js` (estado, API e reuniões da agenda sem ata), `telas.js` (listas) e `formulario.js` (leitura, formulário e envio da ata).
   - `modules/compras/`: abas Lista e Itens salvos; `dados.js` guarda o estado e fala com a API, `index.js` desenha as telas e o formulário.
 - **Navegação**: o nome do módulo no topo abre o **seletor de módulos**; a barra de abas mostra só as abas do módulo atual. Moradores e Ajustes são páginas globais (grupo "Geral" do seletor).
 - **Botões**: usam `data-acao="..."` (o módulo registra o que cada ação faz) em vez de `onclick` com funções globais.

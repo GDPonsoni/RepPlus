@@ -172,6 +172,21 @@ Os itens nunca somem ao serem comprados: voltam para `ok` e viram o catálogo de
 
 ---
 
-## 🖼️ 9. Imagens (Storage, bucket `uploads`)
+## 📝 9. Atas de reunião (tabela `atas`)
+
+| Coluna | Campo na API | Tipo | Descrição |
+| :--- | :--- | :--- | :--- |
+| `id` | `id` | UUID | Identificador |
+| `titulo` / `data` / `local` | `titulo` / `data` / `local` | texto / date / texto | A reunião |
+| `participantes` | `participantes` | jsonb | Ids dos moradores presentes |
+| `pauta` / `conteudo` | `pauta` / `conteudo` | texto | Assuntos e o que foi discutido |
+| `decisoes` | `decisoes` | jsonb | Lista de textos |
+| `tarefas` | `tarefas` | jsonb | Encaminhamentos `{ id, texto, responsavelId, prazo, feito }` |
+| `evento_id` | `eventoId` | UUID | Reunião da agenda que originou a ata (opcional) |
+| `criado_em` / `atualizado_em` | `criadoEm` / `atualizadoEm` | timestamptz | Datas |
+
+---
+
+## 🖼️ 10. Imagens (Storage, bucket `uploads`)
 
 Fotos de cômodos, logo, fundo e galeria de motivação ficam no bucket público `uploads`, cada uma com um nome aleatório (UUID + extensão). A galeria de motivação é tudo o que está no bucket, exceto o logo e o fundo atuais.

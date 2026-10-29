@@ -72,6 +72,20 @@ Nomes de integrantes não podem se repetir (sem diferenciar maiúsculas).
 
 ---
 
+## 📝 Atas de Reunião (`/api/atas`)
+
+| Método | Endpoint | Descrição | Corpo / Retorno |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/api/atas` | Todas as atas | Array de `Ata` |
+| `POST` | `/api/atas` | Cria uma ata | `{ "titulo", "data" (AAAA-MM-DD), "local"?, "participantes"? (ids de moradores), "pauta"?, "conteudo"?, "decisoes"? (textos), "tarefas"?, "eventoId"? }` |
+| `PUT` | `/api/atas/:id` | Edita (só os campos enviados) | Mesmos campos |
+| `PUT` | `/api/atas/:id/tarefas/:tarefaId` | Marca um encaminhamento como feito ou não | `{ "feito": boolean }` (sem corpo, inverte). Retorna a `Ata` |
+| `DELETE` | `/api/atas/:id` | Apaga (permissão `atas:gerenciar`) | `{ "success": true }` |
+
+`tarefas` (encaminhamentos): `[{ "id"?, "texto", "responsavelId"?, "prazo"? (AAAA-MM-DD), "feito"? }]`. Encaminhamento sem `id` ganha um; ao editar, mande o `id` de volta para mantê-lo. Até 50 decisões e 50 encaminhamentos por ata. `eventoId` liga a ata à reunião da agenda que a originou.
+
+---
+
 ## 🚪 Cômodos (`/api/comodos`)
 
 | Método | Endpoint | Descrição | Corpo / Retorno |

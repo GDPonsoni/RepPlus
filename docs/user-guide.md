@@ -21,6 +21,7 @@ O app é dividido em **módulos**. Toque no nome do módulo no topo (ou no botã
 - **Escala de Limpeza**: rodízio semanal, histórico, infrações e os ajustes da escala.
 - **Agenda**: eventos da casa, visitas e aniversários.
 - **Lista de Compras**: o que acabou ou está acabando, para quem for ao mercado.
+- **Atas de Reunião**: o que foi discutido e decidido nas reuniões, e as pendências de cada um.
 - **Anotações**: senhas e contas (num cofre criptografado), contatos de prestadores e notas da casa.
 - **Moradores**: cadastro de todos os moradores (usado por todos os módulos).
 - **Ajustes**: nome da república, aparência (logo, fundo, cores, fonte, estilo), tema claro/escuro deste aparelho e versão do sistema.
@@ -112,7 +113,17 @@ A semana vai de segunda a domingo e vira à 0h de segunda, no horário de Brasí
 
 ---
 
-## 🎨 9. Personalização Visual
+## 📝 9. Atas de Reunião
+
+- **Nova ata**: título, data, local, quem participou (botão **Todos** marca a casa inteira), pauta, o que foi discutido, **decisões** e **encaminhamentos** (o que alguém ficou de fazer, com responsável e prazo).
+- **Reuniões da agenda sem ata**: reuniões (categoria Reunião) dos últimos 45 dias que ainda não têm ata aparecem no topo; **Escrever ata** já preenche título, data, local e a pauta (da descrição do evento).
+- **Buscar**: procura no que foi discutido, nas decisões e nos encaminhamentos (ex.: "geladeira" acha a reunião em que isso foi combinado).
+- **Ler**: toque na ata. Dá para marcar encaminhamentos como feitos ali mesmo e **Enviar** a ata em texto para o grupo.
+- **Pendências**: todos os encaminhamentos ainda não feitos, de todas as atas, com os atrasados primeiro. Filtre por responsável e marque como feito com um toque.
+
+---
+
+## 🎨 10. Personalização Visual
 
 - **Escala de Limpeza → Ajustes → Galeria de Imagens**: envie imagens para a galeria. A cada escala gerada, uma delas é sorteada como destaque; você também pode escolher uma na galeria.
 - **Ajustes → Nome e Estilo** (vale para todos):
