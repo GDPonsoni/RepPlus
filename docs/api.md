@@ -84,6 +84,7 @@ Ao gerar, cada integrante ativo recebe uma linha. Quem está de folga tem `comod
 | :--- | :--- | :--- | :--- |
 | `GET` | `/api/config` | Configurações visuais | Objeto `Config` |
 | `POST` | `/api/config/cores` | Define as cores | `{ "cores": { "primaria"?, "secundaria"?, "branca"?, "preta"? } }` no formato `#RRGGBB` |
+| `PUT` | `/api/config/personalizacao` | Nome da república e estilo da interface (envie só o que mudar) | `{ "nome"? (até 40, vazio = "República"), "slogan"? (até 80, vazio = sem frase), "fonte"? (`inter`, `poppins`, `nunito`, `roboto-slab`, `sistema`), "cantos"? (`reto`, `suave`, `arredondado`, `redondo`), "cabecalho"? (`solido`, `degrade`, `escuro`), "fundoVisibilidade"? (0 a 60) }`. Retorna `{ "success", "config" }` |
 | `POST` | `/api/config/logo` | Envia o logo (substitui o anterior) | `FormData` com o campo `logo` |
 | `POST` | `/api/config/background` | Envia a imagem de fundo (substitui a anterior) | `FormData` com o campo `image` |
 | `POST` | `/api/upload-motivacao-image` | Envia uma imagem para a galeria de motivação | `FormData` com o campo `image`. Retorna `{ "filename", "path" }` |

@@ -83,7 +83,7 @@ O histórico identifica cômodos pelo **nome**: por isso não é permitido ter d
   - `modules/agenda/`: abas Mês e Semana, formulário de evento e os aniversários vindos do cadastro.
 - **Navegação**: o nome do módulo no topo abre o **seletor de módulos**; a barra de abas mostra só as abas do módulo atual. Moradores e Ajustes são páginas globais (grupo "Geral" do seletor).
 - **Botões**: usam `data-acao="..."` (o módulo registra o que cada ação faz) em vez de `onclick` com funções globais.
-- **Tema**: cores aplicadas via variáveis CSS (`style.setProperty()`).
+- **Tema**: cores aplicadas via variáveis CSS (`style.setProperty()`); o resto da paleta deriva delas com `color-mix`. Estilo por atributos no `<html>`: `data-tema` (claro/escuro, do aparelho), `data-texto`, `data-cantos` e `data-cabecalho`. O `index.html` aplica o tema do aparelho antes de desenhar a tela, para não piscar.
 - **Segurança de renderização**: todo texto vindo do banco passa por `escaparHtml` antes de entrar em `innerHTML`.
 
 ---

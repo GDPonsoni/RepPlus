@@ -11,11 +11,29 @@ const DEFAULT_CORES = {
   preta: '#000000'
 };
 
+// Identidade e estilo da interface (coluna jsonb `personalizacao`). Os valores aceitos ficam
+// em OPCOES_PERSONALIZACAO; o que não estiver salvo usa o padrão.
+export const PERSONALIZACAO_PADRAO = {
+  nome: 'República',
+  slogan: 'Organização com responsabilidade! 🏠',
+  fonte: 'inter',
+  cantos: 'arredondado',
+  cabecalho: 'solido',
+  fundoVisibilidade: 14
+};
+
+export const OPCOES_PERSONALIZACAO = {
+  fonte: ['inter', 'poppins', 'nunito', 'roboto-slab', 'sistema'],
+  cantos: ['reto', 'suave', 'arredondado', 'redondo'],
+  cabecalho: ['solido', 'degrade', 'escuro']
+};
+
 const configFromDb = (row) => ({
   logo: row.logo,
   background: row.background,
   motivacaoDestaque: row.motivacao_destaque,
-  cores: { ...DEFAULT_CORES, ...(row.cores || {}) }
+  cores: { ...DEFAULT_CORES, ...(row.cores || {}) },
+  personalizacao: { ...PERSONALIZACAO_PADRAO, ...(row.personalizacao || {}) }
 });
 
 export const ConfigStore = {
@@ -28,7 +46,8 @@ export const ConfigStore = {
       logo: config.logo,
       background: config.background,
       motivacao_destaque: config.motivacaoDestaque,
-      cores: { ...DEFAULT_CORES, ...(config.cores || {}) }
+      cores: { ...DEFAULT_CORES, ...(config.cores || {}) },
+      personalizacao: { ...PERSONALIZACAO_PADRAO, ...(config.personalizacao || {}) }
     }).eq('id', 1).select().single());
     return configFromDb(row);
   }

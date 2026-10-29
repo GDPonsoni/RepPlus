@@ -21,7 +21,7 @@ O app é dividido em **módulos**. Toque no nome do módulo no topo (ou no botã
 - **Escala de Limpeza**: rodízio semanal, histórico, infrações e os ajustes da escala.
 - **Agenda**: eventos da casa, visitas e aniversários.
 - **Moradores**: cadastro de todos os moradores (usado por todos os módulos).
-- **Ajustes**: aparência (logo, fundo, cores) e versão do sistema.
+- **Ajustes**: nome da república, aparência (logo, fundo, cores, fonte, estilo), tema claro/escuro deste aparelho e versão do sistema.
 
 Cada módulo tem suas abas na barra logo abaixo do topo. O app lembra o último módulo aberto.
 
@@ -88,7 +88,16 @@ A semana vai de segunda a domingo e vira à 0h de segunda, no horário de Brasí
 ## 🎨 7. Personalização Visual
 
 - **Escala de Limpeza → Ajustes → Galeria de Imagens**: envie imagens para a galeria. A cada escala gerada, uma delas é sorteada como destaque; você também pode escolher uma na galeria.
-- **Ajustes → Aparência e Logo**: logo do cabeçalho, imagem de fundo e esquema de cores.
-- **Logo**: imagem do cabeçalho.
-- **Fundo**: imagem de plano de fundo da aplicação.
-- **Esquema de cores**: cor primária, secundária, clara e escura. **Restaurar Padrão** volta às cores originais.
+- **Ajustes → Nome e Estilo** (vale para todos):
+  - **Nome da república**: aparece no topo, no rodapé e no título da aba do navegador.
+  - **Frase do rodapé**: deixe vazia para mostrar só o nome.
+  - **Fonte**, **cantos** (retos a bem redondos) e **cabeçalho** (cor sólida, degradê ou escuro).
+  - **Imagem de fundo**: quanto a imagem enviada aparece atrás do conteúdo.
+  - As mudanças aparecem na hora como prévia; **Salvar** aplica para todos e **Descartar** volta ao que estava salvo.
+- **Ajustes → Logo, Fundo e Cores** (vale para todos):
+  - **Logo**: imagem do cabeçalho.
+  - **Fundo**: imagem de plano de fundo da aplicação.
+  - **Esquema de cores**: cor primária, secundária, clara e escura, com prévia ao vivo. As **paletas prontas** (Clássica, Oceano, Floresta...) preenchem as quatro cores; é preciso **Salvar Cores** para manter. **Restaurar Padrão** volta às cores originais.
+- **Ajustes → Neste Aparelho** (só no seu celular/computador, salvo na hora):
+  - **Tema**: automático (segue o aparelho), claro ou escuro.
+  - **Tamanho do texto**: normal, grande ou maior.

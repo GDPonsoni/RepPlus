@@ -21,7 +21,7 @@ escala/
 ├── backend/
 │   ├── core/                     # Núcleo: usado por todos os módulos
 │   │   ├── auth/                 # Sessão (req.contexto) e permissões (exigirPermissao)
-│   │   ├── configuracao/         # Aparência: cores, logo e fundo (tabela config)
+│   │   ├── configuracao/         # Aparência: nome, cores, logo, fundo e estilo (tabela config)
 │   │   ├── db/                   # Cliente Supabase e helpers de consulta (paginação etc.)
 │   │   ├── moradores/            # Integrantes da república
 │   │   ├── http.js               # asyncHandler, HttpError, upload (multer) e erros

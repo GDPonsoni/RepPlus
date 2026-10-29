@@ -2,6 +2,7 @@ import { escaparHtml, definirAccordionAberto } from './ui.js';
 import { aplicarPermissoes, temPermissao } from './sessao.js';
 import { registrarAcoes } from './acoes.js';
 import { abrirPainel } from './painel.js';
+import { nomeDaRepublica } from './aparencia.js';
 
 // Monta a interface a partir dos módulos e cuida da navegação (seletor de módulos + abas).
 //
@@ -96,7 +97,7 @@ function mostrarRota(rota) {
     // Cabeçalho: nome e ícone do módulo atual
     document.getElementById('modulo-atual-icone').className = modulo.icone;
     document.getElementById('modulo-atual-nome').textContent = modulo.nome;
-    document.title = `${modulo.nome} · República`;
+    document.title = `${modulo.nome} · ${nomeDaRepublica()}`;
 
     // Abas do módulo (a barra some quando o módulo tem uma aba só)
     const nav = document.getElementById('nav-abas');

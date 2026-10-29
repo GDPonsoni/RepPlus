@@ -1,8 +1,10 @@
 import { api } from './api.js';
 import { registrarAcoes } from './acoes.js';
-import { mostrarNotificacao, validarArquivoImagem, definirCarregando } from './ui.js';
+import { mostrarNotificacao, validarArquivoImagem, definirCarregando, escaparHtml } from './ui.js';
+import { temPermissao } from './sessao.js';
 
-// Aparência da república (núcleo): logo, fundo e esquema de cores.
+// Aparência da república (núcleo): nome, logo, fundo, cores e estilo (valem para todos)
+// e as preferências deste aparelho (tema claro/escuro e tamanho do texto, no localStorage).
 // A configuração é carregada antes dos módulos, pois a tela inteira depende dela.
 let config = {};
 
@@ -25,6 +27,103 @@ const CORES_PADRAO = {
 
 // Campos do formulário de cores: chave em config.cores -> id do input
 const CAMPOS_COR = { primaria: 'cor-primaria', secundaria: 'cor-secundaria', branca: 'cor-branca', preta: 'cor-preta' };
+
+// Paletas prontas: só preenchem o formulário de cores (é preciso salvar)
+const PALETAS = [
+    { nome: 'Clássica', cores: CORES_PADRAO },
+    { nome: 'Oceano', cores: { primaria: '#0369A1', secundaria: '#38BDF8', branca: '#F8FAFC', preta: '#0F172A' } },
+    { nome: 'Floresta', cores: { primaria: '#166534', secundaria: '#FACC15', branca: '#FAFAF9', preta: '#1C1917' } },
+    { nome: 'Uva', cores: { primaria: '#7E22CE', secundaria: '#F472B6', branca: '#FFFFFF', preta: '#1E1B4B' } },
+    { nome: 'Pôr do sol', cores: { primaria: '#EA580C', secundaria: '#FDE047', branca: '#FFFBF5', preta: '#27272A' } },
+    { nome: 'Grafite', cores: { primaria: '#27272A', secundaria: '#F59E0B', branca: '#FAFAFA', preta: '#09090B' } }
+];
+
+const PERSONALIZACAO_PADRAO = {
+    nome: 'República',
+    slogan: 'Organização com responsabilidade! 🏠',
+    fonte: 'inter',
+    cantos: 'arredondado',
+    cabecalho: 'solido',
+    fundoVisibilidade: 14
+};
+
+// google = nome da família no Google Fonts (null = já carregada ou fonte do sistema)
+const FONTES = {
+    inter: { nome: 'Inter', familia: "'Inter', system-ui, sans-serif", google: null },
+    poppins: { nome: 'Poppins', familia: "'Poppins', system-ui, sans-serif", google: 'Poppins' },
+    nunito: { nome: 'Nunito', familia: "'Nunito', system-ui, sans-serif", google: 'Nunito' },
+    'roboto-slab': { nome: 'Roboto Slab', familia: "'Roboto Slab', Georgia, serif", google: 'Roboto+Slab' },
+    sistema: { nome: 'Do aparelho', familia: "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif", google: null }
+};
+
+const CANTOS = { reto: 'Retos', suave: 'Suaves', arredondado: 'Arredondados', redondo: 'Bem redondos' };
+const CABECALHOS = { solido: 'Cor sólida', degrade: 'Degradê', escuro: 'Escuro' };
+
+const TEMAS = {
+    auto: { nome: 'Automático', icone: 'fa-solid fa-circle-half-stroke' },
+    claro: { nome: 'Claro', icone: 'fa-solid fa-sun' },
+    escuro: { nome: 'Escuro', icone: 'fa-solid fa-moon' }
+};
+const TAMANHOS_TEXTO = { normal: { nome: 'Normal', escala: 0.85 }, grande: { nome: 'Grande', escala: 1 }, maior: { nome: 'Maior', escala: 1.15 } };
+const CHAVE_APARELHO = 'escala:aparelho';
+const PREFERENCIAS_PADRAO = { tema: 'auto', texto: 'normal' };
+
+// Grupo de opções em blocos (radio escondido + amostra visual)
+function htmlOpcoes(nome, opcoes, amostra) {
+    return `<div class="opcoes-visuais" role="radiogroup">${Object.entries(opcoes).map(([valor, rotulo]) => `
+        <label class="opcao-visual">
+            <input type="radio" name="${nome}" value="${valor}">
+            ${amostra(valor)}
+            <span>${escaparHtml(typeof rotulo === 'string' ? rotulo : rotulo.nome)}</span>
+        </label>`).join('')}
+    </div>`;
+}
+
+const HTML_SECAO_IDENTIDADE = `
+    <form id="form-personalizacao" class="form-stack">
+        <label class="field">Nome da república
+            <input type="text" id="pers-nome" maxlength="40" placeholder="República">
+        </label>
+        <label class="field">Frase do rodapé
+            <input type="text" id="pers-slogan" maxlength="80" placeholder="Organização com responsabilidade! 🏠">
+        </label>
+
+        <h4 class="form-title">Fonte</h4>
+        ${htmlOpcoes('pers-fonte', FONTES, valor => `<span class="opcao-fonte-amostra" style="font-family: ${FONTES[valor].familia}">Aa</span>`)}
+
+        <h4 class="form-title">Cantos</h4>
+        ${htmlOpcoes('pers-cantos', CANTOS, valor => `<span class="opcao-cantos-amostra" data-amostra-cantos="${valor}"></span>`)}
+
+        <h4 class="form-title">Cabeçalho</h4>
+        ${htmlOpcoes('pers-cabecalho', CABECALHOS, valor => `<span class="opcao-cabecalho-amostra amostra-${valor}"></span>`)}
+
+        <h4 class="form-title">Imagem de fundo</h4>
+        <label class="field">Quanto a imagem aparece (precisa de um fundo enviado em "Logo, Fundo e Cores")
+            <span class="campo-faixa">
+                <input type="range" id="pers-fundo" min="0" max="60" step="2">
+                <output id="pers-fundo-valor" for="pers-fundo"></output>
+            </span>
+        </label>
+
+        <p class="aviso-previa"><i class="fa-solid fa-eye"></i> As mudanças aparecem na hora como prévia. Salve para valer para todos.</p>
+        <div class="btn-row">
+            <button type="button" class="btn btn-ghost" data-acao="descartar-personalizacao">Descartar</button>
+            <button type="submit" class="btn btn-primary">Salvar</button>
+        </div>
+    </form>
+`;
+
+const HTML_SECAO_APARELHO = `
+    <form id="form-aparelho" class="form-stack">
+        <h4 class="form-title">Tema</h4>
+        ${htmlOpcoes('aparelho-tema', TEMAS, valor => `<i class="${TEMAS[valor].icone} opcao-tema-amostra"></i>`)}
+
+        <h4 class="form-title">Tamanho do texto</h4>
+        ${htmlOpcoes('aparelho-texto', TAMANHOS_TEXTO, valor => `<span class="opcao-fonte-amostra" style="font-size: ${TAMANHOS_TEXTO[valor].escala}rem">Aa</span>`)}
+
+        <p class="aviso-previa"><i class="fa-solid fa-mobile-screen"></i> Vale só para este aparelho e é salvo automaticamente.</p>
+    </form>
+`;
 
 const HTML_SECAO = `
     <h4 class="form-title">Logo da República</h4>
@@ -51,6 +150,13 @@ const HTML_SECAO = `
 
     <h4 class="form-title">Esquema de Cores</h4>
     <form id="form-cores" class="form-stack">
+        <div class="paletas" aria-label="Paletas prontas">
+            ${PALETAS.map((paleta, i) => `
+                <button type="button" class="paleta" data-acao="aplicar-paleta" data-indice="${i}">
+                    <span class="paleta-cores">${Object.values(paleta.cores).map(cor => `<span style="background: ${cor}"></span>`).join('')}</span>
+                    ${escaparHtml(paleta.nome)}
+                </button>`).join('')}
+        </div>
         <div class="color-grid">
             <label class="color-group">
                 <input type="color" id="cor-primaria" value="#DC0000">
@@ -88,6 +194,7 @@ export async function carregarConfig() {
 
         aplicarLogo(config.logo);
         aplicarFundo(config.background);
+        aplicarPersonalizacao(config.personalizacao);
 
         if (config.cores) {
             aplicarCores(config.cores);
@@ -121,6 +228,8 @@ function preencherFormularios() {
     if (config.cores) {
         Object.keys(CAMPOS_COR).forEach(chave => preencherCampoCor(chave, config.cores[chave] || CORES_PADRAO[chave]));
     }
+
+    preencherPersonalizacao(personalizacaoSalva());
 }
 
 function aplicarLogo(logoPath) {
@@ -138,11 +247,135 @@ function aplicarCores(cores) {
     const root = document.documentElement;
     root.style.setProperty('--primary-color', cores.primaria || '#DC0000');
     root.style.setProperty('--secondary-color', cores.secundaria || '#FFD700');
-    root.style.setProperty('--light-color', cores.branca || '#FFFFFF');
-    root.style.setProperty('--dark-color', cores.preta || '#000000');
+    // --light-color/--dark-color derivam destas no CSS (o tema escuro as inverte)
+    root.style.setProperty('--cor-clara', cores.branca || '#FFFFFF');
+    root.style.setProperty('--cor-escura', cores.preta || '#000000');
     root.style.setProperty('--danger-color', cores.primaria || '#DC0000');
     root.style.setProperty('--border-color', cores.primaria || '#DC0000');
-    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', cores.primaria || '#DC0000');
+    atualizarCorDoNavegador();
+}
+
+// Barra do navegador no celular acompanha o cabeçalho
+function atualizarCorDoNavegador() {
+    const estilos = getComputedStyle(document.documentElement);
+    const cor = document.documentElement.dataset.cabecalho === 'escuro'
+        ? estilos.getPropertyValue('--cor-escura')
+        : estilos.getPropertyValue('--primary-color');
+    document.querySelector('meta[name="theme-color"]')?.setAttribute('content', cor.trim() || '#DC0000');
+}
+
+// ===== NOME E ESTILO (valem para todos) =====
+const personalizacaoSalva = () => ({ ...PERSONALIZACAO_PADRAO, ...(config.personalizacao || {}) });
+
+export function nomeDaRepublica() {
+    return personalizacaoSalva().nome;
+}
+
+function carregarFonteGoogle(id, consulta) {
+    if (document.getElementById(id)) return;
+    const link = document.createElement('link');
+    link.id = id;
+    link.rel = 'stylesheet';
+    link.href = `https://fonts.googleapis.com/css2?${consulta}&display=swap`;
+    document.head.appendChild(link);
+}
+
+function aplicarPersonalizacao(dados) {
+    const p = { ...PERSONALIZACAO_PADRAO, ...(dados || {}) };
+    const root = document.documentElement;
+    const fonte = FONTES[p.fonte] || FONTES.inter;
+
+    if (fonte.google) carregarFonteGoogle(`fonte-${p.fonte}`, `family=${fonte.google}:wght@400;500;600;700;800`);
+    root.style.setProperty('--fonte', fonte.familia);
+    root.style.setProperty('--fundo-veu', `${100 - p.fundoVisibilidade}%`);
+    root.dataset.cantos = p.cantos;
+    root.dataset.cabecalho = p.cabecalho;
+
+    document.getElementById('nome-republica').textContent = p.nome;
+    document.getElementById('rodape-texto').textContent = p.slogan ? `${p.nome} · ${p.slogan}` : p.nome;
+    document.getElementById('logo-top').alt = `Logo da ${p.nome}`;
+    document.title = document.title.includes(' · ') ? `${document.title.split(' · ')[0]} · ${p.nome}` : p.nome;
+    atualizarCorDoNavegador();
+}
+
+function preencherPersonalizacao(p) {
+    const form = document.getElementById('form-personalizacao');
+    document.getElementById('pers-nome').value = p.nome;
+    document.getElementById('pers-slogan').value = p.slogan;
+    form.elements['pers-fonte'].value = p.fonte;
+    form.elements['pers-cantos'].value = p.cantos;
+    form.elements['pers-cabecalho'].value = p.cabecalho;
+    document.getElementById('pers-fundo').value = p.fundoVisibilidade;
+    document.getElementById('pers-fundo-valor').textContent = `${p.fundoVisibilidade}%`;
+}
+
+function lerPersonalizacao() {
+    const form = document.getElementById('form-personalizacao');
+    return {
+        nome: document.getElementById('pers-nome').value.trim() || PERSONALIZACAO_PADRAO.nome,
+        slogan: document.getElementById('pers-slogan').value.trim(),
+        fonte: form.elements['pers-fonte'].value,
+        cantos: form.elements['pers-cantos'].value,
+        cabecalho: form.elements['pers-cabecalho'].value,
+        fundoVisibilidade: Number(document.getElementById('pers-fundo').value)
+    };
+}
+
+// Prévia ao vivo enquanto o formulário muda
+function previaPersonalizacao() {
+    const dados = lerPersonalizacao();
+    document.getElementById('pers-fundo-valor').textContent = `${dados.fundoVisibilidade}%`;
+    aplicarPersonalizacao(dados);
+}
+
+function descartarPersonalizacao() {
+    preencherPersonalizacao(personalizacaoSalva());
+    aplicarPersonalizacao(personalizacaoSalva());
+    mostrarNotificacao('Alterações descartadas', 'info');
+}
+
+async function salvarPersonalizacao(e) {
+    e.preventDefault();
+    const botao = e.target.querySelector('button[type="submit"]');
+    definirCarregando(botao, true);
+    try {
+        const resultado = await api('/config/personalizacao', { metodo: 'PUT', corpo: lerPersonalizacao() });
+        atualizarConfig(resultado.config);
+        preencherPersonalizacao(personalizacaoSalva());
+        aplicarPersonalizacao(personalizacaoSalva());
+        mostrarNotificacao('Personalização salva!', 'success');
+    } catch (error) {
+        console.error('Erro:', error);
+        mostrarNotificacao(error.message || 'Erro ao salvar a personalização', 'error');
+    } finally {
+        definirCarregando(botao, false);
+    }
+}
+
+// ===== NESTE APARELHO (localStorage) =====
+// O index.html aplica o tema antes de desenhar a tela (evita piscar claro); aqui ficam as mudanças
+function lerPreferenciasAparelho() {
+    try {
+        return { ...PREFERENCIAS_PADRAO, ...JSON.parse(localStorage.getItem(CHAVE_APARELHO) || '{}') };
+    } catch {
+        return { ...PREFERENCIAS_PADRAO };
+    }
+}
+
+const temaEscuroDoSistema = window.matchMedia('(prefers-color-scheme: dark)');
+
+function aplicarPreferenciasAparelho(prefs) {
+    const root = document.documentElement;
+    const escuro = prefs.tema === 'escuro' || (prefs.tema === 'auto' && temaEscuroDoSistema.matches);
+    root.dataset.tema = escuro ? 'escuro' : 'claro';
+    root.dataset.texto = prefs.texto;
+}
+
+function salvarPreferenciasAparelho() {
+    const form = document.getElementById('form-aparelho');
+    const prefs = { tema: form.elements['aparelho-tema'].value, texto: form.elements['aparelho-texto'].value };
+    try { localStorage.setItem(CHAVE_APARELHO, JSON.stringify(prefs)); } catch { /* sem armazenamento: vale até recarregar */ }
+    aplicarPreferenciasAparelho(prefs);
 }
 
 // Upload de logo ou fundo: mesma sequência para os dois, mudam só os campos
@@ -208,18 +441,28 @@ function uploadBackground(e) {
 async function salvarCores(e) {
     e.preventDefault();
 
-    const cores = Object.fromEntries(
-        Object.entries(CAMPOS_COR).map(([chave, id]) => [chave, document.getElementById(id).value])
-    );
+    const cores = lerCoresDoFormulario();
 
     try {
-        await api('/config/cores', { metodo: 'POST', corpo: { cores } });
+        const resultado = await api('/config/cores', { metodo: 'POST', corpo: { cores } });
+        atualizarConfig(resultado.config);
         aplicarCores(cores);
         mostrarNotificacao('Cores salvas com sucesso!', 'success');
     } catch (error) {
         console.error('Erro:', error);
         mostrarNotificacao(error.message || 'Erro ao salvar cores', 'error');
     }
+}
+
+function lerCoresDoFormulario() {
+    return Object.fromEntries(Object.entries(CAMPOS_COR).map(([chave, id]) => [chave, document.getElementById(id).value]));
+}
+
+function aplicarPaleta({ indice }) {
+    const paleta = PALETAS[Number(indice)];
+    Object.entries(paleta.cores).forEach(([chave, valor]) => preencherCampoCor(chave, valor));
+    aplicarCores(paleta.cores);
+    mostrarNotificacao(`Prévia da paleta ${paleta.nome}. Salve as cores para manter.`, 'info');
 }
 
 function resetarCores() {
@@ -231,22 +474,45 @@ function resetarCores() {
 export default {
     id: 'configuracao',
     secoesAjustes: [
-        { id: 'acc-aparencia', titulo: 'Aparência e Logo', icone: 'fa-solid fa-palette', cor: 'icon-orange', html: HTML_SECAO, permissao: 'aparencia:gerenciar' }
+        { id: 'acc-identidade', titulo: 'Nome e Estilo', icone: 'fa-solid fa-wand-magic-sparkles', cor: 'icon-purple', html: HTML_SECAO_IDENTIDADE, permissao: 'aparencia:gerenciar' },
+        { id: 'acc-aparencia', titulo: 'Logo, Fundo e Cores', icone: 'fa-solid fa-palette', cor: 'icon-orange', html: HTML_SECAO, permissao: 'aparencia:gerenciar' },
+        { id: 'acc-aparelho', titulo: 'Neste Aparelho', icone: 'fa-solid fa-mobile-screen', cor: 'icon-blue', html: HTML_SECAO_APARELHO }
     ],
 
     iniciar() {
         document.getElementById('form-logo').addEventListener('submit', uploadLogo);
         document.getElementById('form-background').addEventListener('submit', uploadBackground);
         document.getElementById('form-cores').addEventListener('submit', salvarCores);
+        document.getElementById('form-personalizacao').addEventListener('submit', salvarPersonalizacao);
+        document.getElementById('form-personalizacao').addEventListener('input', previaPersonalizacao);
 
-        // Seletores de cor (para atualizar display de hex)
+        // Seletores de cor: atualiza o hex e mostra a prévia na hora
         Object.values(CAMPOS_COR).forEach(id => {
-            document.getElementById(id).addEventListener('change', (e) => {
+            document.getElementById(id).addEventListener('input', (e) => {
                 document.getElementById(`${id}-hex`).value = e.target.value;
+                aplicarCores(lerCoresDoFormulario());
             });
         });
 
-        registrarAcoes({ 'restaurar-cores': resetarCores });
+        // Preferências do aparelho: aplicam e salvam na hora; "automático" segue o celular
+        const prefs = lerPreferenciasAparelho();
+        const formAparelho = document.getElementById('form-aparelho');
+        formAparelho.elements['aparelho-tema'].value = prefs.tema;
+        formAparelho.elements['aparelho-texto'].value = prefs.texto;
+        formAparelho.addEventListener('change', salvarPreferenciasAparelho);
+        temaEscuroDoSistema.addEventListener('change', () => aplicarPreferenciasAparelho(lerPreferenciasAparelho()));
+
+        // Amostras das fontes no formulário (só as letras "Aa", bem leve)
+        if (temPermissao('aparencia:gerenciar')) {
+            const familias = Object.values(FONTES).filter(f => f.google).map(f => `family=${f.google}:wght@700`).join('&');
+            carregarFonteGoogle('fonte-amostras', `${familias}&text=Aa`);
+        }
+
+        registrarAcoes({
+            'restaurar-cores': resetarCores,
+            'aplicar-paleta': aplicarPaleta,
+            'descartar-personalizacao': descartarPersonalizacao
+        });
         preencherFormularios();
     }
 };

@@ -27,7 +27,7 @@ Em produção o app roda na Vercel (`vercel.json`), com as mesmas variáveis de 
 - 🛁 **Regra da suíte**: o banheiro da suíte é feito só por moradores da suíte, um por semana, em revezamento.
 - ☕ **Folgas automáticas e iguais para todos**: sobram `integrantes ativos − vagas obrigatórias` folgas por semana, para quem está há mais tempo sem folgar.
 - ❌ **Infrações** com contador e histórico por integrante.
-- 🎨 **Personalização visual**: logo, fundo, galeria de imagens motivacionais e cores.
+- 🎨 **Personalização visual**: nome da república, logo, fundo, cores e paletas prontas, fonte, cantos, estilo do cabeçalho, galeria de imagens motivacionais e tema claro/escuro por aparelho.
 - 📅 **Histórico** das escalas de semanas anteriores.
 - 🗓️ **Agenda conjunta**: eventos com data, hora, local e descrição, em visão mensal e semanal; aniversários dos moradores entram sozinhos.
 - 👥 **Cadastro de moradores** global: contatos, contato de emergência, nascimento, data de entrada, documentos e observações.
