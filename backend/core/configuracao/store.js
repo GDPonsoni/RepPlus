@@ -19,13 +19,15 @@ export const PERSONALIZACAO_PADRAO = {
   fonte: 'inter',
   cantos: 'arredondado',
   cabecalho: 'solido',
+  cabecalhoTamanho: 'amplo',
   fundoVisibilidade: 14
 };
 
 export const OPCOES_PERSONALIZACAO = {
   fonte: ['inter', 'poppins', 'nunito', 'roboto-slab', 'sistema'],
   cantos: ['reto', 'suave', 'arredondado', 'redondo'],
-  cabecalho: ['solido', 'degrade', 'escuro']
+  cabecalho: ['solido', 'degrade', 'escuro'],
+  cabecalhoTamanho: ['amplo', 'compacto']
 };
 
 const configFromDb = (row) => ({

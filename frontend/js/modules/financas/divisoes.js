@@ -5,6 +5,7 @@ import { abrirPainel } from '../../core/painel.js';
 import { escaparHtml, iniciais, mostrarNotificacao, definirCarregando } from '../../core/ui.js';
 import { hoje, formatarDia } from '../../core/datas.js';
 import { obterIntegrantes } from '../../core/moradores.js';
+import { comemorar } from '../../core/movimento.js';
 import { estiloCategoria, htmlEscolhaCategoria } from '../../core/categorias.js';
 import { estado, ESCOPO, reais, lerReais, paraCampo, categoriaFin, nomeDoMorador, saldosEntreMoradores, dividirIgual } from './dados.js';
 
@@ -215,6 +216,7 @@ export async function marcarParte({ id, integrante, pago }) {
 export async function acertar({ de, para }) {
     if (!(await mostrarConfirmacao(`Marcar como pago tudo o que ${nomeDoMorador(de)} e ${nomeDoMorador(para)} devem um ao outro?`, { titulo: 'Acertar as contas', confirmarTexto: 'Acertar' }))) return false;
     const { quitadas } = await api('/financas/acertos', { metodo: 'POST', corpo: { de, para } });
-    mostrarNotificacao(`${quitadas} parte(s) quitadas`, 'success');
+    comemorar();
+    mostrarNotificacao(`Contas acertadas! ${quitadas} parte(s) quitadas 🤝`, 'success');
     return true;
 }

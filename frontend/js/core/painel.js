@@ -1,9 +1,11 @@
 import { escaparHtml } from './ui.js';
+import { permitirArrastarParaFechar } from './movimento.js';
 
 // Painel deslizante (bottom sheet no celular, janela centralizada no computador) para
 // formulários e listas. Uso:
 //   const { corpo, fechar } = abrirPainel({ titulo: 'Novo evento', html: '<form>...</form>' });
-// `aoFechar` é chamado quando o painel fecha por qualquer motivo (botão, Esc, toque fora).
+// `aoFechar` é chamado quando o painel fecha por qualquer motivo (botão, Esc, toque fora,
+// ou arrastar o topo para baixo no celular).
 export function abrirPainel({ titulo, html, classe = '', aoFechar } = {}) {
     const overlay = document.createElement('div');
     overlay.className = 'app-modal-overlay';
@@ -27,7 +29,7 @@ export function abrirPainel({ titulo, html, classe = '', aoFechar } = {}) {
         document.removeEventListener('keydown', onKeydown);
         overlay.classList.remove('visible');
         if (!document.querySelectorAll('.app-modal-overlay.visible').length) document.body.classList.remove('com-painel');
-        setTimeout(() => overlay.remove(), 150);
+        setTimeout(() => overlay.remove(), 220);
         aoFechar?.();
     };
     const onKeydown = (e) => {
@@ -40,6 +42,8 @@ export function abrirPainel({ titulo, html, classe = '', aoFechar } = {}) {
         if (e.target === overlay) fechar();
     });
     document.addEventListener('keydown', onKeydown);
+
+    permitirArrastarParaFechar(overlay.querySelector('.painel'), fechar);
 
     const corpo = overlay.querySelector('.painel-corpo');
     return { corpo, fechar };

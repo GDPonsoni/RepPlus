@@ -3,6 +3,7 @@ import { hoje, formatarDia } from '../../core/datas.js';
 import { estiloCategoria } from '../../core/categorias.js';
 import { estado, reais, reaisCurto, nomeDoMes, somarMeses, categoriaFin, conta } from './dados.js';
 import { rosca, barrasMensais, linhaAcumulada } from './graficos.js';
+import { contarAte } from '../../core/movimento.js';
 
 // Barra de navegação de mês (usada na Visão geral e nos Lançamentos)
 export const htmlNavegadorMes = () => `
@@ -56,22 +57,22 @@ function htmlIndicadores() {
         <div class="fin-indicadores">
             <div class="card fin-indicador gasto">
                 <span class="fin-indicador-rotulo"><i class="fa-solid fa-arrow-trend-down"></i> Gastos ${mesAtual ? 'até hoje' : 'no mês'}</span>
-                <strong>${reais(gastoMes)}</strong>
+                <strong data-centavos="${gastoMes}">${reais(gastoMes)}</strong>
                 ${variacao(gastoMes, gastoAnterior)}
             </div>
             <div class="card fin-indicador entrada">
                 <span class="fin-indicador-rotulo"><i class="fa-solid fa-arrow-trend-up"></i> Entradas no mês</span>
-                <strong>${reais(entradas)}</strong>
+                <strong data-centavos="${entradas}">${reais(entradas)}</strong>
                 <span class="fin-variacao">Saldo do mês: ${reais(entradas - gastoMes)}</span>
             </div>
             <div class="card fin-indicador">
                 <span class="fin-indicador-rotulo"><i class="fa-solid fa-wallet"></i> Disponível em contas</span>
-                <strong class="${disponivel < 0 ? 'negativo' : ''}">${reais(disponivel)}</strong>
+                <strong class="${disponivel < 0 ? 'negativo' : ''}" data-centavos="${disponivel}">${reais(disponivel)}</strong>
                 <span class="fin-variacao">${ativas.filter(c => !c.reserva).length} conta(s)</span>
             </div>
             <div class="card fin-indicador reserva">
                 <span class="fin-indicador-rotulo"><i class="fa-solid fa-piggy-bank"></i> Reserva de emergência</span>
-                <strong>${reais(reserva)}</strong>
+                <strong data-centavos="${reserva}">${reais(reserva)}</strong>
                 <span class="fin-variacao">${media ? `cobre ~${(reserva / media).toLocaleString('pt-BR', { maximumFractionDigits: 1 })} mês(es) de gastos` : 'caixinhas e investimentos'}</span>
             </div>
         </div>`;
@@ -191,4 +192,8 @@ export function renderizarVisao() {
             ${htmlHistorico()}
             ${htmlMaiores()}
         </div>`;
+    // Ao abrir a aba, os valores do topo "sobem" até o total
+    if (container.closest('.entrando')) {
+        container.querySelectorAll('[data-centavos]').forEach(el => contarAte(el, Number(el.dataset.centavos), reais));
+    }
 }

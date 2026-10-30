@@ -44,6 +44,7 @@ const PERSONALIZACAO_PADRAO = {
     fonte: 'inter',
     cantos: 'arredondado',
     cabecalho: 'solido',
+    cabecalhoTamanho: 'amplo',
     fundoVisibilidade: 14
 };
 
@@ -58,6 +59,7 @@ const FONTES = {
 
 const CANTOS = { reto: 'Retos', suave: 'Suaves', arredondado: 'Arredondados', redondo: 'Bem redondos' };
 const CABECALHOS = { solido: 'Cor sólida', degrade: 'Degradê', escuro: 'Escuro' };
+const TAMANHOS_CABECALHO = { amplo: 'Amplo, logo grande', compacto: 'Compacto' };
 
 const TEMAS = {
     auto: { nome: 'Automático', icone: 'fa-solid fa-circle-half-stroke' },
@@ -66,7 +68,15 @@ const TEMAS = {
 };
 const TAMANHOS_TEXTO = { normal: { nome: 'Normal', escala: 0.85 }, grande: { nome: 'Grande', escala: 1 }, maior: { nome: 'Maior', escala: 1.15 } };
 const CHAVE_APARELHO = 'escala:aparelho';
-const PREFERENCIAS_PADRAO = { tema: 'auto', texto: 'normal' };
+const ANIMACOES = {
+    completas: { nome: 'Completas', icone: 'fa-solid fa-wand-magic-sparkles' },
+    reduzidas: { nome: 'Reduzidas', icone: 'fa-solid fa-pause' }
+};
+const VIBRACAO = {
+    sim: { nome: 'Vibrar ao tocar', icone: 'fa-solid fa-mobile-screen-button' },
+    nao: { nome: 'Sem vibração', icone: 'fa-solid fa-ban' }
+};
+const PREFERENCIAS_PADRAO = { tema: 'auto', texto: 'normal', animacoes: 'completas', vibracao: 'sim' };
 
 // Grupo de opções em blocos (radio escondido + amostra visual)
 function htmlOpcoes(nome, opcoes, amostra) {
@@ -97,6 +107,9 @@ const HTML_SECAO_IDENTIDADE = `
         <h4 class="form-title">Cabeçalho</h4>
         ${htmlOpcoes('pers-cabecalho', CABECALHOS, valor => `<span class="opcao-cabecalho-amostra amostra-${valor}"></span>`)}
 
+        <h4 class="form-title">Tamanho do cabeçalho</h4>
+        ${htmlOpcoes('pers-cabecalho-tamanho', TAMANHOS_CABECALHO, valor => `<span class="opcao-cabecalho-amostra amostra-tamanho-${valor}"><i></i></span>`)}
+
         <h4 class="form-title">Imagem de fundo</h4>
         <label class="field">Quanto a imagem aparece (precisa de um fundo enviado em "Logo, Fundo e Cores")
             <span class="campo-faixa">
@@ -120,6 +133,12 @@ const HTML_SECAO_APARELHO = `
 
         <h4 class="form-title">Tamanho do texto</h4>
         ${htmlOpcoes('aparelho-texto', TAMANHOS_TEXTO, valor => `<span class="opcao-fonte-amostra" style="font-size: ${TAMANHOS_TEXTO[valor].escala}rem">Aa</span>`)}
+
+        <h4 class="form-title">Animações</h4>
+        ${htmlOpcoes('aparelho-animacoes', ANIMACOES, valor => `<i class="${ANIMACOES[valor].icone} opcao-tema-amostra"></i>`)}
+
+        <h4 class="form-title">Vibração (celulares Android)</h4>
+        ${htmlOpcoes('aparelho-vibracao', VIBRACAO, valor => `<i class="${VIBRACAO[valor].icone} opcao-tema-amostra"></i>`)}
 
         <p class="aviso-previa"><i class="fa-solid fa-mobile-screen"></i> Vale só para este aparelho e é salvo automaticamente.</p>
     </form>
@@ -237,6 +256,51 @@ function aplicarLogo(logoPath) {
     if (logoTop) {
         logoTop.src = logoPath || LOGO_PADRAO;
     }
+    aplicarIconeDaGuia(logoPath || LOGO_PADRAO);
+}
+
+// Ícone da guia do navegador: o logo recortado em círculo com o anel da cor secundária,
+// como no cabeçalho. Se a imagem não puder ser lida no canvas, usa o logo como está.
+const CHAVE_FAVICON = 'escala:favicon';
+
+function aplicarIconeDaGuia(src) {
+    const link = document.getElementById('favicon');
+    if (!link) return;
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+        let icone = src;
+        try {
+            const tamanho = 64;
+            const canvas = document.createElement('canvas');
+            canvas.width = canvas.height = tamanho;
+            const ctx = canvas.getContext('2d');
+            const anel = getComputedStyle(document.documentElement).getPropertyValue('--secondary-color').trim() || '#FFD700';
+            ctx.beginPath();
+            ctx.arc(32, 32, 32, 0, Math.PI * 2);
+            ctx.fillStyle = anel;
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(32, 32, 28, 0, Math.PI * 2);
+            ctx.fillStyle = '#fff';
+            ctx.fill();
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(32, 32, 27, 0, Math.PI * 2);
+            ctx.clip();
+            // Preenche o círculo como object-fit: cover
+            const escala = Math.max(54 / img.width, 54 / img.height);
+            const largura = img.width * escala;
+            const altura = img.height * escala;
+            ctx.drawImage(img, 32 - largura / 2, 32 - altura / 2, largura, altura);
+            ctx.restore();
+            icone = canvas.toDataURL('image/png');
+        } catch { /* imagem de outro domínio sem CORS: fica o logo original */ }
+        link.href = icone;
+        try { localStorage.setItem(CHAVE_FAVICON, icone); } catch { /* sem armazenamento */ }
+    };
+    img.onerror = () => { link.href = src; };
+    img.src = src;
 }
 
 function aplicarFundo(backgroundPath) {
@@ -290,6 +354,7 @@ function aplicarPersonalizacao(dados) {
     root.style.setProperty('--fundo-veu', `${100 - p.fundoVisibilidade}%`);
     root.dataset.cantos = p.cantos;
     root.dataset.cabecalho = p.cabecalho;
+    root.dataset.cabecalhoTamanho = p.cabecalhoTamanho;
 
     document.getElementById('nome-republica').textContent = p.nome;
     document.getElementById('rodape-texto').textContent = p.slogan ? `${p.nome} · ${p.slogan}` : p.nome;
@@ -305,6 +370,7 @@ function preencherPersonalizacao(p) {
     form.elements['pers-fonte'].value = p.fonte;
     form.elements['pers-cantos'].value = p.cantos;
     form.elements['pers-cabecalho'].value = p.cabecalho;
+    form.elements['pers-cabecalho-tamanho'].value = p.cabecalhoTamanho;
     document.getElementById('pers-fundo').value = p.fundoVisibilidade;
     document.getElementById('pers-fundo-valor').textContent = `${p.fundoVisibilidade}%`;
 }
@@ -317,6 +383,7 @@ function lerPersonalizacao() {
         fonte: form.elements['pers-fonte'].value,
         cantos: form.elements['pers-cantos'].value,
         cabecalho: form.elements['pers-cabecalho'].value,
+        cabecalhoTamanho: form.elements['pers-cabecalho-tamanho'].value,
         fundoVisibilidade: Number(document.getElementById('pers-fundo').value)
     };
 }
@@ -369,11 +436,18 @@ function aplicarPreferenciasAparelho(prefs) {
     const escuro = prefs.tema === 'escuro' || (prefs.tema === 'auto' && temaEscuroDoSistema.matches);
     root.dataset.tema = escuro ? 'escuro' : 'claro';
     root.dataset.texto = prefs.texto;
+    root.dataset.animacoes = prefs.animacoes;
+    root.dataset.vibracao = prefs.vibracao;
 }
 
 function salvarPreferenciasAparelho() {
     const form = document.getElementById('form-aparelho');
-    const prefs = { tema: form.elements['aparelho-tema'].value, texto: form.elements['aparelho-texto'].value };
+    const prefs = {
+        tema: form.elements['aparelho-tema'].value,
+        texto: form.elements['aparelho-texto'].value,
+        animacoes: form.elements['aparelho-animacoes'].value,
+        vibracao: form.elements['aparelho-vibracao'].value
+    };
     try { localStorage.setItem(CHAVE_APARELHO, JSON.stringify(prefs)); } catch { /* sem armazenamento: vale até recarregar */ }
     aplicarPreferenciasAparelho(prefs);
 }
@@ -499,6 +573,8 @@ export default {
         const formAparelho = document.getElementById('form-aparelho');
         formAparelho.elements['aparelho-tema'].value = prefs.tema;
         formAparelho.elements['aparelho-texto'].value = prefs.texto;
+        formAparelho.elements['aparelho-animacoes'].value = prefs.animacoes;
+        formAparelho.elements['aparelho-vibracao'].value = prefs.vibracao;
         formAparelho.addEventListener('change', salvarPreferenciasAparelho);
         temaEscuroDoSistema.addEventListener('change', () => aplicarPreferenciasAparelho(lerPreferenciasAparelho()));
 

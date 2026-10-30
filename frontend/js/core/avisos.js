@@ -3,6 +3,7 @@ import { abrirPainel } from './painel.js';
 import { escaparHtml } from './ui.js';
 import { temPermissao } from './sessao.js';
 import { navegar } from './shell.js';
+import { chacoalhar } from './movimento.js';
 
 // Avisos do sino (canto superior direito). Cada módulo pode exportar:
 //   avisos: async () => [{ id, texto, icone?, tipo?: 'alerta' | 'info', rota? }]
@@ -33,6 +34,9 @@ function atualizarContador() {
     const vistos = lerVistos();
     const novos = avisos.filter(aviso => !vistos.has(aviso.id)).length;
     const contador = document.getElementById('avisos-contador');
+    // Chegou aviso novo: o sino dá uma balançada (uma vez, sem insistir)
+    if (novos > (Number(contador.dataset.total) || 0)) chacoalhar(contador.closest('button'));
+    contador.dataset.total = novos;
     contador.hidden = novos === 0;
     contador.textContent = novos > 9 ? '9+' : String(novos);
     contador.closest('button').setAttribute('aria-label', novos ? `Avisos (${novos} novos)` : 'Avisos');
@@ -55,7 +59,7 @@ async function abrirAvisos() {
     const { corpo, fechar } = abrirPainel({
         titulo: 'Avisos',
         classe: 'painel-canto painel-avisos',
-        html: '<p class="inicio-carregando"><i class="fa-solid fa-spinner fa-spin"></i> Carregando...</p>'
+        html: '<div class="esqueleto" aria-label="Carregando"><span></span><span></span><span></span></div>'
     });
     await carregarAvisos();
     const vistos = lerVistos();

@@ -507,7 +507,6 @@ body.com-nav-inferior .fab {
 
 .tab-content.active {
     display: block;
-    animation: fadeIn 0.25s ease-out;
 }
 
 @keyframes fadeIn {
@@ -1674,7 +1673,6 @@ input[type="file"]::file-selector-button {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
     pointer-events: none;
 }
 
@@ -1692,11 +1690,49 @@ input[type="file"]::file-selector-button {
     background: #1f2937;
     box-shadow: var(--shadow-lg);
     pointer-events: auto;
-    animation: toastIn 0.25s ease-out;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 8px;
+    cursor: pointer;
+    touch-action: pan-y;
+    user-select: none;
 }
 
 .toast.saindo {
-    animation: toastOut 0.25s ease-in forwards;
+    pointer-events: none;
+}
+
+/* Tempo que falta (encolhe até fechar; pausa com o mouse em cima ou o dedo segurando) */
+.toast-tempo {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 3px;
+    background: currentColor;
+    opacity: 0.35;
+    transform-origin: left;
+    animation: toastTempo linear forwards;
+}
+
+.toast:hover .toast-tempo,
+.toast.segurando .toast-tempo {
+    animation-play-state: paused;
+}
+
+:root[data-animacoes="reduzidas"] .toast-tempo {
+    display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .toast-tempo {
+        display: none;
+    }
+}
+
+@keyframes toastTempo {
+    from { transform: scaleX(1); }
+    to { transform: scaleX(0); }
 }
 
 .toast-success { background: var(--success-color); }
@@ -1704,14 +1740,6 @@ input[type="file"]::file-selector-button {
 .toast-warning { background: var(--secondary-color); color: var(--on-secondary); }
 .toast-info { background: #1f2937; }
 
-@keyframes toastIn {
-    from { opacity: 0; transform: translateY(-12px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes toastOut {
-    to { opacity: 0; transform: translateY(-12px); }
-}
 
 /* ===== MODAL (confirmação / prompt) ===== */
 .app-modal-overlay {
@@ -5300,5 +5328,501 @@ button.evento-card:hover {
 @media (min-width: 1400px) {
     .inicio-cartoes {
         columns: 3;
+    }
+}
+
+/* ===== CABEÇALHO AMPLO (padrão; Ajustes > Nome e Estilo > "Compacto" volta à barra fina) =====
+   Logo em destaque e nome da república grande; o módulo atual vira uma etiqueta abaixo.
+   O cabeçalho rola junto com a página: as abas do módulo continuam fixas no topo. */
+:root:not([data-cabecalho-tamanho="compacto"]) .header {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    padding: calc(18px + env(safe-area-inset-top)) 16px 20px;
+}
+
+/* Brilho suave atrás do logo e faixa da cor secundária na base */
+:root:not([data-cabecalho-tamanho="compacto"]) .header::before {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    left: -60px;
+    top: 50%;
+    width: 260px;
+    height: 260px;
+    transform: translateY(-50%);
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0) 65%);
+    pointer-events: none;
+}
+
+:root:not([data-cabecalho-tamanho="compacto"]) .header::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 4px;
+    background: var(--secondary-color);
+}
+
+:root:not([data-cabecalho-tamanho="compacto"]) .header-content {
+    gap: 14px;
+}
+
+:root:not([data-cabecalho-tamanho="compacto"]) .logo-ring {
+    width: 84px;
+    height: 84px;
+    padding: 3px;
+    border-width: 4px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.28);
+    transition: transform 0.2s ease;
+}
+
+:root:not([data-cabecalho-tamanho="compacto"]) .logo-ring:hover {
+    transform: scale(1.04) rotate(-3deg);
+}
+
+/* Nome da república em destaque (até duas linhas) */
+:root:not([data-cabecalho-tamanho="compacto"]) .header-titulo .subtitle {
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.12;
+    text-transform: none;
+    opacity: 1;
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.22);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    overflow-wrap: anywhere;
+}
+
+/* Módulo atual como etiqueta */
+:root:not([data-cabecalho-tamanho="compacto"]) .modulo-atual-nome {
+    align-self: flex-start;
+    max-width: 100%;
+    margin-top: 7px;
+    padding: 4px 11px 4px 9px;
+    border-radius: 999px;
+    background: rgba(0, 0, 0, 0.2);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+:root:not([data-cabecalho-tamanho="compacto"]) .header-acoes {
+    align-self: flex-start;
+}
+
+@media (max-width: 380px) {
+    :root:not([data-cabecalho-tamanho="compacto"]) .logo-ring {
+        width: 70px;
+        height: 70px;
+    }
+
+    :root:not([data-cabecalho-tamanho="compacto"]) .header-titulo .subtitle {
+        font-size: 1.3rem;
+    }
+
+    :root:not([data-cabecalho-tamanho="compacto"]) .header-btn {
+        width: 38px;
+        height: 38px;
+    }
+}
+
+@media (min-width: 900px) {
+    :root:not([data-cabecalho-tamanho="compacto"]) .header {
+        padding: 22px 24px 26px 28px;
+    }
+
+    :root:not([data-cabecalho-tamanho="compacto"]) .header::before {
+        left: -40px;
+        width: 340px;
+        height: 340px;
+    }
+
+    :root:not([data-cabecalho-tamanho="compacto"]) .header-content {
+        gap: 20px;
+    }
+
+    :root:not([data-cabecalho-tamanho="compacto"]) .logo-ring {
+        width: 104px;
+        height: 104px;
+        border-width: 5px;
+    }
+
+    :root:not([data-cabecalho-tamanho="compacto"]) .header-titulo .subtitle {
+        font-size: 2.1rem;
+    }
+
+    :root:not([data-cabecalho-tamanho="compacto"]) .modulo-atual-nome {
+        margin-top: 9px;
+        font-size: 0.8rem;
+    }
+
+    :root:not([data-cabecalho-tamanho="compacto"]) .header-acoes {
+        align-self: center;
+    }
+}
+
+/* Amostras da opção de tamanho do cabeçalho */
+.amostra-tamanho-amplo,
+.amostra-tamanho-compacto {
+    display: flex;
+    align-items: center;
+    padding-left: 6px;
+    background: var(--primary-color);
+}
+
+.amostra-tamanho-amplo { height: 30px; }
+.amostra-tamanho-compacto { height: 16px; }
+
+.amostra-tamanho-amplo i,
+.amostra-tamanho-compacto i {
+    border-radius: 50%;
+    background: var(--secondary-color);
+}
+
+.amostra-tamanho-amplo i { width: 20px; height: 20px; }
+.amostra-tamanho-compacto i { width: 10px; height: 10px; }
+
+/* Celular: a etiqueta do módulo usa o nome curto ("Escala" em vez de "Escala de Limpeza") */
+@media (max-width: 899px) {
+    :root:not([data-cabecalho-tamanho="compacto"]) #modulo-atual-nome {
+        font-size: 0;
+        letter-spacing: 0;
+    }
+
+    :root:not([data-cabecalho-tamanho="compacto"]) #modulo-atual-nome::after {
+        content: attr(data-curto);
+        font-size: 0.72rem;
+        letter-spacing: 0.06em;
+    }
+}
+
+/* ===== MOVIMENTO E RETORNO AO TOQUE (js/core/movimento.js) =====
+   Animações curtas, que não seguram o uso: nada passa de ~0,4s e tudo some com
+   "reduzir movimento" do sistema ou Ajustes > Neste aparelho > Animações: Reduzidas. */
+:root {
+    --mola: cubic-bezier(0.34, 1.4, 0.64, 1);
+    --suave: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Entrada das abas: de lado entre abas do mesmo módulo, de baixo ao trocar de módulo.
+   "backwards" não deixa transform depois que termina (não atrapalha posições fixas) */
+.tab-content.entrando[data-entrada="acima"] { animation: entraAcima 0.32s var(--suave) backwards; }
+.tab-content.entrando[data-entrada="direita"] { animation: entraDireita 0.3s var(--suave) backwards; }
+.tab-content.entrando[data-entrada="esquerda"] { animation: entraEsquerda 0.3s var(--suave) backwards; }
+
+@keyframes entraAcima {
+    from { opacity: 0; transform: translateY(10px); }
+}
+
+@keyframes entraDireita {
+    from { opacity: 0; transform: translateX(22px); }
+}
+
+@keyframes entraEsquerda {
+    from { opacity: 0; transform: translateX(-22px); }
+}
+
+/* Cartões aparecem em sequência logo que a tela abre (depois disso, atualizar não anima) */
+.tab-content.entrando .card {
+    animation: cartaoSurge 0.4s var(--suave) backwards;
+}
+
+.tab-content.entrando .card:nth-child(2) { animation-delay: 0.04s; }
+.tab-content.entrando .card:nth-child(3) { animation-delay: 0.08s; }
+.tab-content.entrando .card:nth-child(4) { animation-delay: 0.12s; }
+.tab-content.entrando .card:nth-child(5) { animation-delay: 0.16s; }
+.tab-content.entrando .card:nth-child(6) { animation-delay: 0.2s; }
+.tab-content.entrando .card:nth-child(n + 7) { animation-delay: 0.24s; }
+
+@keyframes cartaoSurge {
+    from { opacity: 0; transform: translateY(14px) scale(0.985); }
+}
+
+/* Barrinha que desliza até a aba ativa */
+.nav-tabs-inner {
+    position: relative;
+}
+
+.nav-tabs-inner .tab-btn.active {
+    border-bottom-color: transparent;
+}
+
+.tab-indicador {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 3px;
+    border-radius: 3px 3px 0 0;
+    background: var(--primary-color);
+    pointer-events: none;
+    transition: transform 0.32s var(--suave), width 0.32s var(--suave);
+}
+
+.sem-transicao .tab-indicador {
+    transition: none;
+}
+
+/* Afundar ao toque: o botão responde na hora, antes mesmo de a tela mudar */
+.icon-btn,
+.header-btn,
+.tab-btn,
+.nav-inferior-item,
+.menu-lateral-item,
+.compra-check,
+.fin-legenda-item,
+.fin-maior,
+.aviso,
+.logo-ring {
+    -webkit-tap-highlight-color: transparent;
+}
+
+.icon-btn:active:not(:disabled),
+.header-btn:active,
+.tab-btn:active,
+.menu-lateral-item:active,
+.fin-legenda-item:active,
+.fin-maior:active,
+.aviso:active {
+    transform: scale(0.95);
+}
+
+.icon-btn,
+.tab-btn,
+.menu-lateral-item,
+.fin-legenda-item,
+.fin-maior,
+.aviso {
+    transition-property: transform, background, color, border-color, box-shadow;
+    transition-duration: 0.15s;
+}
+
+.header-btn {
+    transition: background 0.2s, transform 0.15s;
+}
+
+/* Barra inferior: ícone "pula" ao ser escolhido e afunda ao toque */
+.nav-inferior-item i {
+    transition: transform 0.15s;
+}
+
+.nav-inferior-item:active i {
+    transform: scale(0.82);
+}
+
+.nav-inferior-item.ativo i {
+    animation: iconePulo 0.42s var(--mola);
+}
+
+.nav-inferior-item.ativo::before {
+    animation: barraCresce 0.3s var(--suave);
+}
+
+@keyframes iconePulo {
+    0% { transform: scale(0.8); }
+    55% { transform: scale(1.18) translateY(-2px); }
+    100% { transform: scale(1); }
+}
+
+@keyframes barraCresce {
+    from { transform: scaleX(0); }
+}
+
+/* Menu lateral: ícone se mexe de leve ao passar o mouse */
+.menu-lateral-item .acc-icon {
+    transition: transform 0.2s var(--mola);
+}
+
+.menu-lateral-item:hover .acc-icon {
+    transform: scale(1.1) rotate(-6deg);
+}
+
+.menu-lateral-item.ativo .acc-icon {
+    animation: iconePulo 0.42s var(--mola);
+}
+
+/* Blocos de módulo (Mais e menu do usuário) sobem de leve no computador */
+@media (hover: hover) {
+    .modulo-bloco {
+        transition: transform 0.18s var(--suave), box-shadow 0.18s, border-color 0.2s;
+    }
+
+    .modulo-bloco:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+}
+
+/* Painéis: no celular sobem inteiros de baixo e têm uma alça para arrastar e fechar */
+@media (max-width: 639px) {
+    .app-modal-card.painel {
+        transform: translateY(100%);
+        transition: transform 0.28s var(--suave);
+    }
+
+    .painel-topo {
+        position: relative;
+        padding-top: 20px;
+        touch-action: none;
+    }
+
+    .painel-topo::before {
+        content: '';
+        position: absolute;
+        top: 7px;
+        left: 50%;
+        width: 38px;
+        height: 4px;
+        margin-left: -19px;
+        border-radius: 999px;
+        background: var(--border);
+    }
+}
+
+/* Itens das listas de painéis entram em sequência */
+.app-modal-overlay.visible .modulo-grade > *,
+.app-modal-overlay.visible .menu-usuario-itens > *,
+.app-modal-overlay.visible .avisos-lista > * {
+    animation: cartaoSurge 0.32s var(--suave) backwards;
+}
+
+.app-modal-overlay.visible :is(.modulo-grade, .menu-usuario-itens, .avisos-lista) > :nth-child(2) { animation-delay: 0.03s; }
+.app-modal-overlay.visible :is(.modulo-grade, .menu-usuario-itens, .avisos-lista) > :nth-child(3) { animation-delay: 0.06s; }
+.app-modal-overlay.visible :is(.modulo-grade, .menu-usuario-itens, .avisos-lista) > :nth-child(4) { animation-delay: 0.09s; }
+.app-modal-overlay.visible :is(.modulo-grade, .menu-usuario-itens, .avisos-lista) > :nth-child(n + 5) { animation-delay: 0.12s; }
+
+/* Sino: balança quando chega aviso novo; o contador "pinga" */
+.chacoalhando i {
+    animation: sinoBalanca 0.7s ease-in-out;
+    transform-origin: 50% 10%;
+}
+
+.chacoalhando .header-contador {
+    animation: contadorPinga 0.45s var(--mola);
+}
+
+@keyframes sinoBalanca {
+    0%, 100% { transform: rotate(0); }
+    15% { transform: rotate(16deg); }
+    30% { transform: rotate(-14deg); }
+    45% { transform: rotate(10deg); }
+    60% { transform: rotate(-6deg); }
+    75% { transform: rotate(3deg); }
+}
+
+@keyframes contadorPinga {
+    from { transform: scale(0.3); }
+}
+
+/* Carregando: barras que brilham no formato do conteúdo, em vez de "Carregando..." */
+.esqueleto {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+    padding: 2px 0;
+}
+
+.esqueleto span {
+    height: 14px;
+    border-radius: 7px;
+    background: linear-gradient(90deg, var(--subtle) 25%, color-mix(in srgb, var(--subtle) 40%, var(--surface)) 50%, var(--subtle) 75%);
+    background-size: 200% 100%;
+    animation: esqueletoBrilha 1.3s linear infinite;
+}
+
+.esqueleto span:nth-child(1) { width: 85%; }
+.esqueleto span:nth-child(2) { width: 65%; }
+.esqueleto span:nth-child(3) { width: 75%; }
+
+.painel-corpo > .esqueleto {
+    padding: 18px;
+}
+
+@keyframes esqueletoBrilha {
+    from { background-position: 200% 0; }
+    to { background-position: -200% 0; }
+}
+
+/* Lista de compras: "comprei" marca o círculo, risca o nome e o item sai de lado */
+.compra-item.saindo-comprado {
+    animation: compraSai 0.38s ease-in forwards;
+    pointer-events: none;
+}
+
+.compra-item.saindo-comprado .compra-check {
+    color: #fff;
+}
+
+.compra-item.saindo-comprado .compra-check::before {
+    background: var(--success-color);
+    border-color: var(--success-color);
+    border-style: solid;
+    animation: checkPop 0.3s var(--mola);
+}
+
+.compra-item.saindo-comprado .compra-nome {
+    text-decoration: line-through;
+    opacity: 0.55;
+}
+
+@keyframes checkPop {
+    0% { transform: scale(0.6); }
+    100% { transform: scale(1); }
+}
+
+@keyframes compraSai {
+    0%, 50% { opacity: 1; transform: none; }
+    100% { opacity: 0; transform: translateX(28px); }
+}
+
+/* Confete das conquistas (lista zerada, contas acertadas) */
+.confete {
+    position: fixed;
+    inset: 0;
+    z-index: 11000;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.confete i {
+    position: absolute;
+    width: 8px;
+    height: 12px;
+    border-radius: 2px;
+    animation: confeteVoa 1.1s cubic-bezier(0.2, 0.7, 0.4, 1) forwards;
+}
+
+@keyframes confeteVoa {
+    0% { transform: translate(-50%, -50%) scale(0.4); opacity: 1; }
+    60% { opacity: 1; }
+    100% { transform: translate(calc(var(--dx) - 50%), calc(var(--dy) + 140px)) rotate(var(--giro)); opacity: 0; }
+}
+
+/* Reduzir movimento: do sistema ou escolhido no aparelho */
+:root[data-animacoes="reduzidas"] *,
+:root[data-animacoes="reduzidas"] *::before,
+:root[data-animacoes="reduzidas"] *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-delay: 0s !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
     }
 }

@@ -16,7 +16,7 @@ function criarOverlay() {
 
 function fecharOverlay(overlay) {
     overlay.classList.remove('visible');
-    setTimeout(() => overlay.remove(), 150);
+    setTimeout(() => overlay.remove(), 220);
 }
 
 export function mostrarConfirmacao(mensagem, { titulo = 'Confirmar ação', confirmarTexto = 'Confirmar', cancelarTexto = 'Cancelar' } = {}) {

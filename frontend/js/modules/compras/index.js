@@ -6,6 +6,7 @@ import { abrirPainel } from '../../core/painel.js';
 import { escaparHtml, mostrarNotificacao, definirCarregando } from '../../core/ui.js';
 import { formatarDia, diaDoInstante } from '../../core/datas.js';
 import { obterIntegrantes } from '../../core/moradores.js';
+import { animarSaida, comemorar, vibrar } from '../../core/movimento.js';
 import { nomeDaRepublica } from '../../core/aparencia.js';
 import { carregarCategorias, categoria, categoriasDe, htmlEscolhaCategoria } from '../../core/categorias.js';
 import {
@@ -218,10 +219,25 @@ function adicionarSugestao({ id, status: statusFixo }) {
     }, 'Erro ao adicionar');
 }
 
-function comprar({ id }) {
+// Comprei: o item se marca e sai da lista antes de redesenhar; zerar a lista ganha comemoração
+async function comprar({ id }, botao) {
+    const linha = botao?.closest('.compra-item');
+    vibrar(12);
+    await animarSaida(linha, 'saindo-comprado', 380);
     return executar(async () => {
-        const item = await comprarItem(id);
-        mostrarNotificacao(`${item.nome} comprado ✔`, 'success', 1800);
+        try {
+            const item = await comprarItem(id);
+            const restam = itensComStatus('falta').length + itensComStatus('acabando').length;
+            if (restam === 0) {
+                comemorar(botao);
+                mostrarNotificacao('Lista zerada! Valeu pela compra 🎉', 'success', 2600);
+            } else {
+                mostrarNotificacao(`${item.nome} comprado ✔`, 'success', 1800);
+            }
+        } catch (error) {
+            linha?.classList.remove('saindo-comprado');
+            throw error;
+        }
     }, 'Erro ao marcar como comprado');
 }
 

@@ -79,7 +79,7 @@ O histórico identifica cômodos pelo **nome**: por isso não é permitido ter d
 - **SPA**: uma página HTML com navegação por abas, sem recarregar e sem etapa de build (módulos JS nativos, `<script type="module">`).
 - **Estrutura** (`frontend/js/`):
   - `main.js`: carrega a sessão, monta a interface com os módulos ativos, aplica a configuração e inicia cada módulo.
-  - `core/`: `api.js` (cliente único da API), `sessao.js` (usuário, permissões e `data-permissao`), `shell.js` (seletor de módulos, abas e navegação por endereço `#/modulo/aba`), `painel.js` (painel deslizante para formulários), `datas.js` (datas no horário de Brasília), `acoes.js` (cliques via `data-acao`), `eventos.js` (avisos entre módulos), `ui.js`, `modal.js` e os módulos do núcleo `moradores.js` (cadastro global), `aparencia.js` e `sistema.js`.
+  - `core/`: `api.js` (cliente único da API), `sessao.js` (usuário, permissões e `data-permissao`), `shell.js` (seletor de módulos, abas e navegação por endereço `#/modulo/aba`), `painel.js` (painel deslizante para formulários; no celular fecha arrastando o topo para baixo), `movimento.js` (animações e retorno ao toque: `vibrar`, `comemorar`, `animarSaida`, `contarAte`, `chacoalhar`; tudo respeita "reduzir movimento" e `data-animacoes`), `datas.js` (datas no horário de Brasília), `acoes.js` (cliques via `data-acao`), `eventos.js` (avisos entre módulos), `ui.js`, `modal.js` e os módulos do núcleo `moradores.js` (cadastro global), `aparencia.js` e `sistema.js`.
   - `modules/escala/`: abas Atual, Histórico, Infrações e Ajustes (cômodos e galeria).
   - `modules/agenda/`: abas Mês e Semana, formulário de evento e os aniversários vindos do cadastro.
   - `modules/anotacoes/`: abas Senhas, Contatos e Notas; `cofre.js` faz toda a criptografia no navegador (Web Crypto), `dados.js` o estado e a API, `telas.js` as listas e `formulario.js` os formulários e as janelas do cofre.
@@ -87,7 +87,7 @@ O histórico identifica cômodos pelo **nome**: por isso não é permitido ter d
   - `modules/compras/`: abas Lista e Itens salvos; `dados.js` guarda o estado e fala com a API, `index.js` desenha as telas e o formulário.
 - **Navegação**: o nome do módulo no topo abre o **seletor de módulos**; a barra de abas mostra só as abas do módulo atual. Moradores e Ajustes são páginas globais (grupo "Geral" do seletor).
 - **Botões**: usam `data-acao="..."` (o módulo registra o que cada ação faz) em vez de `onclick` com funções globais.
-- **Tema**: cores aplicadas via variáveis CSS (`style.setProperty()`); o resto da paleta deriva delas com `color-mix`. Estilo por atributos no `<html>`: `data-tema` (claro/escuro, do aparelho), `data-texto`, `data-cantos` e `data-cabecalho`. O `index.html` aplica o tema do aparelho antes de desenhar a tela, para não piscar.
+- **Tema**: cores aplicadas via variáveis CSS (`style.setProperty()`); o resto da paleta deriva delas com `color-mix`. Estilo por atributos no `<html>`: `data-tema` (claro/escuro, do aparelho), `data-texto`, `data-cantos`, `data-cabecalho` e `data-cabecalho-tamanho` (amplo, com o logo em destaque, ou compacto). O `index.html` aplica o tema do aparelho antes de desenhar a tela, para não piscar.
 - **Segurança de renderização**: todo texto vindo do banco passa por `escaparHtml` antes de entrar em `innerHTML`.
 
 ---

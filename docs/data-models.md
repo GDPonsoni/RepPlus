@@ -109,7 +109,7 @@ A função Postgres `replace_semana_escala(p_ano, p_semana, p_linhas)` substitui
 | `motivacao_destaque` | `motivacaoDestaque` | URL da imagem em destaque na escala |
 | `cores` | `cores` | `{ "primaria", "secundaria", "branca", "preta" }` em `#RRGGBB` |
 | `modulos_desativados` (jsonb) | `modulosDesativados` | Ids dos módulos desligados em Ajustes > Módulos (ex.: `["agenda"]`) |
-| `personalizacao` (jsonb) | `personalizacao` | `{ "nome", "slogan", "fonte", "cantos", "cabecalho", "fundoVisibilidade" }`. Campos ausentes usam o padrão do backend (`PERSONALIZACAO_PADRAO`) |
+| `personalizacao` (jsonb) | `personalizacao` | `{ "nome", "slogan", "fonte", "cantos", "cabecalho", "cabecalhoTamanho", "fundoVisibilidade" }`. Campos ausentes usam o padrão do backend (`PERSONALIZACAO_PADRAO`) |
 
 Tema claro/escuro e tamanho do texto **não** ficam no banco: são preferências de cada aparelho
 (`localStorage`, chave `escala:aparelho`).

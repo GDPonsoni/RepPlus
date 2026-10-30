@@ -3,6 +3,7 @@ import { aplicarPermissoes, temPermissao, obterSessao } from './sessao.js';
 import { registrarAcoes } from './acoes.js';
 import { abrirPainel } from './painel.js';
 import { nomeDaRepublica } from './aparencia.js';
+import { movimentoReduzido } from './movimento.js';
 
 // Monta a interface a partir dos módulos e cuida da navegação.
 //
@@ -31,6 +32,10 @@ const ITENS_BARRA_INFERIOR = 5;
 
 let modulos = [];
 let rotaAtual = null;
+
+// Onde cada aba estava rolada: voltar a uma aba devolve o lugar (tocar de novo no item atual sobe ao topo)
+const rolagemPorAba = new Map();
+const chaveDaAba = ({ modulo, aba }) => `${modulo.id}/${aba.id}`;
 
 const principais = () => modulos.filter(modulo => modulo.menu !== 'usuario');
 const doMenuUsuario = () => modulos.filter(modulo => modulo.menu === 'usuario');
@@ -206,9 +211,23 @@ export function montarInterface(modulosAtivos) {
 }
 
 export function navegar(rota) {
-    if (location.hash === `#/${rota}`) mostrarRota(rota);
+    if (location.hash === `#/${rota}`) mostrarRota(rota, { repetida: true });
     else location.hash = `#/${rota}`;
 }
+
+// Barrinha que desliza até a aba ativa (e a aba ativa entra na tela quando a barra rola de lado)
+function posicionarIndicadorDaAba() {
+    const nav = document.getElementById('nav-abas');
+    const ativa = nav.querySelector('.tab-btn.active');
+    const indicador = nav.querySelector('.tab-indicador');
+    if (!ativa || !indicador) return;
+    indicador.style.width = `${ativa.offsetWidth}px`;
+    indicador.style.transform = `translateX(${ativa.offsetLeft}px)`;
+    const fora = ativa.offsetLeft < nav.scrollLeft || ativa.offsetLeft + ativa.offsetWidth > nav.scrollLeft + nav.clientWidth;
+    if (fora) nav.scrollTo({ left: ativa.offsetLeft - (nav.clientWidth - ativa.offsetWidth) / 2, behavior: movimentoReduzido() ? 'auto' : 'smooth' });
+}
+window.addEventListener('resize', posicionarIndicadorDaAba);
+document.fonts?.ready.then(posicionarIndicadorDaAba);
 
 // Resolve "modulo/aba" (qualquer parte pode faltar ou não existir) para um módulo e uma aba válidos
 function resolverRota(rota) {
@@ -218,14 +237,19 @@ function resolverRota(rota) {
     return { modulo, aba };
 }
 
-function mostrarRota(rota) {
+function mostrarRota(rota, { repetida = false } = {}) {
     const { modulo, aba } = resolverRota(rota);
-    const mudouModulo = rotaAtual?.modulo !== modulo;
+    const anterior = rotaAtual;
+    const mudouModulo = anterior?.modulo !== modulo;
+    if (anterior) rolagemPorAba.set(chaveDaAba(anterior), window.scrollY);
     rotaAtual = { modulo, aba };
 
     // Cabeçalho: nome e ícone do módulo atual
     document.getElementById('modulo-atual-icone').className = modulo.icone;
-    document.getElementById('modulo-atual-nome').textContent = modulo.nome;
+    const nomeModulo = document.getElementById('modulo-atual-nome');
+    nomeModulo.textContent = modulo.nome;
+    // Nome curto na etiqueta do cabeçalho amplo no celular (ver CSS)
+    nomeModulo.dataset.curto = modulo.nomeCurto || modulo.nome;
     document.title = `${modulo.nome} · ${nomeDaRepublica()}`;
     marcarAtivo(modulo);
 
@@ -236,18 +260,33 @@ function mostrarRota(rota) {
             <button class="tab-btn" data-acao="ir-para" data-rota="${modulo.id}/${a.id}" data-tab="${a.id}">
                 <i class="${a.icone}"></i><span>${escaparHtml(a.titulo)}</span>
             </button>
-        `).join('');
+        `).join('') + '<span class="tab-indicador" aria-hidden="true"></span>';
+        nav.classList.add('sem-transicao');
         nav.closest('.nav-tabs').hidden = modulo.abas.length < 2;
     }
     nav.querySelectorAll('.tab-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === aba.id));
+    posicionarIndicadorDaAba();
+    requestAnimationFrame(() => nav.classList.remove('sem-transicao'));
 
-    document.querySelectorAll('.tab-content').forEach(secao => secao.classList.remove('active'));
-    document.getElementById(`aba-${modulo.id}-${aba.id}`).classList.add('active');
+    // Entrada da aba: entre abas do mesmo módulo desliza para o lado da aba escolhida;
+    // ao trocar de módulo sobe de leve, e os cartões aparecem em sequência (classe "entrando")
+    const secao = document.getElementById(`aba-${modulo.id}-${aba.id}`);
+    const mudouAba = anterior && anterior.aba !== aba;
+    if (mudouAba || !anterior) {
+        document.querySelectorAll('.tab-content').forEach(s => s.classList.remove('active', 'entrando'));
+        const passo = mudouModulo ? 0 : modulo.abas.indexOf(aba) - modulo.abas.indexOf(anterior.aba);
+        secao.dataset.entrada = passo > 0 ? 'direita' : passo < 0 ? 'esquerda' : 'acima';
+        secao.classList.add('active', 'entrando');
+        clearTimeout(secao.fimDaEntrada);
+        secao.fimDaEntrada = setTimeout(() => secao.classList.remove('entrando'), 1000);
+    }
 
     // Cada aba carrega seus dados ao ser aberta
     aba.aoAbrir?.();
 
-    window.scrollTo({ top: 0, behavior: mudouModulo ? 'auto' : 'smooth' });
+    // Rolagem: tocar de novo no que já está aberto sobe ao topo; voltar a uma aba devolve o lugar
+    const guardada = repetida ? 0 : (rolagemPorAba.get(chaveDaAba(rotaAtual)) ?? 0);
+    window.scrollTo({ top: guardada, behavior: repetida && !movimentoReduzido() ? 'smooth' : 'auto' });
 }
 
 export function iniciarNavegacao() {

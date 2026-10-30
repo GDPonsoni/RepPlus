@@ -5,14 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="theme-color" content="#DC0000">
     <title>República</title>
+    <!-- Ícone da guia: trocado pelo logo da república em js/core/aparencia.js -->
+    <link rel="icon" id="favicon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'><circle cx='100' cy='100' r='95' fill='%23FFD700' stroke='%23000' stroke-width='4'/><rect x='40' y='50' width='120' height='100' fill='%23DC0000'/><text x='100' y='130' font-size='80' font-weight='bold' text-anchor='middle' font-family='Arial' fill='%23FFD700'>B</text><circle cx='75' cy='75' r='15' fill='%23FFF'/><circle cx='125' cy='75' r='15' fill='%23FFF'/><circle cx='75' cy='80' r='8' fill='%23000'/><circle cx='125' cy='80' r='8' fill='%23000'/></svg>">
     <script>
         // Preferências deste aparelho antes de desenhar a tela (sem piscar claro no tema escuro).
         // A lógica completa e as mudanças ficam em js/core/aparencia.js
         try {
             var prefs = JSON.parse(localStorage.getItem('escala:aparelho') || '{}');
+            // Último ícone da guia gerado a partir do logo (evita mostrar o padrão antes de carregar)
+            var favicon = localStorage.getItem('escala:favicon');
+            if (favicon) document.getElementById('favicon').href = favicon;
             var escuro = prefs.tema === 'escuro' || (prefs.tema !== 'claro' && matchMedia('(prefers-color-scheme: dark)').matches);
             document.documentElement.dataset.tema = escuro ? 'escuro' : 'claro';
             document.documentElement.dataset.texto = prefs.texto || 'normal';
+            document.documentElement.dataset.animacoes = prefs.animacoes || 'completas';
+            document.documentElement.dataset.vibracao = prefs.vibracao || 'sim';
         } catch (e) { /* sem armazenamento: tema padrão */ }
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">

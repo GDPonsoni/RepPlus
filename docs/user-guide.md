@@ -25,6 +25,8 @@ O app abre no **Início**, com um resumo de cada módulo ligado. Toque na **logo
   - 🔔 **Avisos**: encaminhamentos atrasados ou vencendo, o que acabou na lista de compras, eventos de hoje, aniversários do dia e escala da semana não gerada. O número mostra os avisos que você ainda não viu; tocar num aviso leva até ele.
   - 👤 **Menu**: **Moradores** e **Ajustes**. Quando houver login, o perfil e o "sair" também ficarão aqui.
 - Dentro de cada módulo, as **abas** ficam logo abaixo do topo.
+- Cada aba lembra onde você parou de rolar; tocar de novo no módulo ou na aba que já está aberta volta ao topo.
+- No celular, os painéis (formulários, Mais, Avisos) fecham também arrastando a barrinha do topo para baixo.
 
 Os módulos:
 - **Início**: o mais importante de cada módulo numa tela só.
@@ -166,7 +168,7 @@ A semana vai de segunda a domingo e vira à 0h de segunda, no horário de Brasí
 - **Ajustes → Nome e Estilo** (vale para todos):
   - **Nome da república**: aparece no topo, no rodapé e no título da aba do navegador.
   - **Frase do rodapé**: deixe vazia para mostrar só o nome.
-  - **Fonte**, **cantos** (retos a bem redondos) e **cabeçalho** (cor sólida, degradê ou escuro).
+  - **Fonte**, **cantos** (retos a bem redondos) e **cabeçalho** (cor sólida, degradê ou escuro; amplo, com o logo em destaque, ou compacto, que deixa mais espaço para o conteúdo).
   - **Imagem de fundo**: quanto a imagem enviada aparece atrás do conteúdo.
   - As mudanças aparecem na hora como prévia; **Salvar** aplica para todos e **Descartar** volta ao que estava salvo.
 - **Ajustes → Logo, Fundo e Cores** (vale para todos):
@@ -176,3 +178,5 @@ A semana vai de segunda a domingo e vira à 0h de segunda, no horário de Brasí
 - **Ajustes → Neste Aparelho** (só no seu celular/computador, salvo na hora):
   - **Tema**: automático (segue o aparelho), claro ou escuro.
   - **Tamanho do texto**: normal, grande ou maior.
+  - **Animações**: completas ou reduzidas (também seguem o "reduzir movimento" do celular).
+  - **Vibração**: uma vibração curtinha ao navegar e ao concluir algo (só em Android).

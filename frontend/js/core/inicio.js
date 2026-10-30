@@ -97,7 +97,7 @@ function renderizarCartoes() {
                 <h3>${escaparHtml(modulo.inicio.titulo || modulo.nome)}</h3>
                 <button type="button" class="btn btn-ghost btn-sm inicio-abrir" data-acao="ir-para" data-rota="${modulo.inicio.rota || modulo.id}">Abrir <i class="fa-solid fa-chevron-right"></i></button>
             </div>
-            <div class="inicio-cartao-corpo"><p class="inicio-carregando"><i class="fa-solid fa-spinner fa-spin"></i> Carregando...</p></div>
+            <div class="inicio-cartao-corpo"><div class="esqueleto" aria-label="Carregando"><span></span><span></span><span></span></div></div>
         </section>
     `).join('');
 

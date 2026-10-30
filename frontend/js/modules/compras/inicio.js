@@ -1,6 +1,7 @@
 import { escaparHtml, mostrarNotificacao } from '../../core/ui.js';
 import { temPermissao } from '../../core/sessao.js';
 import { iconeCategoria, carregarItens, itensComStatus, adicionarItem, comprarItem } from './dados.js';
+import { animarSaida, comemorar, vibrar } from '../../core/movimento.js';
 
 const MAXIMO = 8;
 
@@ -69,13 +70,21 @@ export default {
             const botao = e.target.closest('[data-comprar]');
             if (!botao) return;
             botao.disabled = true;
+            vibrar(12);
             try {
+                await animarSaida(botao.closest('.compra-item'), 'saindo-comprado', 380);
                 const item = await comprarItem(botao.dataset.comprar);
-                mostrarNotificacao(`${item.nome} comprado ✔`, 'success', 1800);
+                if (!itensComStatus('falta').length && !itensComStatus('acabando').length) {
+                    comemorar(botao);
+                    mostrarNotificacao('Lista zerada! Valeu pela compra 🎉', 'success', 2600);
+                } else {
+                    mostrarNotificacao(`${item.nome} comprado ✔`, 'success', 1800);
+                }
                 atualizar();
             } catch (error) {
                 console.error('Erro:', error);
                 mostrarNotificacao(error.message || 'Erro ao marcar como comprado', 'error');
+                botao.closest('.compra-item')?.classList.remove('saindo-comprado');
                 botao.disabled = false;
             }
         });
