@@ -1,11 +1,14 @@
 import { createHash, timingSafeEqual } from 'crypto';
 import { asyncHandler, HttpError } from '../../core/http.js';
+import { categoriaExiste } from '../../core/categorias/index.js';
 import { exigirPermissao } from '../../core/auth/permissoes.js';
 import { normalizeBoolean } from '../../core/db/helpers.js';
 import { AnotacoesStore, CofreStore } from './store.js';
 
 export const TIPOS = ['conta', 'contato', 'nota'];
-export const CATEGORIAS_CONTA = ['internet', 'streaming', 'consumo', 'banco', 'compras', 'outros'];
+
+// Categorias gerenciáveis de cada tipo (notas não têm)
+const ESCOPO_POR_TIPO = { conta: 'anotacoes-contas', contato: 'anotacoes-contatos' };
 
 // Campos abertos (`dados`) aceitos por tipo, com o limite de caracteres. Booleanos à parte.
 const CAMPOS_DADOS = {
@@ -62,10 +65,8 @@ async function lerAnotacao(body, existente = null) {
 
   if (body.categoria !== undefined) {
     const categoria = String(body.categoria ?? '').trim() || null;
-    if (tipo === 'conta' && categoria && !CATEGORIAS_CONTA.includes(categoria)) {
-      throw new HttpError(400, `Categoria inválida. Use: ${CATEGORIAS_CONTA.join(', ')}.`);
-    }
-    if (categoria && categoria.length > 40) throw new HttpError(400, 'A categoria pode ter no máximo 40 caracteres.');
+    const escopo = ESCOPO_POR_TIPO[tipo];
+    if (categoria && (!escopo || !(await categoriaExiste(escopo, categoria)))) throw new HttpError(400, 'Categoria inválida.');
     anotacao.categoria = categoria;
   }
 
@@ -96,6 +97,40 @@ function lerCofre(body) {
 export default {
   id: 'anotacoes',
   nome: 'Anotações',
+  categorias: {
+    'anotacoes-contas': {
+      nome: 'Tipos de conta (senhas)',
+      permissaoVer: 'anotacoes:ver', permissaoGerenciar: 'anotacoes:editar',
+      tabela: 'anotacoes', coluna: 'categoria', filtro: { tipo: 'conta' },
+      padrao: [
+        { chave: 'internet', nome: 'Internet / Wi-Fi', cor: '#2563eb', icone: 'fa-solid fa-wifi' },
+        { chave: 'streaming', nome: 'Streaming', cor: '#dc2626', icone: 'fa-solid fa-tv' },
+        { chave: 'consumo', nome: 'Luz, água, gás', cor: '#d97706', icone: 'fa-solid fa-bolt' },
+        { chave: 'banco', nome: 'Banco / caixinha', cor: '#16a34a', icone: 'fa-solid fa-building-columns' },
+        { chave: 'compras', nome: 'Apps e compras', cor: '#9333ea', icone: 'fa-solid fa-mobile-screen' },
+        { chave: 'outros', nome: 'Outros', cor: '#6b7280', icone: 'fa-solid fa-key' }
+      ]
+    },
+    // Os contatos antigos guardavam o serviço como texto livre ("Eletricista"): esses textos viram
+    // as chaves, então os dados existentes continuam valendo
+    'anotacoes-contatos': {
+      nome: 'Serviços dos contatos',
+      permissaoVer: 'anotacoes:ver', permissaoGerenciar: 'anotacoes:editar',
+      tabela: 'anotacoes', coluna: 'categoria', filtro: { tipo: 'contato' },
+      padrao: [
+        { chave: 'Eletricista', nome: 'Eletricista', cor: '#eab308', icone: 'fa-solid fa-bolt' },
+        { chave: 'Encanador', nome: 'Encanador', cor: '#0891b2', icone: 'fa-solid fa-faucet-drip' },
+        { chave: 'Gás', nome: 'Gás', cor: '#ea580c', icone: 'fa-solid fa-fire-flame-simple' },
+        { chave: 'Internet', nome: 'Internet', cor: '#2563eb', icone: 'fa-solid fa-wifi' },
+        { chave: 'Diarista', nome: 'Diarista', cor: '#db2777', icone: 'fa-solid fa-broom' },
+        { chave: 'Chaveiro', nome: 'Chaveiro', cor: '#64748b', icone: 'fa-solid fa-key' },
+        { chave: 'Pedreiro', nome: 'Pedreiro / pintor', cor: '#a16207', icone: 'fa-solid fa-paint-roller' },
+        { chave: 'Imobiliária', nome: 'Imobiliária / dono', cor: '#16a34a', icone: 'fa-solid fa-building' },
+        { chave: 'Delivery', nome: 'Delivery', cor: '#dc2626', icone: 'fa-solid fa-motorcycle' },
+        { chave: 'Outros', nome: 'Outros', cor: '#6b7280', icone: 'fa-solid fa-user-gear' }
+      ]
+    }
+  },
   permissoes: {
     'anotacoes:ver': { descricao: 'Ver contas, contatos e notas (senhas só com a senha do cofre)', papeis: ['morador'] },
     'anotacoes:editar': { descricao: 'Criar, editar e apagar contas, contatos e notas', papeis: ['morador'] },

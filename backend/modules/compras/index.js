@@ -1,9 +1,9 @@
 import { asyncHandler, HttpError } from '../../core/http.js';
+import { categoriaExiste, categoriaPadrao } from '../../core/categorias/index.js';
 import { exigirPermissao } from '../../core/auth/permissoes.js';
 import { IntegrantesStore } from '../../core/moradores/store.js';
 import { ComprasStore } from './store.js';
 
-export const CATEGORIAS = ['mercado', 'limpeza', 'higiene', 'bebidas', 'casa', 'outros'];
 export const STATUS = ['falta', 'acabando', 'ok'];
 const LIMITES = { nome: 60, quantidade: 30, observacao: 200 };
 
@@ -20,7 +20,7 @@ async function lerItem(body, { criando = false } = {}) {
   if ((criando || body.nome !== undefined) && !item.nome) throw new HttpError(400, 'Diga o que precisa comprar.');
 
   if (body.categoria !== undefined) {
-    if (!CATEGORIAS.includes(body.categoria)) throw new HttpError(400, `Categoria inválida. Use: ${CATEGORIAS.join(', ')}.`);
+    if (!(await categoriaExiste('compras', body.categoria))) throw new HttpError(400, 'Categoria inválida.');
     item.categoria = body.categoria;
   }
   if (body.status !== undefined) {
@@ -50,6 +50,21 @@ function ajustarPedido(item, existente = null) {
 export default {
   id: 'compras',
   nome: 'Lista de Compras',
+  categorias: {
+    compras: {
+      nome: 'Itens de compra',
+      permissaoVer: 'compras:ver', permissaoGerenciar: 'compras:editar',
+      tabela: 'compras_itens', coluna: 'categoria',
+      padrao: [
+        { chave: 'mercado', nome: 'Mercado', cor: '#ea580c', icone: 'fa-solid fa-basket-shopping' },
+        { chave: 'limpeza', nome: 'Limpeza', cor: '#0891b2', icone: 'fa-solid fa-spray-can-sparkles' },
+        { chave: 'higiene', nome: 'Higiene', cor: '#9333ea', icone: 'fa-solid fa-pump-soap' },
+        { chave: 'bebidas', nome: 'Bebidas', cor: '#2563eb', icone: 'fa-solid fa-bottle-water' },
+        { chave: 'casa', nome: 'Casa', cor: '#65a30d', icone: 'fa-solid fa-house-chimney' },
+        { chave: 'outros', nome: 'Outros', cor: '#6b7280', icone: 'fa-solid fa-box' }
+      ]
+    }
+  },
   permissoes: {
     'compras:ver': { descricao: 'Ver a lista de compras', papeis: ['morador'] },
     'compras:editar': { descricao: 'Adicionar itens, avisar que está acabando e marcar como comprado', papeis: ['morador'] },
@@ -74,7 +89,7 @@ export default {
         return res.json({ ...atualizado, reaproveitado: true, jaEstavaNaLista: existente.status !== 'ok' });
       }
 
-      const novo = await ComprasStore.create(ajustarPedido({ categoria: 'mercado', ...dados }));
+      const novo = await ComprasStore.create(ajustarPedido({ categoria: await categoriaPadrao('compras'), ...dados }));
       res.status(201).json(novo);
     }));
 

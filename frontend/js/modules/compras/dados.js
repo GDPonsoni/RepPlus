@@ -1,14 +1,15 @@
 import { api } from '../../core/api.js';
 import { hoje, diaDoInstante, diasEntre } from '../../core/datas.js';
+import { categoria, categoriasDe } from '../../core/categorias.js';
+import { escaparHtml } from '../../core/ui.js';
 
-// Categorias (as cores ficam no CSS, classes .ccat-<id>); a ordem é a dos grupos na tela
-export const CATEGORIAS = {
-    mercado: { nome: 'Mercado', icone: 'fa-solid fa-basket-shopping' },
-    limpeza: { nome: 'Limpeza', icone: 'fa-solid fa-spray-can-sparkles' },
-    higiene: { nome: 'Higiene', icone: 'fa-solid fa-pump-soap' },
-    bebidas: { nome: 'Bebidas', icone: 'fa-solid fa-bottle-water' },
-    casa: { nome: 'Casa', icone: 'fa-solid fa-house-chimney' },
-    outros: { nome: 'Outros', icone: 'fa-solid fa-box' }
+// Categorias gerenciáveis em Ajustes > Categorias (escopo 'compras'); a ordem delas é a dos grupos na tela
+export const categoriaDoItem = (item) => categoria('compras', item.categoria);
+
+// Ícone da categoria na cor dela (a linha do item usa --cat para a cor do status)
+export const iconeCategoria = (item) => {
+    const c = categoriaDoItem(item);
+    return `<i class="${c.icone} compra-cat-icone" style="--ccat: ${c.cor}" title="${escaparHtml(c.nome)}"></i>`;
 };
 
 // falta = acabou (comprar); acabando = avisado, ainda tem; ok = em casa (fica salvo no catálogo)
@@ -28,7 +29,11 @@ export const estado = {
     antesDaCompra: new Map()
 };
 
-const ordemCategoria = (item) => Object.keys(CATEGORIAS).indexOf(item.categoria);
+// Categoria desconhecida vai para o fim
+const ordemCategoria = (item) => {
+    const i = categoriasDe('compras').findIndex(c => c.chave === item.categoria);
+    return i < 0 ? Infinity : i;
+};
 const porCategoriaENome = (a, b) => (ordemCategoria(a) - ordemCategoria(b)) || a.nome.localeCompare(b.nome, 'pt-BR');
 
 export const itensComStatus = (status) => estado.itens.filter(item => item.status === status).sort(porCategoriaENome);

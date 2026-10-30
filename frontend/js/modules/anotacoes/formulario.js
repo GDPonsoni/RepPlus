@@ -3,7 +3,8 @@ import { mostrarConfirmacao } from '../../core/modal.js';
 import { abrirPainel } from '../../core/painel.js';
 import { escaparHtml, mostrarNotificacao, definirCarregando } from '../../core/ui.js';
 import { cofreDisponivel, cofreExiste, cofreDestrancado, criarCofre, destrancarCofre, trocarSenhaDoCofre, cifrar } from './cofre.js';
-import { TIPOS, CATEGORIAS_CONTA, SERVICOS, estado, buscarAnotacao, decifrarSegredos, salvarAnotacao, excluirAnotacao } from './dados.js';
+import { htmlEscolhaCategoria } from '../../core/categorias.js';
+import { TIPOS, ESCOPO_POR_TIPO, estado, buscarAnotacao, decifrarSegredos, salvarAnotacao, excluirAnotacao } from './dados.js';
 
 const SENHA_MINIMA = 8;
 
@@ -131,11 +132,7 @@ function htmlCampos(tipo, anotacao, segredo, podeEditar) {
     if (tipo === 'conta') {
         return `
             <div class="field"><span>Tipo</span>
-                <div class="chips" role="radiogroup">
-                    ${Object.entries(CATEGORIAS_CONTA).map(([id, c]) => `
-                        <label class="chip acat-${id}"><input type="radio" name="categoria" value="${id}" ${id === (anotacao?.categoria || 'outros') ? 'checked' : ''} ${d}><span><i class="${c.icone}"></i> ${c.nome}</span></label>
-                    `).join('')}
-                </div>
+                ${htmlEscolhaCategoria({ escopo: ESCOPO_POR_TIPO.conta, selecionada: anotacao?.categoria, desabilitado: !podeEditar })}
             </div>
             <label class="field"><span>Site ou app</span>
                 <input type="text" name="site" value="${v('site')}" maxlength="200" placeholder="netflix.com" inputmode="url" ${d}></label>
@@ -149,9 +146,9 @@ function htmlCampos(tipo, anotacao, segredo, podeEditar) {
     }
     if (tipo === 'contato') {
         return `
-            <label class="field"><span>Serviço</span>
-                <input type="text" name="categoria" value="${escaparHtml(anotacao?.categoria ?? '')}" maxlength="40" list="servicos-contato" placeholder="Ex.: Eletricista" ${d}>
-                <datalist id="servicos-contato">${SERVICOS.map(s => `<option value="${s}">`).join('')}</datalist></label>
+            <div class="field"><span>Serviço</span>
+                ${htmlEscolhaCategoria({ escopo: ESCOPO_POR_TIPO.contato, selecionada: anotacao ? (anotacao.categoria || '') : undefined, desabilitado: !podeEditar, nenhuma: true })}
+            </div>
             <div class="field-row">
                 <label class="field"><span>Telefone</span>
                     <input type="tel" name="telefone" value="${v('telefone')}" maxlength="30" inputmode="tel" ${d}></label>
@@ -195,7 +192,7 @@ async function lerFormulario(form, tipo, anotacao) {
     const corpo = { titulo: valor('titulo') };
 
     if (tipo === 'conta') {
-        corpo.categoria = form.elements.categoria.value;
+        corpo.categoria = form.elements.categoria?.value || null;
         corpo.dados = { site: valor('site'), observacao: valor('observacao') };
         // Cofre trancado: o segredo não é enviado e continua como estava
         if (cofreDestrancado()) {
@@ -203,7 +200,7 @@ async function lerFormulario(form, tipo, anotacao) {
             if (!corpo.segredo && !anotacao?.segredo) delete corpo.segredo;
         }
     } else if (tipo === 'contato') {
-        corpo.categoria = valor('categoria');
+        corpo.categoria = form.elements.categoria?.value || null;
         corpo.dados = {
             telefone: valor('telefone'), whatsapp: form.elements.whatsapp.checked,
             email: valor('email'), site: valor('site'), endereco: valor('endereco'), observacao: valor('observacao')

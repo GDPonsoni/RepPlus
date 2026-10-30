@@ -1,5 +1,6 @@
 import { registrarAcoes } from '../../core/acoes.js';
 import { ouvir } from '../../core/eventos.js';
+import { carregarCategorias } from '../../core/categorias.js';
 import { mostrarConfirmacao } from '../../core/modal.js';
 import { mostrarNotificacao } from '../../core/ui.js';
 import { cofreDisponivel, cofreExiste, cofreDestrancado, carregarCofre, trancarCofre, apagarCofre } from './cofre.js';
@@ -121,6 +122,11 @@ export default {
         });
 
         // Abriu/trancou o cofre: some ou aparece o que é sigiloso
+        ouvir('categorias:atualizadas', ({ escopo }) => {
+            if (escopo.startsWith('anotacoes-')) renderizarTudo();
+        });
+        await Promise.all(['anotacoes-contas', 'anotacoes-contatos'].map(escopo => carregarCategorias(escopo).catch(error => console.error(error))));
+
         ouvir('cofre:mudou', () => {
             if (!cofreDestrancado()) estado.segredos.clear();
             atualizarTudo();

@@ -34,6 +34,7 @@ escala/
 │   │   ├── anotacoes/            # Módulo de anotações (contas, contatos, notas e cofre)
 │   │   ├── atas/                 # Módulo de atas de reunião
 │   │   ├── compras/              # Módulo da lista de compras
+│   │   ├── financas/             # Módulo de finanças (contas, lançamentos, divisões, Open Finance)
 │   │   └── escala/               # Módulo da escala de limpeza
 │   │       ├── rotas/            # Cômodos, escala, infrações e motivação
 │   │       ├── rodizio.js        # Algoritmo do rodízio semanal (folgas, suíte, cômodos)
@@ -51,6 +52,7 @@ escala/
 │   │   │   ├── anotacoes/        # Senhas (cofre criptografado), contatos e notas
 │   │   │   ├── atas/             # Atas, pendências e formulário da ata
 │   │   │   ├── compras/          # Lista, itens salvos e formulário de item
+│   │   │   ├── financas/         # Visão geral, lançamentos, contas, divisões e ajustes
 │   │   │   └── escala/           # Abas da escala (atual, histórico, infrações, ajustes)
 │   │   └── main.js               # Inicialização (lista MODULOS)
 │   └── index.html                # Casca da aplicação (cabeçalho, abas e conteúdo)

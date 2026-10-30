@@ -1,7 +1,8 @@
 import { aplicarPermissoes } from '../../core/sessao.js';
 import { escaparHtml, mostrarNotificacao } from '../../core/ui.js';
 import { hoje, somarDias, inicioDaSemana, formatarDia, horaDoInstante } from '../../core/datas.js';
-import { estado, CATEGORIAS, RECORRENCIAS, carregarPeriodo, eventosDoDia, diaInicial, diaFinal } from './dados.js';
+import { estiloCategoria } from '../../core/categorias.js';
+import { estado, categoriaDoEvento, RECORRENCIAS, carregarPeriodo, eventosDoDia, diaInicial, diaFinal } from './dados.js';
 
 const NOMES_DIAS = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
 const MAXIMO_PINS = 3;
@@ -44,7 +45,7 @@ function textoHorario(evento, dia) {
 }
 
 function htmlEvento(evento, dia, { detalhado = true } = {}) {
-    const categoria = CATEGORIAS[evento.categoria] || CATEGORIAS.geral;
+    const categoria = categoriaDoEvento(evento);
     const variosDias = diaInicial(evento) !== diaFinal(evento);
     const periodo = variosDias
         ? `<span class="evento-extra"><i class="fa-regular fa-calendar"></i> ${formatarDia(diaInicial(evento), { day: '2-digit', month: '2-digit' })} a ${formatarDia(diaFinal(evento), { day: '2-digit', month: '2-digit' })}</span>`
@@ -61,8 +62,8 @@ function htmlEvento(evento, dia, { detalhado = true } = {}) {
     `;
     // Aniversários vêm do cadastro de moradores: não abrem o formulário
     return evento.somenteLeitura
-        ? `<div class="evento-card cat-${evento.categoria}">${conteudo}</div>`
-        : `<button type="button" class="evento-card cat-${evento.categoria}" data-acao="abrir-evento" data-id="${escaparHtml(evento.id)}" ${evento.ocorrencia ? `data-ocorrencia="${evento.ocorrencia}"` : ''}>${conteudo}</button>`;
+        ? `<div class="evento-card" style="${estiloCategoria(categoria)}">${conteudo}</div>`
+        : `<button type="button" class="evento-card" style="${estiloCategoria(categoria)}" data-acao="abrir-evento" data-id="${escaparHtml(evento.id)}" ${evento.ocorrencia ? `data-ocorrencia="${evento.ocorrencia}"` : ''}>${conteudo}</button>`;
 }
 
 // ===== MÊS =====
@@ -98,7 +99,7 @@ export async function renderizarMes() {
             <button type="button" class="${classes}" data-acao="agenda-selecionar-dia" data-dia="${dia}" aria-label="${formatarDia(dia, { day: 'numeric', month: 'long' })}, ${eventos.length} evento(s)">
                 <span class="cal-dia-numero">${Number(dia.slice(8))}</span>
                 <span class="cal-pins">
-                    ${eventos.slice(0, MAXIMO_PINS).map(e => `<span class="cal-pin cat-${e.categoria}"><span class="cal-pin-texto">${escaparHtml(e.titulo)}</span></span>`).join('')}
+                    ${eventos.slice(0, MAXIMO_PINS).map(e => `<span class="cal-pin" style="${estiloCategoria(categoriaDoEvento(e))}"><span class="cal-pin-texto">${escaparHtml(e.titulo)}</span></span>`).join('')}
                     ${extras > 0 ? `<span class="cal-mais">+${extras}</span>` : ''}
                 </span>
             </button>

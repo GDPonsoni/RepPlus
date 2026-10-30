@@ -24,7 +24,7 @@ O código é dividido em **núcleo** (o que todo módulo usa: moradores, aparên
 |  core/auth (req.contexto + exigirPermissao)           |
 |  core/modulos.js monta cada módulo em /api:           |
 |  sistema · moradores · configuracao · escala ·        |
-|  agenda · compras · anotacoes · atas                  |
+|  agenda · compras · anotacoes · atas · financas       |
 |        │                                              |
 |        ├── */store.js ─────────┐                      |
 |        └── core/storage.js ─┐  │   Multer (memória)   |
@@ -140,6 +140,19 @@ O módulo aparece no seletor e suas abas na navegação automaticamente (endere�
 - Cada cartão carrega sozinho (`conteudo()`); se um falhar, os outros continuam. `aoMontar(elemento, atualizar)` liga eventos do cartão (ex.: o campo rápido da lista de compras) e `atualizar()` recarrega só ele.
 - Quais cartões aparecem e a ordem ficam no `localStorage` (`escala:inicio`), por aparelho.
 - Módulos só do frontend, como o Início, usam `semBackend: true` para não depender de `GET /api/sessao`.
+
+### Finanças e Open Finance
+
+- `modules/financas/` (backend): `store.js` (tabelas `fin_*`), `regras.js` (categorização por "contém"), `sincronizacao.js` e `provedores/`.
+- **Provedores** (`provedores/index.js`) seguem um contrato único: `configurado()`, `conectar(dados)`, `contas(conexao)` e `transacoes(conexao, conta, desde)`, sempre com valores em centavos. A sincronização, a deduplicação (`externo_id`) e as regras não dependem do provedor.
+- `provedores/demo.js` simula um banco (só com `FINANCAS_PROVEDOR_DEMO=1`, ligado no servidor local de testes); `provedores/pluggy.js` marca onde entra a integração real com o roteiro do que implementar.
+- A Vercel chama `GET /api/financas/sincronizar` uma vez por dia (`crons` no `vercel.json`); com `CRON_SECRET` definido, a chamada do agendador é aceita mesmo quando houver login.
+- Frontend (`modules/financas/`): `dados.js` (estado, API e formatação), `graficos.js` (SVG sem biblioteca), uma tela por aba (`visao.js`, `lancamentos.js`, `contas.js`, `divisoes.js`, `ajustes.js`), `inicio.js` e `avisos.js`.
+
+### Categorias
+
+- `core/categorias` (backend e frontend) guarda categorias com nome, cor e ícone por **escopo**. Um módulo declara seus escopos em `categorias: { <escopo>: { nome, permissaoVer, permissaoGerenciar, tabela, coluna, filtro?, padrao: [...] } }`; o backend valida com `categoriaExiste(escopo, chave)` e usa `categoriaPadrao(escopo)` quando nada é enviado.
+- No frontend: `carregarCategorias(escopo)` no `iniciar()`, `categoria(escopo, chave)` para nome/cor/ícone, `estiloCategoria(c)` para a variável CSS `--cat` e `htmlEscolhaCategoria({ escopo, selecionada })` para os chips de formulário (com o botão "Editar"). Mudanças emitem `categorias:atualizadas`.
 
 ### Navegação e avisos
 

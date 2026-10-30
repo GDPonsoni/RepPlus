@@ -1,4 +1,5 @@
 import { api } from '../../core/api.js';
+import { categoria } from '../../core/categorias.js';
 import { cofreDestrancado, decifrar, provaDoCofre } from './cofre.js';
 
 export const TIPOS = {
@@ -7,19 +8,10 @@ export const TIPOS = {
     nota: { nome: 'Notas', novo: 'Nova nota', icone: 'fa-solid fa-note-sticky' }
 };
 
-// Categorias de conta (as cores ficam no CSS, classes .acat-<id>)
-export const CATEGORIAS_CONTA = {
-    internet: { nome: 'Internet / Wi-Fi', icone: 'fa-solid fa-wifi' },
-    streaming: { nome: 'Streaming', icone: 'fa-solid fa-tv' },
-    consumo: { nome: 'Luz, água, gás', icone: 'fa-solid fa-bolt' },
-    banco: { nome: 'Banco / caixinha', icone: 'fa-solid fa-building-columns' },
-    compras: { nome: 'Apps e compras', icone: 'fa-solid fa-mobile-screen' },
-    outros: { nome: 'Outros', icone: 'fa-solid fa-key' }
-};
+// Categorias gerenciáveis (Ajustes > Categorias): tipos de conta e serviços dos contatos. Notas não têm.
+export const ESCOPO_POR_TIPO = { conta: 'anotacoes-contas', contato: 'anotacoes-contatos' };
 
-// Sugestões de serviço para os contatos (o campo aceita qualquer texto)
-export const SERVICOS = ['Eletricista', 'Encanador', 'Gás', 'Internet', 'Diarista', 'Chaveiro', 'Pedreiro', 'Pintor',
-    'Dedetização', 'Marido de aluguel', 'Imobiliária', 'Proprietário', 'Condomínio', 'Mecânico', 'Delivery', 'Outros'];
+export const categoriaDaAnotacao = (anotacao) => categoria(ESCOPO_POR_TIPO[anotacao.tipo], anotacao.categoria);
 
 export const estado = {
     anotacoes: [],

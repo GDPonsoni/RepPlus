@@ -17,6 +17,48 @@ Ambos exigem a permissão `modulos:gerenciar`. Com um módulo desligado, as rota
 
 ---
 
+## 💰 Finanças (`/api/financas/...`)
+
+Valores sempre em **centavos inteiros** (saída negativa, entrada positiva). Datas `AAAA-MM-DD`. Permissões: `financas:ver` (ler), `financas:lancar` (lançamentos manuais e divisões), `financas:gerenciar` (contas, bancos, regras, orçamentos, categorias).
+
+| Método | Endpoint | Descrição |
+| :--- | :--- | :--- |
+| `GET` | `/financas/contas` | Contas com `saldo` calculado (conectada: o que o banco informou; manual: `saldoInicial` + lançamentos) |
+| `POST` / `PUT` | `/financas/contas[/:id]` | `{ nome, tipo (corrente, cartao, dinheiro, caixinha, investimento), instituicao?, cor?, reserva?, saldoInicial?, arquivada? }` |
+| `POST` | `/financas/contas/:id/ajuste` | `{ saldo }`: lança a diferença como "Ajuste de saldo" (só contas manuais) |
+| `DELETE` | `/financas/contas/:id` | Só sem lançamentos (com lançamentos, arquive) |
+| `GET` | `/financas/transacoes?de=&ate=` | Lançamentos de `[de, ate)` (até 400 dias) |
+| `POST` / `PUT` | `/financas/transacoes[/:id]` | `{ contaId, data, descricao, valor, categoria?, observacao? }`. Importados do banco só aceitam `categoria`, `observacao` e `ignorada` |
+| `DELETE` | `/financas/transacoes/:id` | Só lançamentos manuais |
+| `GET` | `/financas/resumo?meses=6&ate=AAAA-MM` | Por mês: `{ mes, entradas, saidas, porCategoria }` (sem transferências, ajustes e ignorados) |
+| `GET` / `POST` / `DELETE` | `/financas/regras[/:id]` | Regras `{ termo, categoria }`: "se a descrição contém o termo"; criar reaplica em tudo que não foi categorizado à mão |
+| `POST` | `/financas/regras/sugeridas` | Adiciona regras prontas (iFood, Uber, contas de consumo...) |
+| `GET` / `PUT` | `/financas/orcamentos[/:categoria]` | `{ valorMensal }` (0 remove) |
+| `GET` / `POST` / `PUT` / `DELETE` | `/financas/divisoes[/:id]` | `{ descricao, data, valorTotal, pagoPor, participantes: [{ integranteId, valor }], categoria?, transacaoId? }` — as partes precisam somar o total |
+| `PUT` | `/financas/divisoes/:id/participantes/:integranteId` | `{ pago }` |
+| `POST` | `/financas/acertos` | `{ de, para }`: quita tudo o que as duas pessoas devem uma à outra |
+| `GET` | `/financas/provedores` | Provedores de Open Finance e se estão disponíveis |
+| `GET` / `POST` / `DELETE` | `/financas/conexoes[/:id]` | Conectar `{ provedor, dados? }` (já sincroniza); desconectar mantém o histórico e torna as contas manuais |
+| `POST` | `/financas/conexoes/:id/sincronizar` | Sincroniza uma conexão |
+| `GET` / `POST` | `/financas/sincronizar` | Sincroniza tudo. O `GET` é o agendamento diário da Vercel (aceita `Authorization: Bearer <CRON_SECRET>`) |
+
+---
+
+## 🏷️ Categorias (`/api/categorias`)
+
+| Método | Endpoint | Descrição | Corpo / Retorno |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/api/categorias` | Grupos de categorias dos módulos ligados | `[{ "escopo", "nome", "modulo", "podeGerenciar" }]` |
+| `GET` | `/api/categorias/:escopo` | Categorias do grupo, em ordem | `[{ "id", "escopo", "chave", "nome", "cor", "icone", "ordem" }]` |
+| `POST` | `/api/categorias/:escopo` | Cria | `{ "nome" (até 30), "cor" (#rrggbb), "icone" ("fa-solid fa-...") }` |
+| `PUT` | `/api/categorias/:escopo/:id` | Edita nome, cor ou ícone (a `chave` nunca muda) | Mesmos campos |
+| `PUT` | `/api/categorias/:escopo/ordem` | Nova ordem | `{ "ids": [todos os ids do grupo, na ordem] }` |
+| `DELETE` | `/api/categorias/:escopo/:id?substituta=<chave>` | Exclui. Se houver registros usando, responde 409 com `emUso` até receber a `substituta` | `{ "success", "movidos" }` |
+
+Escopos: `agenda` (eventos), `compras` (itens), `anotacoes-contas` (tipos de conta) e `anotacoes-contatos` (serviços). Os registros guardam a `chave`; na primeira leitura de um grupo vazio, o backend cria as categorias padrão e também as que já estiverem em uso. Ver exige a permissão de ver do módulo; criar, editar e excluir, a de gerenciar (agenda: `agenda:gerenciar`; compras: `compras:editar`; anotações: `anotacoes:editar`).
+
+---
+
 ## 👥 Integrantes (`/api/integrantes`)
 
 | Método | Endpoint | Descrição | Corpo / Retorno |

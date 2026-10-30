@@ -4,7 +4,8 @@ import { mostrarConfirmacao, mostrarEscolha } from '../../core/modal.js';
 import { abrirPainel } from '../../core/painel.js';
 import { escaparHtml, mostrarNotificacao, definirCarregando } from '../../core/ui.js';
 import { hoje, instante, horaDoInstante, formatarDia } from '../../core/datas.js';
-import { CATEGORIAS, CATEGORIAS_EDITAVEIS, RECORRENCIAS, diaInicial, diaFinal } from './dados.js';
+import { htmlEscolhaCategoria } from '../../core/categorias.js';
+import { RECORRENCIAS, diaInicial, diaFinal } from './dados.js';
 
 // Texto de cada opção de repetição de acordo com a data escolhida (ex.: "Todo mês, no dia 10")
 function rotuloRecorrencia(tipo, data) {
@@ -38,7 +39,7 @@ export function abrirFormularioEvento({ evento = null, dia = hoje(), aoSalvar })
             recorrencia: serie.recorrencia || '',
             recorrenciaAte: serie.recorrenciaAte || ''
         }
-        : { titulo: '', categoria: 'geral', diaInteiro: false, data: dia, horaInicio: '19:00', dataFim: '', horaFim: '', local: '', descricao: '', recorrencia: '', recorrenciaAte: '' };
+        : { titulo: '', categoria: undefined, diaInteiro: false, data: dia, horaInicio: '19:00', dataFim: '', horaFim: '', local: '', descricao: '', recorrencia: '', recorrenciaAte: '' };
 
     const avisoSerie = evento?.ocorrencia && podeEditar
         ? `<p class="aviso-serie"><i class="fa-solid fa-repeat"></i> Este evento se repete (${RECORRENCIAS[evento.recorrencia].toLowerCase()}). As alterações valem para todas as repetições; a data abaixo é a da primeira.</p>`
@@ -55,14 +56,7 @@ export function abrirFormularioEvento({ evento = null, dia = hoje(), aoSalvar })
                 </label>
                 <div class="field">
                     <span>Categoria</span>
-                    <div class="chips" role="radiogroup">
-                        ${CATEGORIAS_EDITAVEIS.map(id => `
-                            <label class="chip cat-${id}">
-                                <input type="radio" name="categoria" value="${id}" ${valores.categoria === id ? 'checked' : ''} ${desabilitado}>
-                                <span><i class="${CATEGORIAS[id].icone}"></i> ${CATEGORIAS[id].nome}</span>
-                            </label>
-                        `).join('')}
-                    </div>
+                    ${htmlEscolhaCategoria({ escopo: 'agenda', selecionada: valores.categoria, desabilitado: Boolean(desabilitado) })}
                 </div>
                 <label class="checkbox-label"><input type="checkbox" name="diaInteiro" ${valores.diaInteiro ? 'checked' : ''} ${desabilitado}> Dia inteiro</label>
                 <div class="field-row">
@@ -169,7 +163,7 @@ export function abrirFormularioEvento({ evento = null, dia = hoje(), aoSalvar })
 
         const corpoRequisicao = {
             titulo,
-            categoria: form.querySelector('input[name="categoria"]:checked')?.value || 'geral',
+            categoria: form.querySelector('input[name="categoria"]:checked')?.value || undefined,
             diaInteiro,
             inicio,
             fim,

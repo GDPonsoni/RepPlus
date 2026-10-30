@@ -1,16 +1,13 @@
 import { api } from '../../core/api.js';
 import { obterIntegrantes } from '../../core/moradores.js';
 import { hoje, inicioDaSemana, instante, diaDoInstante, aniversarioNoAno } from '../../core/datas.js';
+import { categoria } from '../../core/categorias.js';
 
-// Categorias de evento (as cores ficam no CSS, classes .cat-<id>)
-export const CATEGORIAS = {
-    geral: { nome: 'Geral', icone: 'fa-solid fa-thumbtack' },
-    festa: { nome: 'Festa / rolê', icone: 'fa-solid fa-champagne-glasses' },
-    reuniao: { nome: 'Reunião', icone: 'fa-solid fa-people-group' },
-    visita: { nome: 'Visita', icone: 'fa-solid fa-door-open' },
-    manutencao: { nome: 'Manutenção', icone: 'fa-solid fa-screwdriver-wrench' },
-    aniversario: { nome: 'Aniversário', icone: 'fa-solid fa-cake-candles' }
-};
+// Categorias de evento: gerenciáveis em Ajustes > Categorias (escopo 'agenda').
+// Aniversários não são eventos (vêm do cadastro de moradores) e têm categoria fixa.
+const ANIVERSARIO = { chave: 'aniversario', nome: 'Aniversário', cor: '#db2777', icone: 'fa-solid fa-cake-candles' };
+
+export const categoriaDoEvento = (evento) => (evento.somenteLeitura && evento.categoria === 'aniversario' ? ANIVERSARIO : categoria('agenda', evento.categoria));
 
 // Repetições (o backend expande cada série em ocorrências, com o campo `ocorrencia` = dia)
 export const RECORRENCIAS = {
@@ -19,9 +16,6 @@ export const RECORRENCIAS = {
     mensal: 'Todo mês',
     anual: 'Todo ano'
 };
-
-// Categorias que o usuário pode escolher (aniversário vem do cadastro de moradores)
-export const CATEGORIAS_EDITAVEIS = ['geral', 'festa', 'reuniao', 'visita', 'manutencao'];
 
 export const estado = {
     eventos: [],                         // eventos do período carregado (+ aniversários)

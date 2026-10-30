@@ -1,5 +1,6 @@
 import { registrarAcoes } from '../../core/acoes.js';
 import { ouvir } from '../../core/eventos.js';
+import { carregarCategorias } from '../../core/categorias.js';
 import { estado, buscarEvento } from './dados.js';
 import { HTML_ABA_MES, HTML_ABA_SEMANA, renderizarMes, renderizarSemana, selecionarDia, navegarPeriodo, irParaHoje, atualizarVisao } from './visualizacao.js';
 import { abrirFormularioEvento } from './formulario.js';
@@ -29,7 +30,7 @@ export default {
         { id: 'semana', titulo: 'Semana', icone: 'fa-solid fa-list-ul', html: HTML_ABA_SEMANA, permissao: 'agenda:ver', aoAbrir: () => { estado.visao = 'semana'; renderizarSemana(); } }
     ],
 
-    iniciar() {
+    async iniciar() {
         registrarAcoes({
             'agenda-navegar': ({ passo }) => navegarPeriodo(Number(passo)),
             'agenda-hoje': irParaHoje,
@@ -45,5 +46,11 @@ export default {
         ouvir('moradores:atualizados', () => {
             if (document.querySelector('[id^="aba-agenda-"].active')) atualizarVisao();
         });
+
+        // Cores e ícones das categorias vêm do cadastro de categorias
+        ouvir('categorias:atualizadas', ({ escopo }) => {
+            if (escopo === 'agenda' && document.querySelector('[id^="aba-agenda-"].active')) atualizarVisao();
+        });
+        await carregarCategorias('agenda');
     }
 };

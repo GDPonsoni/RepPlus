@@ -1,6 +1,6 @@
 # 🏠 Escala - Sistema de Escalas de Limpeza
 
-Aplicação web para organizar a república, dividida em módulos: **escala de limpeza** (rodízio automático de cômodos e folgas, regra do banheiro da suíte, infrações), **agenda conjunta** (eventos e aniversários), **lista de compras**, **anotações** (senhas num cofre criptografado, contatos de prestadores, notas), **atas de reunião** e **cadastro de moradores**, com personalização visual.
+Aplicação web para organizar a república, dividida em módulos: **escala de limpeza** (rodízio automático de cômodos e folgas, regra do banheiro da suíte, infrações), **agenda conjunta** (eventos e aniversários), **lista de compras**, **anotações** (senhas num cofre criptografado, contatos de prestadores, notas), **atas de reunião**, **finanças** (gastos, contas, reserva e divisão de despesas, preparado para Open Finance) e **cadastro de moradores**, com personalização visual.
 
 ## ⚡ Como Rodar
 
@@ -8,6 +8,8 @@ Aplicação web para organizar a república, dividida em módulos: **escala de l
    ```env
    SUPABASE_URL=https://<seu-projeto>.supabase.co
    SUPABASE_SERVICE_ROLE_KEY=<chave service_role do projeto>
+   # Opcional: protege a sincronização diária das finanças (a Vercel envia este segredo no agendamento)
+   CRON_SECRET=<texto aleatório>
    ```
 2. Instale e inicie (na raiz do projeto):
    ```bash
@@ -17,7 +19,7 @@ Aplicação web para organizar a república, dividida em módulos: **escala de l
 3. Aplique as migrações de [`db/migrations/`](db/README.md) no Supabase (SQL Editor), se ainda não aplicou.
 4. Acesse **http://localhost:3000**
 
-Em produção o app roda na Vercel (`vercel.json`), com as mesmas variáveis de ambiente configuradas no painel.
+Em produção o app roda na Vercel (`vercel.json`), com as mesmas variáveis de ambiente configuradas no painel. O `vercel.json` também agenda `GET /api/financas/sincronizar` uma vez por dia (06:00 de Brasília) para atualizar os bancos conectados.
 
 ---
 
@@ -35,6 +37,8 @@ Em produção o app roda na Vercel (`vercel.json`), com as mesmas variáveis de 
 - 📝 **Atas de reunião**: o que foi discutido, decisões e encaminhamentos com responsável e prazo; aba de pendências e sugestão de ata para as reuniões da agenda.
 - 👥 **Cadastro de moradores** global: contatos, contato de emergência, nascimento, data de entrada, documentos e observações.
 - 🏠 **Início**: resumo dos módulos ligados (escala da semana, próximos eventos, compras, pendências, aniversários), personalizável em cada aparelho.
+- 💰 **Finanças**: contas e cartões (manuais ou conectados), lançamentos com categorização automática por regras, gráficos por período, orçamento por categoria, reserva de emergência e divisão de despesas entre moradores ("quem deve para quem"). A conexão com bancos via Open Finance (Pluggy) está preparada e será ligada quando houver credenciais.
+- 🏷️ **Categorias gerenciáveis**: nome, cor e ícone das categorias da agenda, compras e anotações.
 - 🧭 **Navegação** de app: barra inferior no celular, menu lateral no computador, sino de avisos e menu do usuário no canto.
 - 🧩 **Módulos**: cada república liga só os módulos que usa (Ajustes → Módulos); novos módulos entram sem mexer no núcleo.
 

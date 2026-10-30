@@ -1,6 +1,7 @@
 import express from 'express';
 import { registrarPermissoes } from './auth/permissoes.js';
 import { ConfigStore } from './configuracao/store.js';
+import { registrarCategorias } from './categorias/index.js';
 
 // Contrato de um módulo (núcleo ou funcionalidade):
 //
@@ -11,6 +12,7 @@ import { ConfigStore } from './configuracao/store.js';
 //     permissoes: {                       // permissões que as rotas do módulo exigem
 //       'escala:gerar': { descricao: 'Gerar a escala da semana', papeis: ['admin'] }
 //     },
+//     categorias: { ... },                // opcional: grupos de categorias gerenciáveis (core/categorias)
 //     rotas(router) { ... }               // registra as rotas em um express.Router (montado em /api)
 //   };
 //
@@ -49,6 +51,7 @@ export async function definirModuloAtivo(id, ativo) {
 export function montarModulos(app, modulos) {
   // Primeiro registra todas as permissões, para que um módulo possa exigir permissões declaradas por outro
   modulos.forEach(modulo => registrarPermissoes(modulo.id, modulo.permissoes));
+  modulos.forEach(modulo => registrarCategorias(modulo.id, modulo.categorias));
 
   modulos.forEach(modulo => {
     const router = express.Router();

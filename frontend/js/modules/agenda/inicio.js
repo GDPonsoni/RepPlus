@@ -1,7 +1,8 @@
 import { api } from '../../core/api.js';
 import { escaparHtml } from '../../core/ui.js';
 import { hoje, somarDias, instante, diaDoInstante, horaDoInstante, formatarDia } from '../../core/datas.js';
-import { CATEGORIAS, aniversariosNoPeriodo } from './dados.js';
+import { estiloCategoria } from '../../core/categorias.js';
+import { categoriaDoEvento, aniversariosNoPeriodo } from './dados.js';
 
 const DIAS = 7;
 const MAXIMO = 5;
@@ -34,9 +35,9 @@ export default {
         return `
             <ul class="inicio-eventos">
                 ${proximos.slice(0, MAXIMO).map(e => `
-                    <li class="cat-${e.categoria}">
+                    <li style="${estiloCategoria(categoriaDoEvento(e))}">
                         <span class="inicio-evento-quando"><strong>${rotuloDia(e.dia)}</strong>${e.diaInteiro ? 'dia todo' : horaDoInstante(e.inicio)}</span>
-                        <span class="inicio-evento-titulo"><i class="${(CATEGORIAS[e.categoria] || CATEGORIAS.geral).icone}"></i> ${escaparHtml(e.titulo)}</span>
+                        <span class="inicio-evento-titulo"><i class="${categoriaDoEvento(e).icone}"></i> ${escaparHtml(e.titulo)}</span>
                     </li>
                 `).join('')}
             </ul>

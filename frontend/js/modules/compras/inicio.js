@@ -1,20 +1,19 @@
 import { escaparHtml, mostrarNotificacao } from '../../core/ui.js';
 import { temPermissao } from '../../core/sessao.js';
-import { CATEGORIAS, carregarItens, itensComStatus, adicionarItem, comprarItem } from './dados.js';
+import { iconeCategoria, carregarItens, itensComStatus, adicionarItem, comprarItem } from './dados.js';
 
 const MAXIMO = 8;
 
 // Uma linha da lista, no mesmo visual da aba Lista (círculo = "comprei")
 function htmlLinha(item, podeEditar) {
-    const categoria = CATEGORIAS[item.categoria] || CATEGORIAS.outros;
     const detalhes = [item.quantidade && `<strong>${escaparHtml(item.quantidade)}</strong>`, item.observacao && escaparHtml(item.observacao)].filter(Boolean);
     return `
-        <div class="compra-item ccat-${item.categoria} cstatus-${item.status}">
+        <div class="compra-item cstatus-${item.status}">
             ${podeEditar
                 ? `<button type="button" class="compra-check" data-comprar="${escaparHtml(item.id)}" aria-label="Comprei ${escaparHtml(item.nome)}"><i class="fa-solid fa-check"></i></button>`
                 : '<span class="compra-check"></span>'}
             <span class="compra-info">
-                <span class="compra-nome"><i class="${categoria.icone} compra-cat-icone"></i> ${escaparHtml(item.nome)}</span>
+                <span class="compra-nome">${iconeCategoria(item)} ${escaparHtml(item.nome)}</span>
                 ${detalhes.length ? `<span class="compra-meta">${detalhes.join(' · ')}</span>` : ''}
             </span>
             ${item.status === 'acabando' ? '<span class="compra-status-tag cstatus-acabando"><i class="fa-solid fa-hourglass-half"></i> Acabando</span>' : ''}

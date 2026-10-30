@@ -32,6 +32,7 @@ Os módulos:
 - **Agenda**: eventos da casa, visitas e aniversários.
 - **Lista de Compras**: o que acabou ou está acabando, para quem for ao mercado.
 - **Atas de Reunião**: o que foi discutido e decidido nas reuniões, e as pendências de cada um.
+- **Finanças**: gastos, contas, reserva de emergência e divisão de despesas.
 - **Anotações**: senhas e contas (num cofre criptografado), contatos de prestadores e notas da casa.
 - **Moradores** (menu do canto): cadastro de todos os moradores (usado por todos os módulos).
 - **Ajustes** (menu do canto): nome da república, aparência (logo, fundo, cores, fonte, estilo), tema claro/escuro deste aparelho e versão do sistema.
@@ -143,8 +144,22 @@ A semana vai de segunda a domingo e vira à 0h de segunda, no horário de Brasí
 
 ---
 
-## 🎨 10. Personalização Visual
+## 💰 10. Finanças
 
+- **Visão geral**: gastos e entradas do mês (comparados ao mês anterior até o mesmo dia), disponível em contas, **reserva de emergência** (e quantos meses de gastos ela cobre), gastos por categoria (toque numa categoria para ver os lançamentos), gasto acumulado no mês contra o mês anterior, **orçamento** por categoria, últimos 6 meses e maiores gastos. As setas trocam o mês.
+- **Lançamentos**: tudo do mês, agrupado por dia, com busca e filtros por conta, categoria e tipo. **Lançar** registra um gasto ou entrada à mão (em contas manuais). Num lançamento vindo do banco, dá para mudar a categoria (e marcar "classificar sempre assim" para criar uma regra), anotar ou **ignorar** (ex.: duplicado). **Dividir** transforma um gasto numa divisão.
+- **Contas**: contas, cartões e dinheiro (disponível) e caixinhas/investimentos (reserva). Contas manuais têm **ajustar saldo** (ex.: a caixinha rendeu); a diferença entra como "Ajuste de saldo" e não conta como gasto. **Conectar banco** usa o Open Finance (em breve, via Pluggy); bancos conectados atualizam sozinhos uma vez por dia.
+- **Divisões**: alguém pagou e a conta é dividida entre moradores, em partes iguais ou valores diferentes. **Quem deve para quem** já compensa os dois sentidos; toque no nome de alguém para marcar a parte como paga, ou **Acertar** para quitar tudo entre duas pessoas.
+- **Ajustes**: regras de categoria ("se contém IFOOD → Delivery"), regras sugeridas, orçamento mensal por categoria e as categorias (nome, cor, ícone).
+- O sino avisa quando um orçamento passa de 80% ou estoura, quando a atualização de um banco falha e quando uma divisão tem partes em aberto há mais de 15 dias.
+
+> Sem login, qualquer pessoa com o link vê as finanças da casa. Quando houver login, cada morador verá só o que o papel dele permitir.
+
+---
+
+## 🎨 11. Personalização Visual
+
+- **Ajustes → Categorias**: nome, **cor** e **ícone** das categorias de eventos da agenda, itens de compra, tipos de conta e serviços dos contatos. Crie, edite, mude a ordem (setas) ou exclua; ao excluir uma categoria em uso, escolha para qual os registros vão. Também dá para abrir pelo botão **Editar** ao lado das categorias, dentro dos próprios formulários.
 - **Ajustes → Módulos**: liga e desliga cada módulo (Escala, Agenda, Lista de Compras, Anotações, Atas). Desligado, ele some do menu para todos e as rotas dele param de responder, mas **nada é apagado**: religando, tudo volta como estava. Moradores e Ajustes fazem parte do núcleo e estão sempre ligados.
 
 - **Escala de Limpeza → Ajustes → Galeria de Imagens**: envie imagens para a galeria. A cada escala gerada, uma delas é sorteada como destaque; você também pode escolher uma na galeria.

@@ -1,10 +1,10 @@
 import { asyncHandler, HttpError } from '../../core/http.js';
+import { categoriaExiste, categoriaPadrao } from '../../core/categorias/index.js';
 import { exigirPermissao } from '../../core/auth/permissoes.js';
 import { normalizeBoolean } from '../../core/db/helpers.js';
 import { EventosStore, DURACAO_MAXIMA_DIAS } from './store.js';
 import { RECORRENCIAS, DURACAO_MAXIMA_POR_RECORRENCIA, diaNaCasa } from './recorrencia.js';
 
-export const CATEGORIAS = ['geral', 'festa', 'reuniao', 'visita', 'manutencao'];
 const LIMITES = { titulo: 120, local: 120, descricao: 1000 };
 const DIA_MS = 86400000;
 
@@ -14,7 +14,7 @@ const DIA_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 const NOMES_RECORRENCIA = { semanal: 'toda semana', quinzenal: 'a cada 2 semanas', mensal: 'todo mês', anual: 'todo ano' };
 
 // Valida o corpo de criação/edição. Em edição (`existente`), campos ausentes mantêm o valor atual.
-function lerEvento(body, existente = null) {
+async function lerEvento(body, existente = null) {
   const evento = {};
 
   for (const campo of ['titulo', 'local', 'descricao']) {
@@ -30,10 +30,8 @@ function lerEvento(body, existente = null) {
   }
 
   if (body.categoria !== undefined || !existente) {
-    const categoria = body.categoria || 'geral';
-    if (!CATEGORIAS.includes(categoria)) {
-      throw new HttpError(400, `Categoria inválida. Use: ${CATEGORIAS.join(', ')}.`);
-    }
+    const categoria = body.categoria || await categoriaPadrao('agenda');
+    if (!(await categoriaExiste('agenda', categoria))) throw new HttpError(400, 'Categoria inválida.');
     evento.categoria = categoria;
   }
 
@@ -95,6 +93,20 @@ function lerEvento(body, existente = null) {
 export default {
   id: 'agenda',
   nome: 'Agenda',
+  categorias: {
+    agenda: {
+      nome: 'Eventos da agenda',
+      permissaoVer: 'agenda:ver', permissaoGerenciar: 'agenda:gerenciar',
+      tabela: 'eventos', coluna: 'categoria',
+      padrao: [
+        { chave: 'geral', nome: 'Geral', cor: '#dc0000', icone: 'fa-solid fa-thumbtack' },
+        { chave: 'festa', nome: 'Festa / rolê', cor: '#9333ea', icone: 'fa-solid fa-champagne-glasses' },
+        { chave: 'reuniao', nome: 'Reunião', cor: '#2563eb', icone: 'fa-solid fa-people-group' },
+        { chave: 'visita', nome: 'Visita', cor: '#16a34a', icone: 'fa-solid fa-door-open' },
+        { chave: 'manutencao', nome: 'Manutenção', cor: '#ea580c', icone: 'fa-solid fa-screwdriver-wrench' }
+      ]
+    }
+  },
   permissoes: {
     'agenda:ver': { descricao: 'Ver a agenda', papeis: ['morador'] },
     'agenda:criar': { descricao: 'Criar eventos', papeis: ['morador'] },
@@ -115,14 +127,14 @@ export default {
     }));
 
     router.post('/eventos', exigirPermissao('agenda:criar'), asyncHandler(async (req, res) => {
-      const evento = lerEvento(req.body);
+      const evento = await lerEvento(req.body);
       res.json(await EventosStore.create({ fim: null, local: null, descricao: null, recorrencia: null, recorrenciaAte: null, excecoes: [], ...evento }));
     }));
 
     router.put('/eventos/:id', exigirPermissao('agenda:gerenciar'), asyncHandler(async (req, res) => {
       const existente = await EventosStore.findById(req.params.id);
       if (!existente) throw new HttpError(404, 'Evento não encontrado');
-      res.json(await EventosStore.update(req.params.id, lerEvento(req.body, existente)));
+      res.json(await EventosStore.update(req.params.id, await lerEvento(req.body, existente)));
     }));
 
     // Cancela uma única repetição de um evento recorrente: { "data": "AAAA-MM-DD" }

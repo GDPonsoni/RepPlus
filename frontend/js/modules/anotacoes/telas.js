@@ -1,7 +1,8 @@
 import { aplicarPermissoes } from '../../core/sessao.js';
 import { escaparHtml } from '../../core/ui.js';
 import { cofreDisponivel, cofreExiste, cofreDestrancado } from './cofre.js';
-import { TIPOS, CATEGORIAS_CONTA, estado, anotacoesDoTipo, decifrarSegredos, semAcento } from './dados.js';
+import { estiloCategoria, categoriasDe } from '../../core/categorias.js';
+import { TIPOS, ESCOPO_POR_TIPO, categoriaDaAnotacao, estado, anotacoesDoTipo, decifrarSegredos, semAcento } from './dados.js';
 
 const htmlTopo = (tipo, titulo) => `
     <div class="pagina-topo">
@@ -53,7 +54,7 @@ function htmlBarraCofre() {
 function filtrar(tipo) {
     const busca = semAcento(document.querySelector(`[data-busca="${tipo}"]`)?.value.trim());
     return anotacoesDoTipo(tipo).filter(anotacao => !busca ||
-        semAcento([anotacao.titulo, anotacao.categoria, ...Object.values(anotacao.dados || {})].join(' ')).includes(busca));
+        semAcento([anotacao.titulo, anotacao.categoria && categoriaDaAnotacao(anotacao).nome, ...Object.values(anotacao.dados || {})].join(' ')).includes(busca));
 }
 
 const vazio = (tipo, filtrado) => `<div class="card"><p class="empty-state">${filtrado ? 'Nada encontrado.' : {
@@ -100,14 +101,14 @@ async function renderizarContas() {
     await decifrarSegredos(contas);
 
     container.innerHTML = contas.length ? contas.map(anotacao => {
-        const categoria = CATEGORIAS_CONTA[anotacao.categoria] || CATEGORIAS_CONTA.outros;
+        const categoria = categoriaDaAnotacao(anotacao);
         return `
-            <article class="card anotacao-card acat-${anotacao.categoria || 'outros'}">
+            <article class="card anotacao-card" style="${estiloCategoria(categoria)}">
                 <button type="button" class="anotacao-topo" data-acao="abrir-anotacao" data-id="${escaparHtml(anotacao.id)}">
                     <span class="anotacao-icone"><i class="${categoria.icone}"></i></span>
                     <span class="anotacao-titulos">
                         <span class="anotacao-titulo">${escaparHtml(anotacao.titulo)}</span>
-                        <span class="anotacao-sub">${categoria.nome}</span>
+                        <span class="anotacao-sub">${escaparHtml(categoria.nome)}</span>
                     </span>
                     <i class="fa-solid fa-pen anotacao-editar"></i>
                 </button>
@@ -136,24 +137,28 @@ function renderizarContatos() {
         return;
     }
 
-    // Agrupados por serviço, em ordem alfabética
+    // Agrupados por serviço, na ordem do cadastro de categorias (sem serviço e desconhecidos no fim)
+    const ordem = categoriasDe(ESCOPO_POR_TIPO.contato).map(c => c.chave);
+    const posicao = (chave) => (ordem.includes(chave) ? ordem.indexOf(chave) : ordem.length + (chave ? 0 : 1));
     const grupos = new Map();
     contatos.sort((a, b) => a.titulo.localeCompare(b.titulo, 'pt-BR')).forEach(contato => {
-        const servico = contato.categoria || 'Outros';
-        if (!grupos.has(servico)) grupos.set(servico, []);
-        grupos.get(servico).push(contato);
+        const chave = contato.categoria || '';
+        if (!grupos.has(chave)) grupos.set(chave, []);
+        grupos.get(chave).push(contato);
     });
 
-    container.innerHTML = [...grupos.entries()].sort(([a], [b]) => a.localeCompare(b, 'pt-BR')).map(([servico, lista]) => `
-        <section>
-            <h3 class="anotacoes-grupo-titulo">${escaparHtml(servico)} <span class="anotacoes-grupo-total">${lista.length}</span></h3>
+    container.innerHTML = [...grupos.entries()].sort(([a], [b]) => posicao(a) - posicao(b) || a.localeCompare(b, 'pt-BR')).map(([chave, lista]) => {
+        const servico = categoriaDaAnotacao(lista[0]);
+        return `
+        <section style="${estiloCategoria(servico)}">
+            <h3 class="anotacoes-grupo-titulo"><i class="${servico.icone} anotacoes-grupo-icone"></i> ${escaparHtml(chave ? servico.nome : 'Sem serviço')} <span class="anotacoes-grupo-total">${lista.length}</span></h3>
             <div class="anotacoes-lista">
                 ${lista.map(contato => {
                     const { telefone, whatsapp, email, site, endereco, observacao } = contato.dados;
                     return `
                         <article class="card anotacao-card">
                             <button type="button" class="anotacao-topo" data-acao="abrir-anotacao" data-id="${escaparHtml(contato.id)}">
-                                <span class="anotacao-icone contato-icone"><i class="fa-solid fa-user-gear"></i></span>
+                                <span class="anotacao-icone"><i class="${servico.icone}"></i></span>
                                 <span class="anotacao-titulos">
                                     <span class="anotacao-titulo">${escaparHtml(contato.titulo)}</span>
                                     ${telefone ? `<span class="anotacao-sub">${escaparHtml(telefone)}</span>` : ''}
@@ -173,7 +178,8 @@ function renderizarContatos() {
                 }).join('')}
             </div>
         </section>
-    `).join('');
+    `;
+    }).join('');
 }
 
 // ===== NOTAS =====

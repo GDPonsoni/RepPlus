@@ -7,8 +7,9 @@ import { escaparHtml, mostrarNotificacao, definirCarregando } from '../../core/u
 import { formatarDia, diaDoInstante } from '../../core/datas.js';
 import { obterIntegrantes } from '../../core/moradores.js';
 import { nomeDaRepublica } from '../../core/aparencia.js';
+import { carregarCategorias, categoria, categoriasDe, htmlEscolhaCategoria } from '../../core/categorias.js';
 import {
-    CATEGORIAS, STATUS, estado, itensComStatus, compradosRecentes, sugestoes, buscarItem, haQuantoTempo,
+    iconeCategoria, STATUS, estado, itensComStatus, compradosRecentes, sugestoes, buscarItem, haQuantoTempo,
     carregarItens, adicionarItem, atualizarItem, comprarItem, desfazerCompra, excluirItem
 } from './dados.js';
 import inicio from './inicio.js';
@@ -49,7 +50,6 @@ function nomeDoMorador(id) {
 }
 
 function htmlItemLista(item) {
-    const categoria = CATEGORIAS[item.categoria] || CATEGORIAS.outros;
     const quem = nomeDoMorador(item.pedidoPor);
     const detalhes = [
         item.quantidade && `<strong>${escaparHtml(item.quantidade)}</strong>`,
@@ -58,12 +58,12 @@ function htmlItemLista(item) {
     ].filter(Boolean);
 
     return `
-        <div class="compra-item ccat-${item.categoria} cstatus-${item.status}">
+        <div class="compra-item cstatus-${item.status}">
             <button type="button" class="compra-check" data-acao="comprar-item" data-id="${escaparHtml(item.id)}" data-permissao="compras:editar" aria-label="Comprei ${escaparHtml(item.nome)}">
                 <i class="fa-solid fa-check"></i>
             </button>
             <button type="button" class="compra-info" data-acao="abrir-item-compra" data-id="${escaparHtml(item.id)}">
-                <span class="compra-nome"><i class="${categoria.icone} compra-cat-icone"></i> ${escaparHtml(item.nome)}</span>
+                <span class="compra-nome">${iconeCategoria(item)} ${escaparHtml(item.nome)}</span>
                 ${detalhes.length ? `<span class="compra-meta">${detalhes.join(' · ')}</span>` : ''}
             </button>
             ${item.status === 'acabando' ? `<button type="button" class="btn btn-ghost btn-sm compra-acabou" data-acao="marcar-acabou" data-id="${escaparHtml(item.id)}" data-permissao="compras:editar">Acabou</button>` : ''}
@@ -145,12 +145,15 @@ function renderizarCatalogo() {
         return;
     }
 
-    container.innerHTML = Object.entries(CATEGORIAS).map(([id, categoria]) => {
-        const doGrupo = itens.filter(item => item.categoria === id).sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+    // Um grupo por categoria, na ordem do cadastro (categorias sem cadastro vão para o fim)
+    const chaves = [...new Set([...categoriasDe('compras').map(c => c.chave), ...itens.map(item => item.categoria)])];
+    container.innerHTML = chaves.map(chave => {
+        const doGrupo = itens.filter(item => item.categoria === chave).sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
         if (!doGrupo.length) return '';
+        const c = categoria('compras', chave);
         return `
-            <section class="compras-secao ccat-${id}">
-                <h3 class="compras-secao-titulo"><i class="${categoria.icone} compra-cat-icone"></i> ${categoria.nome} <span class="compras-secao-total">${doGrupo.length}</span></h3>
+            <section class="compras-secao">
+                <h3 class="compras-secao-titulo">${iconeCategoria(doGrupo[0])} ${escaparHtml(c.nome)} <span class="compras-secao-total">${doGrupo.length}</span></h3>
                 <div class="card compras-itens">
                     ${doGrupo.map(item => `
                         <div class="compra-item cstatus-${item.status}">
@@ -281,11 +284,7 @@ function htmlFormulario(item, podeEditar) {
             </div>
             <div class="field">
                 <span>Categoria</span>
-                <div class="chips" role="radiogroup">
-                    ${Object.entries(CATEGORIAS).map(([id, c]) => `
-                        <label class="chip ccat-${id}"><input type="radio" name="categoria" value="${id}" ${id === (item?.categoria || 'mercado') ? 'checked' : ''} ${desabilitado}><span><i class="${c.icone}"></i> ${c.nome}</span></label>
-                    `).join('')}
-                </div>
+                ${htmlEscolhaCategoria({ escopo: 'compras', selecionada: item?.categoria, desabilitado: Boolean(desabilitado) })}
             </div>
             <div class="field-row">
                 <label class="field">
@@ -406,7 +405,7 @@ export default {
         { id: 'itens', titulo: 'Itens salvos', icone: 'fa-solid fa-box-archive', html: HTML_ABA_ITENS, permissao: 'compras:ver', aoAbrir: recarregar }
     ],
 
-    iniciar() {
+    async iniciar() {
         document.getElementById('form-compra-rapida')?.addEventListener('submit', adicionarRapido);
         document.getElementById('compras-busca')?.addEventListener('input', renderizarCatalogo);
 
@@ -422,5 +421,7 @@ export default {
 
         // "Quem pediu" mostra nomes do cadastro: redesenha quando ele mudar
         ouvir('moradores:atualizados', renderizarTudo);
+        ouvir('categorias:atualizadas', ({ escopo }) => { if (escopo === 'compras') renderizarTudo(); });
+        await carregarCategorias('compras');
     }
 };

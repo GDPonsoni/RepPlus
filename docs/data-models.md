@@ -188,6 +188,35 @@ Os itens nunca somem ao serem comprados: voltam para `ok` e viram o catálogo de
 
 ---
 
-## 🖼️ 10. Imagens (Storage, bucket `uploads`)
+## 🏷️ 10. Categorias (tabela `categorias`)
+
+| Coluna | Campo na API | Tipo | Descrição |
+| :--- | :--- | :--- | :--- |
+| `id` | `id` | UUID | Identificador |
+| `escopo` | `escopo` | texto | Grupo: `agenda`, `compras`, `anotacoes-contas`, `anotacoes-contatos` |
+| `chave` | `chave` | texto | O que os registros guardam em `categoria` (única por escopo; não muda ao renomear) |
+| `nome` / `cor` / `icone` | `nome` / `cor` / `icone` | texto | Como aparece: nome, `#rrggbb` e classe do Font Awesome |
+| `ordem` | `ordem` | inteiro | Ordem nos formulários e nos agrupamentos |
+
+---
+
+## 💰 11. Finanças (tabelas `fin_*`)
+
+Valores em **centavos** (`bigint`): saída negativa, entrada positiva.
+
+| Tabela | O que guarda |
+| :--- | :--- |
+| `fin_conexoes` | Conexão com um provedor de Open Finance: `provedor`, `externo_id`, `instituicao`, `status` (ativa, erro, desconectada), `erro`, `ultima_sincronizacao` |
+| `fin_contas` | `nome`, `tipo` (corrente, cartao, dinheiro, caixinha, investimento), `cor`, `reserva`, `saldo_inicial` (manual), `saldo_informado` (do banco), `conexao_id`, `externo_id`, `arquivada` |
+| `fin_transacoes` | `conta_id`, `data`, `descricao`, `valor`, `categoria`, `categoria_manual` (escolhida à mão: regras não mexem), `observacao`, `origem` (manual/importado), `externo_id` (evita duplicar), `ignorada` |
+| `fin_regras` | `termo` → `categoria` |
+| `fin_orcamentos` | `categoria` → `valor_mensal` |
+| `fin_divisoes` | `descricao`, `data`, `valor_total`, `pago_por`, `participantes` (jsonb: `{ integranteId, valor, pago, pagoEm }`), `transacao_id`, `categoria` |
+
+As categorias dos lançamentos ficam em `categorias` (escopo `financas`). `transferencia` e `ajuste` não contam como gasto nem entrada.
+
+---
+
+## 🖼️ 12. Imagens (Storage, bucket `uploads`)
 
 Fotos de cômodos, logo, fundo e galeria de motivação ficam no bucket público `uploads`, cada uma com um nome aleatório (UUID + extensão). A galeria de motivação é tudo o que está no bucket, exceto o logo e o fundo atuais.
