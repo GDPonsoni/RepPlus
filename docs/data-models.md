@@ -1,6 +1,6 @@
 # 🗄️ Modelos de Dados
 
-Os dados ficam no **Supabase**: tabelas no Postgres e imagens no Storage. O acesso passa pelos `store.js` do núcleo (`backend/core/moradores/`, `backend/core/configuracao/`) e de cada módulo (`backend/modules/escala/store.js`), que converte os nomes de coluna (`snake_case`) para os campos da API (`camelCase`).
+Os dados ficam no **Supabase**: tabelas no Postgres e imagens no Storage. As mudanças no esquema ficam versionadas em [`db/migrations/`](../db/README.md). O acesso passa pelos `store.js` do núcleo (`backend/core/moradores/`, `backend/core/configuracao/`, `backend/core/categorias/`) e de cada módulo (`backend/modules/<módulo>/store.js`), que converte os nomes de coluna (`snake_case`) para os campos da API (`camelCase`).
 
 ---
 
@@ -111,8 +111,8 @@ A função Postgres `replace_semana_escala(p_ano, p_semana, p_linhas)` substitui
 | `modulos_desativados` (jsonb) | `modulosDesativados` | Ids dos módulos desligados em Ajustes > Módulos (ex.: `["agenda"]`) |
 | `personalizacao` (jsonb) | `personalizacao` | `{ "nome", "slogan", "fonte", "cantos", "cabecalho", "cabecalhoTamanho", "fundoVisibilidade" }`. Campos ausentes usam o padrão do backend (`PERSONALIZACAO_PADRAO`) |
 
-Tema claro/escuro e tamanho do texto **não** ficam no banco: são preferências de cada aparelho
-(`localStorage`, chave `escala:aparelho`).
+Tema, tamanho do texto, animações e vibração **não** ficam no banco: são preferências de cada
+aparelho (veja [Dados guardados no aparelho](#-13-dados-guardados-no-aparelho)).
 
 ---
 
@@ -123,7 +123,7 @@ Tema claro/escuro e tamanho do texto **não** ficam no banco: são preferências
 | `id` | `id` | UUID | Identificador |
 | `titulo` | `titulo` | texto | Título (obrigatório) |
 | `descricao` / `local` | `descricao` / `local` | texto | Detalhes e local |
-| `categoria` | `categoria` | texto | `geral`, `festa`, `reuniao`, `visita` ou `manutencao` |
+| `categoria` | `categoria` | texto | Chave de uma categoria do escopo `agenda` (padrão: `geral`, `festa`, `reuniao`, `visita`, `manutencao`) |
 | `inicio` / `fim` | `inicio` / `fim` | timestamptz | Início e término (`fim` opcional) |
 | `dia_inteiro` | `diaInteiro` | boolean | Evento sem horário |
 | `recorrencia` | `recorrencia` | texto | `semanal`, `quinzenal`, `mensal`, `anual` ou `null` (não repete) |
@@ -133,8 +133,6 @@ Tema claro/escuro e tamanho do texto **não** ficam no banco: são preferências
 
 Eventos recorrentes são guardados como **uma linha só** (a primeira ocorrência + a regra); as repetições são calculadas na consulta (`backend/modules/agenda/recorrencia.js`).
 
-As mudanças no esquema ficam versionadas em [`db/migrations/`](../db/README.md).
-
 ---
 
 ## 🛒 7. Lista de compras (tabela `compras_itens`)
@@ -143,7 +141,7 @@ As mudanças no esquema ficam versionadas em [`db/migrations/`](../db/README.md)
 | :--- | :--- | :--- | :--- |
 | `id` | `id` | UUID | Identificador |
 | `nome` | `nome` | texto | Nome do item (único, ignorando maiúsculas, acentos e espaços) |
-| `categoria` | `categoria` | texto | `mercado`, `limpeza`, `higiene`, `bebidas`, `casa` ou `outros` |
+| `categoria` | `categoria` | texto | Chave de uma categoria do escopo `compras` (padrão: `mercado`, `limpeza`, `higiene`, `bebidas`, `casa`, `outros`) |
 | `status` | `status` | texto | `falta` (acabou), `acabando` ou `ok` (em casa) |
 | `quantidade` / `observacao` | `quantidade` / `observacao` | texto | Ex.: "2 un", "folha dupla" |
 | `pedido_por` | `pedidoPor` | UUID | Morador que pediu (`integrantes.id`, opcional) |
@@ -163,7 +161,7 @@ Os itens nunca somem ao serem comprados: voltam para `ok` e viram o catálogo de
 | `id` | `id` | UUID | Identificador |
 | `tipo` | `tipo` | texto | `conta`, `contato` ou `nota` |
 | `titulo` | `titulo` | texto | Nome da conta, do prestador ou da nota |
-| `categoria` | `categoria` | texto | Tipo de conta ou serviço do contato |
+| `categoria` | `categoria` | texto | Chave de uma categoria: tipo de conta (`anotacoes-contas`) ou serviço do contato (`anotacoes-contatos`) |
 | `dados` | `dados` | jsonb | Campos abertos (site, telefone, observação, texto...) |
 | `segredo` | `segredo` | texto | Login, senha, dados extras ou texto da nota secreta, **cifrados no navegador** |
 | `fixado` | `fixado` | boolean | Nota fixada no topo |
@@ -193,7 +191,7 @@ Os itens nunca somem ao serem comprados: voltam para `ok` e viram o catálogo de
 | Coluna | Campo na API | Tipo | Descrição |
 | :--- | :--- | :--- | :--- |
 | `id` | `id` | UUID | Identificador |
-| `escopo` | `escopo` | texto | Grupo: `agenda`, `compras`, `anotacoes-contas`, `anotacoes-contatos` |
+| `escopo` | `escopo` | texto | Grupo: `agenda`, `compras`, `anotacoes-contas`, `anotacoes-contatos`, `financas` |
 | `chave` | `chave` | texto | O que os registros guardam em `categoria` (única por escopo; não muda ao renomear) |
 | `nome` / `cor` / `icone` | `nome` / `cor` / `icone` | texto | Como aparece: nome, `#rrggbb` e classe do Font Awesome |
 | `ordem` | `ordem` | inteiro | Ordem nos formulários e nos agrupamentos |
@@ -220,3 +218,19 @@ As categorias dos lançamentos ficam em `categorias` (escopo `financas`). `trans
 ## 🖼️ 12. Imagens (Storage, bucket `uploads`)
 
 Fotos de cômodos, logo, fundo e galeria de motivação ficam no bucket público `uploads`, cada uma com um nome aleatório (UUID + extensão). A galeria de motivação é tudo o que está no bucket, exceto o logo e o fundo atuais.
+
+---
+
+## 📱 13. Dados guardados no aparelho (`localStorage`)
+
+Preferências de cada celular ou computador. Não vão para o servidor e não valem para os outros moradores.
+
+| Chave | O que guarda |
+| :--- | :--- |
+| `escala:aparelho` | `{ "tema" (auto, claro, escuro), "texto" (normal, grande, maior), "animacoes" (completas, reduzidas), "vibracao" (sim, nao) }` |
+| `escala:inicio` | Ordem e cartões escondidos do Início |
+| `escala:avisos-vistos` | Ids dos avisos do sino já vistos (o contador mostra só os novos) |
+| `escala:favicon` | Último ícone da guia gerado a partir do logo (para não piscar o padrão ao abrir) |
+
+O cofre de senhas não guarda nada no aparelho: a chave fica só na memória enquanto ele está destrancado.
+

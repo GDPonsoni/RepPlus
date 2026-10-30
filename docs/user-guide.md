@@ -12,6 +12,7 @@ Este guia explica como operar o **Escala** no dia a dia.
    npm start
    ```
 2. Abra o navegador em `http://localhost:3000` (ou na URL da Vercel).
+3. **No celular**: com o celular no mesmo Wi-Fi do computador, abra o endereço que aparece no terminal ao subir o servidor (`http://192.168.x.x:3000`). O cofre de senhas só funciona pelo endereço seguro (https) da Vercel ou em `localhost`; o resto do app funciona normalmente pelo IP. Veja [Testar no celular](../README.md#-testar-no-celular).
 
 ---
 
@@ -22,7 +23,7 @@ O app abre no **Início**, com um resumo de cada módulo ligado. Toque na **logo
 - **No celular**: a **barra inferior** troca de módulo (Início e os primeiros módulos; se não couberem todos, o resto fica em **Mais**).
 - **No computador**: o **menu lateral** à esquerda lista todos os módulos.
 - **Canto superior direito**:
-  - 🔔 **Avisos**: encaminhamentos atrasados ou vencendo, o que acabou na lista de compras, eventos de hoje, aniversários do dia e escala da semana não gerada. O número mostra os avisos que você ainda não viu; tocar num aviso leva até ele.
+  - 🔔 **Avisos**: encaminhamentos atrasados ou vencendo, o que acabou na lista de compras, eventos de hoje, aniversários do dia, escala da semana não gerada e alertas das finanças (orçamento, banco, divisões em aberto). O número mostra os avisos que você ainda não viu, e o sino balança quando chega um novo; tocar num aviso leva até ele.
   - 👤 **Menu**: **Moradores** e **Ajustes**. Quando houver login, o perfil e o "sair" também ficarão aqui.
 - Dentro de cada módulo, as **abas** ficam logo abaixo do topo.
 - Cada aba lembra onde você parou de rolar; tocar de novo no módulo ou na aba que já está aberta volta ao topo.
@@ -37,7 +38,7 @@ Os módulos:
 - **Finanças**: gastos, contas, reserva de emergência e divisão de despesas.
 - **Anotações**: senhas e contas (num cofre criptografado), contatos de prestadores e notas da casa.
 - **Moradores** (menu do canto): cadastro de todos os moradores (usado por todos os módulos).
-- **Ajustes** (menu do canto): nome da república, aparência (logo, fundo, cores, fonte, estilo), tema claro/escuro deste aparelho e versão do sistema.
+- **Ajustes** (menu do canto): nome da república, aparência (logo, fundo, cores, fonte, cabeçalho), preferências deste aparelho (tema, texto, animações, vibração), categorias, módulos ligados e versão do sistema.
 
 
 ### Início
@@ -47,6 +48,7 @@ Os módulos:
 - **Lista de compras**: o que acabou e o que está acabando, com um campo para avisar na hora que algo acabou.
 - **Pendências das reuniões**: encaminhamentos em aberto (atrasados primeiro) e o link para a última ata.
 - **Anotações**: notas fixadas e atalhos para senhas, contatos e notas.
+- **Finanças do mês**: gasto do mês contra o orçamento, disponível, reserva e quem deve para quem.
 - **Moradores**: aniversários dos próximos 30 dias e quem está sem contato de emergência.
 - **Abrir** leva ao módulo completo. **Personalizar início** (no fim da página) escolhe quais resumos aparecem e em que ordem; vale só para o seu aparelho.
 - Só aparecem resumos de módulos ligados (Ajustes → Módulos).
@@ -115,7 +117,7 @@ A semana vai de segunda a domingo e vira à 0h de segunda, no horário de Brasí
 
 - **Acabou alguma coisa?** Digite no campo do topo (ex.: "detergente"), escolha **Acabou** ou **Tá acabando** e toque em **+**.
 - **Já compramos antes**: os itens que a casa costuma comprar aparecem como sugestão; um toque coloca na lista. O campo também completa o nome sozinho.
-- **No mercado**: abra a lista e toque no **círculo** de cada item ao pegá-lo. Ele vai para **Comprados agora há pouco**, onde dá para **Desfazer** um toque errado.
+- **No mercado**: abra a lista (ou o cartão do Início) e toque no **círculo** de cada item ao pegá-lo. Ele vai para **Comprados agora há pouco**, onde dá para **Desfazer** um toque errado. Zerou a lista? Tem comemoração. 🎉
 - **Está acabando**: aviso para quem passar no mercado; o botão **Acabou** muda o item para a lista principal.
 - **Enviar lista**: manda a lista em texto para o grupo da casa (no computador, copia para colar).
 - **Toque no item** para editar: quantidade, quem pediu, observação (marca, tamanho...) e categoria.
@@ -159,10 +161,10 @@ A semana vai de segunda a domingo e vira à 0h de segunda, no horário de Brasí
 
 ---
 
-## 🎨 11. Personalização Visual
+## 🎨 11. Ajustes e Personalização
 
-- **Ajustes → Categorias**: nome, **cor** e **ícone** das categorias de eventos da agenda, itens de compra, tipos de conta e serviços dos contatos. Crie, edite, mude a ordem (setas) ou exclua; ao excluir uma categoria em uso, escolha para qual os registros vão. Também dá para abrir pelo botão **Editar** ao lado das categorias, dentro dos próprios formulários.
-- **Ajustes → Módulos**: liga e desliga cada módulo (Escala, Agenda, Lista de Compras, Anotações, Atas). Desligado, ele some do menu para todos e as rotas dele param de responder, mas **nada é apagado**: religando, tudo volta como estava. Moradores e Ajustes fazem parte do núcleo e estão sempre ligados.
+- **Ajustes → Categorias**: nome, **cor** e **ícone** das categorias de eventos da agenda, itens de compra, tipos de conta, serviços dos contatos e lançamentos das finanças. Crie, edite, mude a ordem (setas) ou exclua; ao excluir uma categoria em uso, escolha para qual os registros vão. Também dá para abrir pelo botão **Editar** ao lado das categorias, dentro dos próprios formulários.
+- **Ajustes → Módulos**: liga e desliga cada módulo (Escala, Agenda, Lista de Compras, Anotações, Atas, Finanças). Desligado, ele some do menu para todos e as rotas dele param de responder, mas **nada é apagado**: religando, tudo volta como estava. Moradores e Ajustes fazem parte do núcleo e estão sempre ligados.
 
 - **Escala de Limpeza → Ajustes → Galeria de Imagens**: envie imagens para a galeria. A cada escala gerada, uma delas é sorteada como destaque; você também pode escolher uma na galeria.
 - **Ajustes → Nome e Estilo** (vale para todos):
@@ -172,7 +174,7 @@ A semana vai de segunda a domingo e vira à 0h de segunda, no horário de Brasí
   - **Imagem de fundo**: quanto a imagem enviada aparece atrás do conteúdo.
   - As mudanças aparecem na hora como prévia; **Salvar** aplica para todos e **Descartar** volta ao que estava salvo.
 - **Ajustes → Logo, Fundo e Cores** (vale para todos):
-  - **Logo**: imagem do cabeçalho.
+  - **Logo**: imagem do cabeçalho e ícone da guia do navegador.
   - **Fundo**: imagem de plano de fundo da aplicação.
   - **Esquema de cores**: cor primária, secundária, clara e escura, com prévia ao vivo. As **paletas prontas** (Clássica, Oceano, Floresta...) preenchem as quatro cores; é preciso **Salvar Cores** para manter. **Restaurar Padrão** volta às cores originais.
 - **Ajustes → Neste Aparelho** (só no seu celular/computador, salvo na hora):
