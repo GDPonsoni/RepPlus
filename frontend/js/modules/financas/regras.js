@@ -40,10 +40,10 @@ function htmlPrevia(p, categoria) {
     ].filter(Boolean);
     return `
         <p class="fin-previa-total"><strong>${p.quantidade} lançamento(s)</strong> contêm o termo · ${reais(p.total)}
-            ${categoria ? `<br><span>${p.mudam} vão para <strong>${escaparHtml(categoriaFin(categoria).nome)}</strong></span>` : ''}
+            ${categoria ? `<br><span>${p.mudam} vão para <strong>${escaparHtml(categoriaFin(categoria).nomeCompleto)}</strong></span>` : ''}
             ${avisos.length ? `<br><small>${avisos.join(' · ')}</small>` : ''}</p>
         <ul class="fin-previa-lista">${p.exemplos.map(t => `
-            <li><span>${escaparHtml(t.descricao)}<small>${formatarDia(t.data, { day: '2-digit', month: 'short' }).replace('.', '')} · ${escaparHtml(categoriaFin(t.categoria).nome)}</small></span>
+            <li><span>${escaparHtml(t.descricao)}<small>${formatarDia(t.data, { day: '2-digit', month: 'short' }).replace('.', '')} · ${escaparHtml(categoriaFin(t.categoria).nomeCompleto)}</small></span>
                 <strong class="fin-valor ${t.valor < 0 ? 'saida' : 'entrada'}">${reais(t.valor)}</strong></li>`).join('')}
         </ul>`;
 }

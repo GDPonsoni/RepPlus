@@ -1,7 +1,7 @@
 import { api } from '../../core/api.js';
 import { hoje } from '../../core/datas.js';
-import { categoria } from '../../core/categorias.js';
-import { ESCOPO, NEUTRAS, reais, somarMeses, nomeDoMorador } from './dados.js';
+import { categoria, carregarCategorias } from '../../core/categorias.js';
+import { ESCOPO, reais, somarMeses, nomeDoMorador, conta, dentro } from './dados.js';
 
 const DIAS_COBRANCA = 15;
 
@@ -14,11 +14,13 @@ export default async function avisos() {
         api('/financas/conexoes'),
         api('/financas/divisoes')
     ]);
+    await carregarCategorias(ESCOPO);
     const lista = [];
 
+    // Orçamento de uma categoria principal conta também as subcategorias dela
     const gastos = new Map();
-    transacoes.filter(t => !t.ignorada && !NEUTRAS.includes(t.categoria) && t.valor < 0)
-        .forEach(t => gastos.set(t.categoria, (gastos.get(t.categoria) || 0) - t.valor));
+    const saidas = transacoes.filter(t => conta(t) && t.valor < 0);
+    orcamentos.forEach(o => gastos.set(o.categoria, saidas.filter(t => dentro(t.categoria, o.categoria)).reduce((s, t) => s - t.valor, 0)));
     orcamentos.forEach(o => {
         const pct = (gastos.get(o.categoria) || 0) / o.valorMensal;
         const nome = categoria(ESCOPO, o.categoria).nome;

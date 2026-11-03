@@ -1,7 +1,8 @@
 import { api } from '../../core/api.js';
 import { escaparHtml } from '../../core/ui.js';
 import { hoje } from '../../core/datas.js';
-import { estado, reais, nomeDoMorador, saldosEntreMoradores, NEUTRAS, somarMeses } from './dados.js';
+import { carregarCategorias } from '../../core/categorias.js';
+import { estado, ESCOPO, reais, nomeDoMorador, saldosEntreMoradores, somarMeses, conta, dentro } from './dados.js';
 
 // Resumo no Início: gasto do mês (contra o orçamento), disponível, reserva e quem deve para quem
 export default {
@@ -18,13 +19,14 @@ export default {
             api('/financas/divisoes')
         ]);
         estado.divisoes = divisoes;
+        await carregarCategorias(ESCOPO);
 
-        const gastos = transacoes.filter(t => !t.ignorada && !NEUTRAS.includes(t.categoria) && t.valor < 0);
+        const gastos = transacoes.filter(t => conta(t) && t.valor < 0);
         const gasto = gastos.reduce((s, t) => s - t.valor, 0);
         // Orçamento: compara só o que foi gasto nas categorias que têm limite
         const limite = orcamentos.reduce((s, o) => s + o.valorMensal, 0);
-        const comLimite = new Set(orcamentos.map(o => o.categoria));
-        const gastoComLimite = gastos.filter(t => comLimite.has(t.categoria)).reduce((s, t) => s - t.valor, 0);
+        // Cada gasto conta uma vez, se alguma categoria com limite o cobre (ela ou a principal dela)
+        const gastoComLimite = gastos.filter(t => orcamentos.some(o => dentro(t.categoria, o.categoria))).reduce((s, t) => s - t.valor, 0);
         const ativas = contas.filter(c => !c.arquivada);
         const disponivel = ativas.filter(c => !c.reserva).reduce((s, c) => s + c.saldo, 0);
         const reserva = ativas.filter(c => c.reserva).reduce((s, c) => s + c.saldo, 0);

@@ -15,6 +15,9 @@ import { escaparHtml, mostrarNotificacao, definirCarregando } from './ui.js';
 //   `<span style="${estiloCategoria(c)}">`           // define --cat para o CSS
 //   htmlEscolhaCategoria({ escopo, selecionada })     // chips de escolha num formulário (com "gerenciar")
 //   ouvir('categorias:atualizadas', ({ escopo }) => redesenhar())
+//
+// Subcategorias (grupos com `subcategorias`): a categoria tem `pai` = chave da principal. O registro
+// guarda a chave mais específica; dentroDe(escopo, chave, 'mercado') diz se ela é Mercado ou está dentro.
 
 const cache = new Map();
 const RESERVA = { nome: 'Sem categoria', cor: '#6b7280', icone: 'fa-solid fa-tag' };
@@ -43,8 +46,23 @@ export async function carregarCategorias(escopo, { forcar = false } = {}) {
 export const categoriasDe = (escopo) => cache.get(escopo) || [];
 
 export function categoria(escopo, chave) {
-    return categoriasDe(escopo).find(c => c.chave === chave)
-        || (chave ? { ...RESERVA, chave, nome: chave } : { ...RESERVA, chave: null });
+    const c = categoriasDe(escopo).find(x => x.chave === chave);
+    if (!c) return chave ? { ...RESERVA, chave, nome: chave, nomeCompleto: chave } : { ...RESERVA, chave: null, nomeCompleto: RESERVA.nome };
+    const pai = c.pai && categoriasDe(escopo).find(x => x.chave === c.pai);
+    return { ...c, nomeCompleto: pai ? `${pai.nome} › ${c.nome}` : c.nome };
+}
+
+// ===== SUBCATEGORIAS =====
+export const subcategoriasDe = (escopo, chave) => categoriasDe(escopo).filter(c => c.pai === chave);
+// Principal de uma chave (ela mesma, se já for principal)
+export const categoriaRaiz = (escopo, chave) => categoriasDe(escopo).find(c => c.chave === chave)?.pai || chave;
+export const dentroDe = (escopo, chave, alvo) => chave === alvo || (Boolean(chave) && categoriaRaiz(escopo, chave) === alvo);
+// Principais na ordem, cada uma seguida das suas subcategorias (subcategoria sem principal vira principal)
+export function emOrdemDeArvore(escopo) {
+    const lista = categoriasDe(escopo);
+    const existe = new Set(lista.map(c => c.chave));
+    const principais = lista.filter(c => !c.pai || !existe.has(c.pai));
+    return principais.flatMap(p => [p, ...lista.filter(c => c.pai === p.chave)]);
 }
 
 export const estiloCategoria = (c) => `--cat: ${c.cor}`;
@@ -53,15 +71,22 @@ export const estiloCategoria = (c) => `--cat: ${c.cor}`;
 export function htmlEscolhaCategoria({ escopo, nome = 'categoria', selecionada, desabilitado = false, nenhuma = false }) {
     const lista = categoriasDe(escopo);
     const marcada = selecionada ?? (nenhuma ? '' : lista[0]?.chave);
-    const chip = (valor, c) => `
-        <label class="chip" style="${estiloCategoria(c)}">
+    const chip = (valor, c, sub = false) => `
+        <label class="chip ${sub ? 'chip-sub' : ''}" style="${estiloCategoria(c)}">
             <input type="radio" name="${nome}" value="${escaparHtml(valor)}" ${valor === marcada ? 'checked' : ''} ${desabilitado ? 'disabled' : ''}>
             <span><i class="${c.icone}"></i> ${escaparHtml(c.nome)}</span>
         </label>`;
+    // Principal com subcategorias ocupa uma linha: a principal e, ao lado, as de dentro
+    const itens = emOrdemDeArvore(escopo).filter(c => !c.pai || !lista.some(p => p.chave === c.pai)).map(principal => {
+        const subs = subcategoriasDe(escopo, principal.chave);
+        return subs.length
+            ? `<div class="chips-grupo" style="${estiloCategoria(principal)}">${chip(principal.chave, principal)}${subs.map(c => chip(c.chave, c, true)).join('')}</div>`
+            : chip(principal.chave, principal);
+    });
     return `
         <div class="chips" role="radiogroup" data-escolha-categoria="${escopo}" data-nome="${nome}" data-nenhuma="${nenhuma ? '1' : ''}">
             ${nenhuma ? chip('', { ...RESERVA, nome: 'Nenhum' }) : ''}
-            ${lista.map(c => chip(c.chave, c)).join('')}
+            ${itens.join('')}
             ${!desabilitado && podeGerenciar(escopo) ? `<button type="button" class="chip-gerenciar" data-acao="gerenciar-categorias" data-escopo="${escopo}" aria-label="Gerenciar categorias"><i class="fa-solid fa-pen"></i> Editar</button>` : ''}
         </div>`;
 }
@@ -91,18 +116,26 @@ async function aposMudar(escopo) {
     emitir('categorias:atualizadas', { escopo });
 }
 
+const comSubcategorias = (escopo) => Boolean(escopos.find(e => e.escopo === escopo)?.subcategorias);
+// Irmãs de uma categoria (mesma principal, ou as principais), na ordem: as setas trocam entre elas
+const irmas = (escopo, c) => emOrdemDeArvore(escopo).filter(x => (x.pai || null) === (c.pai || null));
+
 function htmlLinhas(escopo) {
-    const lista = categoriasDe(escopo);
-    return lista.map((c, i) => `
-        <div class="categoria-linha" data-id="${c.id}">
+    const subs = comSubcategorias(escopo);
+    return emOrdemDeArvore(escopo).map(c => {
+        const grupo = irmas(escopo, c);
+        const i = grupo.findIndex(x => x.id === c.id);
+        return `
+        <div class="categoria-linha ${c.pai ? 'sub' : ''}" data-id="${c.id}">
             <span class="categoria-icone" style="${estiloCategoria(c)}"><i class="${c.icone}"></i></span>
             <span class="categoria-nome">${escaparHtml(c.nome)}</span>
+            ${subs && !c.pai ? `<button type="button" class="icon-btn" data-nova-sub aria-label="Nova subcategoria em ${escaparHtml(c.nome)}" title="Nova subcategoria"><i class="fa-solid fa-folder-plus"></i></button>` : ''}
             <button type="button" class="icon-btn" data-mover="-1" ${i === 0 ? 'disabled' : ''} aria-label="Subir"><i class="fa-solid fa-arrow-up"></i></button>
-            <button type="button" class="icon-btn" data-mover="1" ${i === lista.length - 1 ? 'disabled' : ''} aria-label="Descer"><i class="fa-solid fa-arrow-down"></i></button>
+            <button type="button" class="icon-btn" data-mover="1" ${i === grupo.length - 1 ? 'disabled' : ''} aria-label="Descer"><i class="fa-solid fa-arrow-down"></i></button>
             <button type="button" class="icon-btn" data-editar aria-label="Editar ${escaparHtml(c.nome)}"><i class="fa-solid fa-pen"></i></button>
             <button type="button" class="icon-btn danger" data-excluir aria-label="Excluir ${escaparHtml(c.nome)}"><i class="fa-solid fa-trash"></i></button>
-        </div>
-    `).join('');
+        </div>`;
+    }).join('');
 }
 
 export async function abrirGerenciadorCategorias(escopo) {
@@ -114,7 +147,7 @@ export async function abrirGerenciadorCategorias(escopo) {
         titulo: `Categorias: ${grupo?.nome || escopo}`,
         classe: 'painel-categorias',
         html: `
-            <p class="modulos-ajuda">Toque no lápis para mudar nome, cor e ícone. Use as setas para mudar a ordem em que aparecem.</p>
+            <p class="modulos-ajuda">Toque no lápis para mudar nome, cor e ícone. Use as setas para mudar a ordem em que aparecem.${comSubcategorias(escopo) ? ' <i class="fa-solid fa-folder-plus"></i> cria uma subcategoria dentro da categoria.' : ''}</p>
             <div class="categorias-lista">${htmlLinhas(escopo)}</div>
             <div class="painel-acoes"><button type="button" class="btn btn-primary" data-nova><i class="fa-solid fa-plus"></i> Nova categoria</button></div>
         `
@@ -129,15 +162,29 @@ export async function abrirGerenciadorCategorias(escopo) {
         if (!linha) return;
         const atual = categoriasDe(escopo).find(c => c.id === linha.dataset.id);
 
-        if (e.target.closest('[data-editar]')) {
+        if (e.target.closest('[data-nova-sub]')) {
+            abrirFormularioCategoria(escopo, null, redesenhar, atual);
+        } else if (e.target.closest('[data-editar]')) {
             abrirFormularioCategoria(escopo, atual, redesenhar);
         } else if (e.target.closest('[data-excluir]')) {
             if (await excluirCategoria(escopo, atual)) redesenhar();
         } else if (e.target.closest('[data-mover]')) {
-            const ids = categoriasDe(escopo).map(c => c.id);
-            const de = ids.indexOf(atual.id);
-            const para = de + Number(e.target.closest('[data-mover]').dataset.mover);
-            [ids[de], ids[para]] = [ids[para], ids[de]];
+            // Troca com a irmã vizinha e manda a ordem da árvore inteira
+            const grupo = irmas(escopo, atual);
+            const de = grupo.findIndex(c => c.id === atual.id);
+            const vizinha = grupo[de + Number(e.target.closest('[data-mover]').dataset.mover)];
+            const ids = emOrdemDeArvore(escopo).map(c => c.id);
+            if (!atual.pai) {
+                // Principais: move o bloco inteiro (a principal com as subcategorias)
+                const blocos = grupo.map(p => [p.id, ...subcategoriasDe(escopo, p.chave).map(c => c.id)]);
+                const j = de + Number(e.target.closest('[data-mover]').dataset.mover);
+                [blocos[de], blocos[j]] = [blocos[j], blocos[de]];
+                ids.splice(0, ids.length, ...blocos.flat(), ...ids.filter(id => !blocos.flat().includes(id)));
+            } else {
+                const a = ids.indexOf(atual.id);
+                const b = ids.indexOf(vizinha.id);
+                [ids[a], ids[b]] = [ids[b], ids[a]];
+            }
             try {
                 await api(`/categorias/${escopo}/ordem`, { metodo: 'PUT', corpo: { ids } });
                 await aposMudar(escopo);
@@ -178,16 +225,27 @@ async function excluirCategoria(escopo, alvo) {
     return true;
 }
 
-function abrirFormularioCategoria(escopo, atual, aoSalvar) {
-    const valores = { nome: atual?.nome || '', cor: atual?.cor || CORES[8], icone: atual?.icone || ICONES[0] };
+// `dentroDe`: principal já escolhida para uma subcategoria nova (herda a cor dela)
+function abrirFormularioCategoria(escopo, atual, aoSalvar, dentroDe = null) {
+    const valores = { nome: atual?.nome || '', cor: atual?.cor || dentroDe?.cor || CORES[8], icone: atual?.icone || ICONES[0] };
+    const temFilhas = Boolean(atual) && subcategoriasDe(escopo, atual.chave).length > 0;
+    const principais = categoriasDe(escopo).filter(c => !c.pai && c.id !== atual?.id);
+    const paiAtual = atual ? atual.pai || '' : dentroDe?.chave || '';
+    const campoPai = comSubcategorias(escopo) && !temFilhas ? `
+                <label class="field"><span>Fica dentro de</span>
+                    <select name="pai">
+                        <option value="">Nenhuma (categoria principal)</option>
+                        ${principais.map(c => `<option value="${escaparHtml(c.chave)}" ${c.chave === paiAtual ? 'selected' : ''}>${escaparHtml(c.nome)}</option>`).join('')}
+                    </select></label>` : '';
     const { corpo, fechar } = abrirPainel({
-        titulo: atual ? `Editando: ${atual.nome}` : 'Nova categoria',
+        titulo: atual ? `Editando: ${atual.nome}` : dentroDe ? `Nova subcategoria em ${dentroDe.nome}` : 'Nova categoria',
         classe: 'painel-categorias',
         html: `
             <form class="form-stack form-categoria" novalidate>
                 <div class="categoria-previa"><span class="chip"><span><i></i> <b></b></span></span></div>
                 <label class="field"><span>Nome</span>
                     <input type="text" name="nome" maxlength="30" value="${escaparHtml(valores.nome)}" required></label>
+                ${campoPai}
                 <div class="field"><span>Cor</span>
                     <div class="categoria-cores">
                         ${CORES.map(cor => `<button type="button" class="categoria-cor" data-cor="${cor}" style="background: ${cor}" aria-label="Cor ${cor}"></button>`).join('')}
@@ -241,6 +299,7 @@ function abrirFormularioCategoria(escopo, atual, aoSalvar) {
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
         const dados = { nome: form.elements.nome.value.trim(), cor: valores.cor, icone: valores.icone };
+        if (form.elements.pai) dados.pai = form.elements.pai.value || null;
         if (!dados.nome) return mostrarNotificacao('Dê um nome para a categoria', 'warning');
         const botao = form.querySelector('button[type="submit"]');
         definirCarregando(botao, true, '⏳ Salvando...');

@@ -10,7 +10,8 @@ const categoriaFromDb = (row) => ({
   nome: row.nome,
   cor: row.cor,
   icone: row.icone,
-  ordem: row.ordem ?? 0
+  ordem: row.ordem ?? 0,
+  pai: row.pai ?? null   // chave da categoria principal (subcategoria) ou null
 });
 
 // Aplica o filtro extra do escopo (ex.: só anotações do tipo "conta")

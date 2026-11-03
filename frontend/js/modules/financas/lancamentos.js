@@ -4,8 +4,8 @@ import { mostrarConfirmacao } from '../../core/modal.js';
 import { abrirPainel } from '../../core/painel.js';
 import { escaparHtml, mostrarNotificacao, definirCarregando } from '../../core/ui.js';
 import { hoje, formatarDia } from '../../core/datas.js';
-import { estiloCategoria, categoriasDe, htmlEscolhaCategoria } from '../../core/categorias.js';
-import { estado, ESCOPO, reais, lerReais, paraCampo, categoriaFin, buscarConta, conta, NEUTRAS } from './dados.js';
+import { estiloCategoria, categoriasDe, subcategoriasDe, htmlEscolhaCategoria } from '../../core/categorias.js';
+import { estado, ESCOPO, reais, lerReais, paraCampo, categoriaFin, buscarConta, conta, NEUTRAS, raiz as raizDe, dentro } from './dados.js';
 import { htmlNavegadorMes } from './visao.js';
 import { termoParecido } from './regras.js';
 
@@ -74,7 +74,12 @@ function preencherFiltros() {
     const { filtros } = estado;
     const raiz = document.getElementById('fin-filtros');
     raiz.querySelector('[data-filtro="conta"]').innerHTML = `<option value="">Todas as contas</option>${estado.contas.map(c => `<option value="${c.id}">${escaparHtml(c.nome)}</option>`).join('')}`;
-    raiz.querySelector('[data-filtro="categoria"]').innerHTML = `<option value="">Todas as categorias</option><option value="sem">Sem categoria</option>${categoriasDe(ESCOPO).map(c => `<option value="${escaparHtml(c.chave)}">${escaparHtml(c.nome)}</option>`).join('')}`;
+    // Principal com subcategorias: um grupo com "tudo de Mercado" e cada subcategoria
+    const opcao = (c, texto) => `<option value="${escaparHtml(c.chave)}">${escaparHtml(texto)}</option>`;
+    raiz.querySelector('[data-filtro="categoria"]').innerHTML = `<option value="">Todas as categorias</option><option value="sem">Sem categoria</option>${categoriasDe(ESCOPO).filter(c => !c.pai).map(c => {
+        const subs = subcategoriasDe(ESCOPO, c.chave);
+        return subs.length ? `<optgroup label="${escaparHtml(c.nome)}">${opcao(c, `${c.nome} (tudo)`)}${subs.map(sub => opcao(sub, sub.nome)).join('')}</optgroup>` : opcao(c, c.nome);
+    }).join('')}`;
     // Só reescreve o que mudou, para não atrapalhar quem está digitando
     raiz.querySelectorAll('[data-filtro]').forEach(campo => {
         const valor = filtros[campo.dataset.filtro] ?? '';
@@ -91,9 +96,9 @@ function filtrar() {
         if (tipo === 'ignorados' ? !t.ignorada : t.ignorada) return false;
         if (tipo === 'gastos' && !(conta(t) && t.valor < 0)) return false;
         if (tipo === 'entradas' && !(conta(t) && t.valor > 0)) return false;
-        if (tipo === 'neutros' && !NEUTRAS.includes(t.categoria)) return false;
+        if (tipo === 'neutros' && !NEUTRAS.includes(raizDe(t.categoria))) return false;
         if (contaId && t.contaId !== contaId) return false;
-        if (categoria && (categoria === 'sem' ? t.categoria : t.categoria !== categoria)) return false;
+        if (categoria && (categoria === 'sem' ? t.categoria : !dentro(t.categoria, categoria))) return false;
         const dia = Number(t.data.slice(8));
         if (diaDe && dia < Number(diaDe)) return false;
         if (diaAte && dia > Number(diaAte)) return false;
@@ -110,7 +115,7 @@ function htmlFiltrosAtivos() {
     const chips = [];
     if (f.busca) chips.push(['busca', `“${f.busca}”`]);
     if (f.conta) chips.push(['conta', buscarConta(f.conta)?.nome || 'Conta']);
-    if (f.categoria) chips.push(['categoria', f.categoria === 'sem' ? 'Sem categoria' : categoriaFin(f.categoria).nome]);
+    if (f.categoria) chips.push(['categoria', f.categoria === 'sem' ? 'Sem categoria' : categoriaFin(f.categoria).nomeCompleto]);
     if (f.tipo) chips.push(['tipo', ROTULOS_TIPO[f.tipo]]);
     if (f.diaDe || f.diaAte) chips.push(['dias', f.diaDe && f.diaDe === f.diaAte ? `Dia ${f.diaDe}` : `Dias ${f.diaDe || 1} a ${f.diaAte || 31}`]);
     if (f.valorMin || f.valorMax) chips.push(['valor', f.valorMin && f.valorMax ? `R$ ${f.valorMin} a R$ ${f.valorMax}` : f.valorMin ? `A partir de R$ ${f.valorMin}` : `Até R$ ${f.valorMax}`]);
@@ -131,14 +136,14 @@ function htmlFiltrosAtivos() {
 function htmlLancamento(t, { comData = false } = {}) {
     const c = categoriaFin(t.categoria);
     const contaDoLancamento = buscarConta(t.contaId);
-    const neutro = NEUTRAS.includes(t.categoria);
+    const neutro = NEUTRAS.includes(raizDe(t.categoria));
     return `
         <button type="button" class="fin-lancamento ${t.ignorada ? 'ignorado' : ''}" data-acao="fin-abrir-lancamento" data-id="${escaparHtml(t.id)}" style="${estiloCategoria(c)}">
             <span class="fin-lancamento-icone"><i class="${c.icone}"></i></span>
             <span class="fin-lancamento-texto">
                 <span class="fin-lancamento-descricao">${escaparHtml(t.descricao)}</span>
                 <span class="fin-lancamento-meta">
-                    ${comData ? `${formatarDia(t.data, { day: '2-digit', month: 'short' }).replace('.', '')} · ` : ''}${escaparHtml(c.nome)} · ${escaparHtml(contaDoLancamento?.nome || 'Conta removida')}
+                    ${comData ? `${formatarDia(t.data, { day: '2-digit', month: 'short' }).replace('.', '')} · ` : ''}${escaparHtml(c.nomeCompleto)} · ${escaparHtml(contaDoLancamento?.nome || 'Conta removida')}
                     ${t.origem === 'importado' ? '<i class="fa-solid fa-building-columns" title="Veio do banco"></i>' : ''}
                     ${t.observacao ? '<i class="fa-regular fa-comment" title="Tem observação"></i>' : ''}
                 </span>

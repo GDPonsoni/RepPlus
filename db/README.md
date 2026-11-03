@@ -26,5 +26,6 @@ acrescente uma linha na tabela abaixo.
 | `20261030_config_modulos.sql` | Ativar/desativar módulos: coluna `modulos_desativados` em `config` |
 | `20261031_categorias.sql` | Categorias gerenciáveis (nome, cor, ícone): tabela `categorias`; remove as listas fixas de `eventos` e `compras_itens` |
 | `20261031_financas.sql` | Módulo Finanças: contas, lançamentos, regras, orçamentos, divisões e conexões de Open Finance |
+| `20261104_categorias_subcategorias.sql` | Subcategorias (coluna `pai` em `categorias`); nas Finanças: Mercado, Contas da casa e Serviços ganham subcategorias |
 | `20261103_financas_regras_sentido.sql` | Regras de categoria só para saídas ou só para entradas: coluna `sentido` em `fin_regras` |
 

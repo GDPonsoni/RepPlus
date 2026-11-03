@@ -50,9 +50,9 @@ export const REGRAS_SUGERIDAS = [
   ['ifood', 'alimentacao'], ['rappi', 'alimentacao'], ['uber eats', 'alimentacao'], ['ze delivery', 'alimentacao'],
   ['uber', 'transporte'], ['99app', 'transporte'], ['99 taxi', 'transporte'], ['posto', 'transporte'], ['shell', 'transporte'],
   ['carrefour', 'mercado'], ['pao de acucar', 'mercado'], ['assai', 'mercado'], ['atacadao', 'mercado'], ['supermercado', 'mercado'],
-  ['enel', 'contas'], ['cpfl', 'contas'], ['cemig', 'contas'], ['light s', 'contas'], ['sabesp', 'contas'], ['sanasa', 'contas'],
-  ['comgas', 'contas'], ['vivo', 'contas'], ['claro', 'contas'], ['tim ', 'contas'], ['oi fibra', 'contas'],
-  ['brk ambiental', 'contas'], ['telefonica', 'contas'], ['sanepar', 'contas'], ['copasa', 'contas'], ['energisa', 'contas'],
+  ['enel', 'energia'], ['cpfl', 'energia'], ['cemig', 'energia'], ['light s', 'energia'], ['energisa', 'energia'],
+  ['sabesp', 'agua'], ['sanasa', 'agua'], ['brk ambiental', 'agua'], ['sanepar', 'agua'], ['copasa', 'agua'], ['comgas', 'gas'],
+  ['vivo', 'internet'], ['claro', 'internet'], ['tim ', 'internet'], ['oi fibra', 'internet'], ['telefonica', 'internet'],
   ['netflix', 'assinaturas'], ['spotify', 'assinaturas'], ['amazon prime', 'assinaturas'], ['disney', 'assinaturas'], ['hbo', 'assinaturas'],
   ['aluguel', 'moradia'], ['condominio', 'moradia'], ['drogasil', 'saude'], ['droga raia', 'saude'], ['farmacia', 'saude'],
   // Dinheiro que só muda de lugar: não é gasto nem entrada

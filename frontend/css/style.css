@@ -2151,6 +2151,18 @@ body.com-painel {
     color: var(--cat);
 }
 
+/* Categoria principal com as subcategorias na mesma linha */
+.chips-grupo {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 0 4px 6px;
+    border-left: 3px solid color-mix(in srgb, var(--cat) 45%, transparent);
+}
+.chip-sub span { min-height: 30px; padding: 4px 10px; font-size: 0.8rem; }
+
 .chip input:checked + span {
     border-color: var(--cat);
     background: color-mix(in srgb, var(--cat) 12%, var(--surface));
@@ -4357,6 +4369,8 @@ button.evento-card:hover {
     background: var(--surface);
 }
 
+.categoria-linha.sub { margin-left: 22px; border-style: dashed; }
+
 .categoria-linha .icon-btn:disabled {
     opacity: 0.3;
     cursor: default;
@@ -4608,6 +4622,9 @@ button.evento-card:hover {
 .fin-legenda-nome { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .fin-legenda-valor { font-weight: 700; }
 .fin-legenda-pct { text-align: right; color: var(--muted); font-size: 0.75rem; }
+.fin-legenda-sub { list-style: none; margin: 0 0 4px 14px; padding-left: 8px; border-left: 2px solid color-mix(in srgb, var(--cat) 35%, transparent); }
+.fin-legenda-sub .fin-legenda-item { padding: 3px 4px; font-size: 0.78rem; color: var(--muted); }
+.fin-legenda-sub .fin-legenda-valor { font-weight: 600; }
 
 .grafico-linha {
     width: 100%;
@@ -5162,6 +5179,8 @@ button.evento-card:hover {
 .fin-regra-categoria { flex: 1; min-width: 0; }
 .fin-regra-categoria i { color: var(--cat); }
 .fin-orcamentos-campos { display: flex; flex-direction: column; gap: 8px; }
+
+.fin-orcamento-campo.sub { margin-left: 18px; font-size: 0.82rem; }
 
 .fin-orcamento-campo {
     display: flex;

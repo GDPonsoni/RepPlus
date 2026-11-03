@@ -10,7 +10,8 @@ import { CategoriasStore } from './store.js';
 //       nome: 'Itens de compra',
 //       permissaoVer: 'compras:ver', permissaoGerenciar: 'compras:editar',
 //       tabela: 'compras_itens', coluna: 'categoria', filtro: { tipo: 'conta' }?,   // onde a chave é usada
-//       padrao: [{ chave: 'mercado', nome: 'Mercado', cor: '#ea580c', icone: 'fa-solid fa-basket-shopping' }]
+//       padrao: [{ chave: 'mercado', nome: 'Mercado', cor: '#ea580c', icone: 'fa-solid fa-basket-shopping' }],
+//       subcategorias: true?   // permite categorias dentro de outras (um nível): { ..., pai: 'mercado' }
 //     }
 //   }
 //
@@ -32,6 +33,7 @@ const COR_PADRAO = '#6b7280';
 const ICONE_PADRAO = 'fa-solid fa-tag';
 const LIMITE_NOME = 30;
 const LIMITE_POR_ESCOPO = 40;
+const LIMITE_COM_SUBCATEGORIAS = 80;
 
 const semAcento = (texto) => String(texto).normalize('NFD').replace(/[̀-ͯ]/g, '');
 const paraChave = (nome) => semAcento(nome).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 30) || 'categoria';
@@ -73,6 +75,20 @@ export async function categoriaPadrao(escopo) {
   return (await listarCategorias(escopo))[0]?.chave ?? null;
 }
 
+// Categoria principal válida para ser `pai` (do mesmo grupo e que não é subcategoria)
+function lerPai(body, definicao, atuais, existente = null) {
+  if (body.pai === undefined) return undefined;
+  const pai = body.pai || null;
+  if (!pai) return null;
+  if (!definicao.subcategorias) throw new HttpError(400, 'Este grupo não tem subcategorias.');
+  const principal = atuais.find(c => c.chave === pai);
+  if (!principal || principal.pai) throw new HttpError(400, 'Escolha uma categoria principal.');
+  if (existente && (principal.id === existente.id || atuais.some(c => c.pai === existente.chave))) {
+    throw new HttpError(400, 'Uma categoria com subcategorias não pode ficar dentro de outra.');
+  }
+  return pai;
+}
+
 function lerCategoria(body, { criando = false } = {}) {
   const dados = {};
   if (criando || body.nome !== undefined) {
@@ -109,7 +125,7 @@ export default {
       const desativados = await modulosDesativados();
       res.json([...escopos.values()]
         .filter(d => !desativados.includes(d.modulo) && temPermissao(req.contexto, d.permissaoVer))
-        .map(d => ({ escopo: d.escopo, nome: d.nome, modulo: d.modulo, podeGerenciar: temPermissao(req.contexto, d.permissaoGerenciar) })));
+        .map(d => ({ escopo: d.escopo, nome: d.nome, modulo: d.modulo, subcategorias: Boolean(d.subcategorias), podeGerenciar: temPermissao(req.contexto, d.permissaoGerenciar) })));
     }));
 
     router.get('/categorias/:escopo', exigirDoEscopo('ver'), asyncHandler(async (req, res) => {
@@ -118,9 +134,13 @@ export default {
 
     router.post('/categorias/:escopo', exigirDoEscopo('gerenciar'), asyncHandler(async (req, res) => {
       const { escopo } = req.params;
+      const definicao = escopos.get(escopo);
       const dados = lerCategoria(req.body || {}, { criando: true });
       const atuais = await listarCategorias(escopo);
-      if (atuais.length >= LIMITE_POR_ESCOPO) throw new HttpError(400, `Máximo de ${LIMITE_POR_ESCOPO} categorias por grupo.`);
+      const limite = definicao.subcategorias ? LIMITE_COM_SUBCATEGORIAS : LIMITE_POR_ESCOPO;
+      if (atuais.length >= limite) throw new HttpError(400, `Máximo de ${limite} categorias por grupo.`);
+      const pai = lerPai(req.body || {}, definicao, atuais);
+      if (pai) dados.pai = pai;
       if (atuais.some(c => semAcento(c.nome).toLowerCase() === semAcento(dados.nome).toLowerCase())) throw new HttpError(400, 'Já existe uma categoria com esse nome.');
 
       // Chave estável a partir do nome (não muda se a categoria for renomeada depois)
@@ -145,10 +165,13 @@ export default {
       const existente = await CategoriasStore.findById(req.params.id);
       if (!existente || existente.escopo !== req.params.escopo) throw new HttpError(404, 'Categoria não encontrada.');
       const dados = lerCategoria(req.body || {});
+      const atuais = await listarCategorias(existente.escopo);
       if (dados.nome) {
-        const outras = (await listarCategorias(existente.escopo)).filter(c => c.id !== existente.id);
+        const outras = atuais.filter(c => c.id !== existente.id);
         if (outras.some(c => semAcento(c.nome).toLowerCase() === semAcento(dados.nome).toLowerCase())) throw new HttpError(400, 'Já existe uma categoria com esse nome.');
       }
+      const pai = lerPai(req.body || {}, escopos.get(existente.escopo), atuais, existente);
+      if (pai !== undefined) dados.pai = pai;
       res.json(await CategoriasStore.update(existente.id, dados));
     }));
 
@@ -159,6 +182,8 @@ export default {
       if (!existente || existente.escopo !== definicao.escopo) throw new HttpError(404, 'Categoria não encontrada.');
       const atuais = await listarCategorias(definicao.escopo);
       if (atuais.length <= 1) throw new HttpError(400, 'O grupo precisa ter pelo menos uma categoria.');
+      const filhas = atuais.filter(c => c.pai === existente.chave);
+      if (filhas.length) throw new HttpError(400, `"${existente.nome}" tem ${filhas.length} subcategoria(s). Exclua ou mova as subcategorias antes.`);
 
       const emUso = await CategoriasStore.contarUso(definicao, existente.chave);
       const substituta = req.query.substituta;

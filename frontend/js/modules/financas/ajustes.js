@@ -1,7 +1,7 @@
 import { api } from '../../core/api.js';
 import { aplicarPermissoes, temPermissao } from '../../core/sessao.js';
 import { escaparHtml, mostrarNotificacao } from '../../core/ui.js';
-import { estiloCategoria, categoriasDe } from '../../core/categorias.js';
+import { estiloCategoria, emOrdemDeArvore } from '../../core/categorias.js';
 import { formatarDia } from '../../core/datas.js';
 import { estado, ESCOPO, NEUTRAS, reais, lerReais, paraCampo, categoriaFin } from './dados.js';
 
@@ -38,7 +38,8 @@ export const SECOES_AJUSTES = [
     }
 ];
 
-const categoriasDeGasto = () => categoriasDe(ESCOPO).filter(c => !NEUTRAS.includes(c.chave) && c.chave !== 'receitas');
+// Na ordem da árvore (principal e logo abaixo as subcategorias), sem as que não são gasto
+const categoriasDeGasto = () => emOrdemDeArvore(ESCOPO).filter(c => ![...NEUTRAS, 'receitas'].includes(c.pai || c.chave));
 
 // Grupos de lançamentos parecidos ainda sem categoria: cada um vira uma regra com um toque
 function htmlSugestoes() {
@@ -51,7 +52,7 @@ function htmlSugestoes() {
                 <span class="fin-sugestao-texto">
                     <code>${escaparHtml(g.termo)}</code>
                     <small>${g.quantidade} lançamento(s) · ${reais(g.total)} · ex.: ${escaparHtml(g.exemplos[0]?.descricao || '')}, ${formatarDia(g.exemplos[0]?.data, { day: '2-digit', month: 'short' }).replace('.', '')}</small>
-                    ${c ? `<small class="fin-sugestao-categoria" style="${estiloCategoria(c)}"><i class="${c.icone}"></i> Você já usou ${escaparHtml(c.nome)} para algo parecido</small>` : ''}
+                    ${c ? `<small class="fin-sugestao-categoria" style="${estiloCategoria(c)}"><i class="${c.icone}"></i> Você já usou ${escaparHtml(c.nomeCompleto)} para algo parecido</small>` : ''}
                 </span>
                 <button type="button" class="btn btn-ghost btn-sm" data-acao="fin-nova-regra" data-termo="${escaparHtml(g.termo)}" data-sentido="${g.sentido || ''}" data-categoria="${escaparHtml(g.categoriaSugerida || '')}" data-permissao="financas:gerenciar">
                     <i class="fa-solid fa-wand-magic-sparkles"></i> Criar regra</button>
@@ -78,11 +79,11 @@ export function renderizarAjustes() {
         const c = categoriaFin(r.categoria);
         const sentido = ICONE_SENTIDO[r.sentido];
         return `
-            <div class="fin-regra" style="${estiloCategoria(c)}" data-busca="${escaparHtml(`${r.termo} ${c.nome}`.toLowerCase())}">
+            <div class="fin-regra" style="${estiloCategoria(c)}" data-busca="${escaparHtml(`${r.termo} ${c.nomeCompleto}`.toLowerCase())}">
                 <code>${escaparHtml(r.termo)}</code>
                 ${sentido ? `<i class="${sentido[0]} fin-regra-sentido" title="${sentido[1]}" aria-label="${sentido[1]}"></i>` : ''}
                 <i class="fa-solid fa-arrow-right"></i>
-                <span class="fin-regra-categoria"><i class="${c.icone}"></i> ${escaparHtml(c.nome)}</span>
+                <span class="fin-regra-categoria"><i class="${c.icone}"></i> ${escaparHtml(c.nomeCompleto)}</span>
                 <span class="fin-regra-uso ${r.quantidade ? '' : 'zero'}" title="Lançamentos categorizados por esta regra">${r.quantidade}</span>
                 <span class="fin-regra-botoes" data-permissao="financas:gerenciar">
                     <button type="button" class="icon-btn" data-acao="fin-editar-regra" data-id="${r.id}" aria-label="Editar regra"><i class="fa-solid fa-pen"></i></button>
@@ -94,7 +95,7 @@ export function renderizarAjustes() {
 
     const orcamento = new Map(estado.orcamentos.map(o => [o.categoria, o.valorMensal]));
     document.getElementById('fin-orcamentos-campos').innerHTML = categoriasDeGasto().map(c => `
-        <label class="fin-orcamento-campo" style="${estiloCategoria(c)}">
+        <label class="fin-orcamento-campo ${c.pai ? 'sub' : ''}" style="${estiloCategoria(c)}">
             <span><i class="${c.icone}"></i> ${escaparHtml(c.nome)}</span>
             <input type="text" inputmode="decimal" data-categoria="${escaparHtml(c.chave)}" value="${paraCampo(orcamento.get(c.chave))}" placeholder="sem limite" ${temPermissao('financas:gerenciar') ? '' : 'disabled'}>
         </label>`).join('');

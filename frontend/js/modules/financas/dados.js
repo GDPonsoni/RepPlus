@@ -1,6 +1,6 @@
 import { api } from '../../core/api.js';
 import { hoje } from '../../core/datas.js';
-import { categoria } from '../../core/categorias.js';
+import { categoria, categoriaRaiz, dentroDe } from '../../core/categorias.js';
 import { obterIntegrantes } from '../../core/moradores.js';
 
 // Finanças: valores em CENTAVOS (inteiros) em toda a API. Saída < 0, entrada > 0.
@@ -69,11 +69,14 @@ export function somarMeses(mes, n) {
 }
 
 export const nomeDoMorador = (id) => obterIntegrantes().find(i => String(i.id) === String(id))?.nome || '—';
-export const categoriaFin = (chave) => (chave ? categoria(ESCOPO, chave) : { chave: null, nome: 'Sem categoria', cor: '#9ca3af', icone: 'fa-solid fa-circle-question' });
+export const categoriaFin = (chave) => (chave ? categoria(ESCOPO, chave) : { chave: null, nome: 'Sem categoria', nomeCompleto: 'Sem categoria', cor: '#9ca3af', icone: 'fa-solid fa-circle-question' });
+// Subcategorias: a principal de uma chave e se a chave é `alvo` ou está dentro dele
+export const raiz = (chave) => categoriaRaiz(ESCOPO, chave);
+export const dentro = (chave, alvo) => dentroDe(ESCOPO, chave, alvo);
 export const buscarConta = (id) => estado.contas.find(c => c.id === id);
 
 // Gastos e entradas de verdade: sem transferências, ajustes e lançamentos ignorados
-export const conta = (t) => !t.ignorada && !NEUTRAS.includes(t.categoria);
+export const conta = (t) => !t.ignorada && !NEUTRAS.includes(raiz(t.categoria));
 
 // ===== API =====
 // Mês exibido + o anterior (uma consulta só), contas, resumo dos últimos 6 meses e orçamentos

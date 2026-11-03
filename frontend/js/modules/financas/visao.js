@@ -1,7 +1,7 @@
 import { escaparHtml } from '../../core/ui.js';
 import { hoje, formatarDia } from '../../core/datas.js';
 import { estiloCategoria } from '../../core/categorias.js';
-import { estado, reais, reaisCurto, nomeDoMes, somarMeses, categoriaFin, conta } from './dados.js';
+import { estado, reais, reaisCurto, nomeDoMes, somarMeses, categoriaFin, conta, raiz, dentro } from './dados.js';
 import { rosca, barrasMensais, linhaAcumulada, barrasDiarias, ativarDicas } from './graficos.js';
 import { contarAte } from '../../core/movimento.js';
 
@@ -78,11 +78,32 @@ function htmlIndicadores() {
         </div>`;
 }
 
+// Rosca pelas categorias principais; na legenda, cada principal mostra as subcategorias dela
 function htmlCategorias() {
-    const porCategoria = new Map();
-    gastos(estado.transacoes).forEach(t => porCategoria.set(t.categoria || '', (porCategoria.get(t.categoria || '') || 0) - t.valor));
-    const total = [...porCategoria.values()].reduce((s, v) => s + v, 0);
-    const linhas = [...porCategoria.entries()].sort((a, b) => b[1] - a[1]).map(([chave, valor]) => ({ c: categoriaFin(chave || null), chave, valor }));
+    const porPrincipal = new Map();   // principal -> { valor, partes: Map(chave -> valor) }
+    gastos(estado.transacoes).forEach(t => {
+        const chave = t.categoria || '';
+        const principal = chave ? raiz(chave) : '';
+        if (!porPrincipal.has(principal)) porPrincipal.set(principal, { valor: 0, partes: new Map() });
+        const grupo = porPrincipal.get(principal);
+        grupo.valor -= t.valor;
+        grupo.partes.set(chave, (grupo.partes.get(chave) || 0) - t.valor);
+    });
+    const total = [...porPrincipal.values()].reduce((s, g) => s + g.valor, 0);
+    const linhas = [...porPrincipal.entries()].sort((a, b) => b[1].valor - a[1].valor)
+        .map(([chave, g]) => ({ c: categoriaFin(chave || null), chave, valor: g.valor, partes: g.partes }));
+    const pct = (valor) => `${Math.round((valor / total) * 100)}%`;
+
+    // Detalhe: só quando algum gasto está numa subcategoria; o lançado direto na principal vira "Sem subcategoria"
+    const htmlPartes = (l) => {
+        if (![...l.partes.keys()].some(chave => chave !== l.chave)) return '';
+        return `<ul class="fin-legenda-sub">${[...l.partes.entries()].sort((a, b) => b[1] - a[1]).map(([chave, valor]) => {
+            const c = chave === l.chave ? { ...l.c, nome: 'Sem subcategoria' } : categoriaFin(chave);
+            return `<li style="${estiloCategoria(c)}"><button type="button" class="fin-legenda-item" data-acao="fin-filtrar-categoria" data-categoria="${escaparHtml(chave)}">
+                <i class="${c.icone}"></i><span class="fin-legenda-nome">${escaparHtml(c.nome)}</span>
+                <span class="fin-legenda-valor">${reais(valor)}</span><span class="fin-legenda-pct">${pct(valor)}</span></button></li>`;
+        }).join('')}</ul>`;
+    };
 
     return `
         <section class="card card-padded fin-bloco">
@@ -97,8 +118,9 @@ function htmlCategorias() {
                                     <i class="${l.c.icone}"></i>
                                     <span class="fin-legenda-nome">${escaparHtml(l.c.nome)}</span>
                                     <span class="fin-legenda-valor">${reais(l.valor)}</span>
-                                    <span class="fin-legenda-pct">${Math.round((l.valor / total) * 100)}%</span>
+                                    <span class="fin-legenda-pct">${pct(l.valor)}</span>
                                 </button>
+                                ${htmlPartes(l)}
                             </li>`).join('')}
                     </ul>
                 </div>` : '<p class="empty-state">Nenhum gasto neste mês.</p>'}
@@ -173,8 +195,8 @@ function htmlOrcamentos() {
                 <p class="empty-state">Defina limites por categoria em <strong>Ajustes → Orçamentos</strong> para acompanhar aqui.</p>
             </section>`;
     }
-    const gastosPor = new Map();
-    gastos(estado.transacoes).forEach(t => gastosPor.set(t.categoria, (gastosPor.get(t.categoria) || 0) - t.valor));
+    // Orçamento de uma principal conta também as subcategorias dela
+    const gastosPor = new Map(estado.orcamentos.map(o => [o.categoria, gastos(estado.transacoes).filter(t => dentro(t.categoria, o.categoria)).reduce((s, t) => s - t.valor, 0)]));
     const mesAtual = estado.mes === hoje().slice(0, 7);
     // Quanto do mês já passou: ajuda a ver se o ritmo de gasto está acima do esperado
     const fracaoMes = mesAtual ? Number(hoje().slice(8)) / diasNoMes(estado.mes) : 1;
@@ -191,7 +213,7 @@ function htmlOrcamentos() {
                     return `
                         <div class="fin-orcamento ${situacao}" style="${estiloCategoria(c)}">
                             <div class="fin-orcamento-topo">
-                                <span><i class="${c.icone}"></i> ${escaparHtml(c.nome)}</span>
+                                <span><i class="${c.icone}"></i> ${escaparHtml(c.nomeCompleto)}</span>
                                 <span>${reais(gasto)} <small>de ${reais(o.valorMensal)}</small></span>
                             </div>
                             <div class="fin-progresso"><span style="width: ${Math.min(100, pct)}%"></span>${mesAtual ? `<i class="fin-progresso-hoje" style="left: ${fracaoMes * 100}%" title="Hoje"></i>` : ''}</div>

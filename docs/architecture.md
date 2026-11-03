@@ -168,6 +168,7 @@ O módulo aparece na navegação e suas abas automaticamente (endereços `#/manu
 
 - `core/categorias` (backend e frontend) guarda categorias com nome, cor e ícone por **escopo**. Um módulo declara seus escopos em `categorias: { <escopo>: { nome, permissaoVer, permissaoGerenciar, tabela, coluna, filtro?, padrao: [...] } }`; o backend valida com `categoriaExiste(escopo, chave)` e usa `categoriaPadrao(escopo)` quando nada é enviado.
 - No frontend: `carregarCategorias(escopo)` no `iniciar()`, `categoria(escopo, chave)` para nome/cor/ícone, `estiloCategoria(c)` para a variável CSS `--cat` e `htmlEscolhaCategoria({ escopo, selecionada })` para os chips de formulário (com o botão "Editar"). Mudanças emitem `categorias:atualizadas`.
+- **Subcategorias** (um nível): um escopo com `subcategorias: true` aceita `pai` (chave de uma categoria principal) na criação e na edição. O backend recusa subcategoria dentro de subcategoria, principal com filhas dentro de outra e excluir principal com filhas. Os registros guardam a chave mais específica; no frontend, `categoria()` traz `nomeCompleto` ("Mercado › Limpeza") e `emOrdemDeArvore`, `subcategoriasDe`, `categoriaRaiz` e `dentroDe(escopo, chave, alvo)` montam a árvore e as somas por categoria principal.
 
 ### Navegação e avisos
 
