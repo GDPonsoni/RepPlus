@@ -1,5 +1,7 @@
 # 🏠 RepPlus - Organização da República
 
+🌐 **Acesse:** [repplus.onrender.com](https://repplus.onrender.com) · 📦 **Código:** [github.com/GDPonsoni/RepPlus](https://github.com/GDPonsoni/RepPlus)
+
 Aplicação web para organizar a república, dividida em módulos que cada casa liga ou desliga: **escala de limpeza** (rodízio automático de cômodos e folgas, regra do banheiro da suíte, infrações), **agenda conjunta** (eventos e aniversários), **lista de compras**, **anotações** (senhas num cofre criptografado, contatos de prestadores, notas), **atas de reunião**, **finanças** (gastos, contas, reserva e divisão de despesas, preparado para Open Finance) e **cadastro de moradores**, com personalização visual.
 
 ## ⚡ Como Rodar
@@ -35,7 +37,7 @@ Com o servidor rodando no computador e o celular **no mesmo Wi-Fi**, abra no cel
 
 ### ☁️ Publicar
 
-Em produção o app roda no **Render**, com o banco no **Neon** e as imagens no **Cloudflare R2**. O passo a passo (criar cada serviço, variáveis de ambiente e importar os dados do Supabase antigo) está em [**docs/deploy.md**](docs/deploy.md).
+Em produção o app roda no **Render**, em **https://repplus.onrender.com**, com o banco no **Neon** e as imagens no **Cloudflare R2**. O passo a passo (criar cada serviço, variáveis de ambiente e importar os dados do Supabase antigo) está em [**docs/deploy.md**](docs/deploy.md).
 
 ---
 

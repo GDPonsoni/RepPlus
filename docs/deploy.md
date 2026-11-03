@@ -1,5 +1,7 @@
 # ☁️ Deploy: Render + Neon + Cloudflare R2
 
+O app está publicado em **https://repplus.onrender.com**, a partir do repositório [GDPonsoni/RepPlus](https://github.com/GDPonsoni/RepPlus).
+
 Em produção o RepPlus usa três serviços, todos com plano gratuito:
 
 | Serviço | Para quê | Variáveis |
@@ -48,7 +50,7 @@ O repositório já tem um [`render.yaml`](../render.yaml) (Blueprint) com:
 1. Em [render.com](https://render.com), entre com o GitHub e abra **New → Blueprint**.
 2. Escolha o repositório `GDPonsoni/RepPlus`. O Render lê o `render.yaml` e pede as variáveis marcadas com `sync: false`: `SENHA_CASA`, `DATABASE_URL`, `DATABASE_URL_UNPOOLED` e as quatro `R2_*`.
    - Outra opção: em **Environment → Add from .env**, cole o seu `.env` local **sem** as linhas do Supabase.
-3. Confirme. O primeiro deploy cria as tabelas no Neon e publica o app em `https://repplus.onrender.com`, ou em um nome parecido se esse já estiver em uso.
+3. Confirme. O primeiro deploy cria as tabelas no Neon e publica o app em `https://repplus.onrender.com` (o endereço atual), ou em um nome parecido se esse já estiver em uso.
 
 O Blueprint publica a branch `feat/modulos`. Quando ela for unida ao `main`, troque `branch:` no `render.yaml` (ou em Settings no Render). Cada push na branch publica sozinho.
 
@@ -87,7 +89,7 @@ Só faz diferença quando houver um banco conectado por Open Finance (Pluggy), q
 Quando estiver, configure um agendador gratuito (ex.: [cron-job.org](https://cron-job.org)) para chamar uma vez por dia:
 
 ```
-GET https://<seu-app>.onrender.com/api/financas/sincronizar
+GET https://repplus.onrender.com/api/financas/sincronizar
 Authorization: Bearer <CRON_SECRET>
 ```
 
