@@ -1,14 +1,15 @@
 import { api } from './api.js';
 
 // Sessão atual: quem está usando, quais permissões tem e quais módulos estão ativos.
-// Hoje o backend roda em modo aberto (todos são admin, permissão '*'); quando houver login,
-// esta mesma rota passa a devolver o usuário logado e só as permissões do papel dele.
+// No modo aberto todos são admin (permissão '*'); no modo senha, a rota responde 401 até a
+// pessoa entrar com a senha da casa, e aí carregarSessao() devolve null (veja main.js).
 let sessao = { modo: 'aberto', autenticado: false, usuario: null, permissoes: [], modulos: [] };
 
 export async function carregarSessao() {
     try {
         sessao = await api('/sessao', { cache: 'no-store' });
     } catch (error) {
+        if (error.status === 401) return null;
         console.error('Erro ao carregar sessão:', error);
         // Esconder botões é só conveniência visual: quem barra de verdade é o backend.
         // Sem resposta, mostra tudo e deixa o backend recusar o que não for permitido.

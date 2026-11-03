@@ -1,5 +1,5 @@
 -- Eventos que se repetem (semanal, quinzenal, mensal, anual).
--- Aplicar no Supabase (SQL Editor) depois de 20261028_moradores_perfil_e_agenda.sql.
+-- Aplicar (npm run db:migrar) depois de 20261028_moradores_perfil_e_agenda.sql.
 -- Pode ser executado mais de uma vez sem efeito colateral.
 
 alter table eventos add column if not exists recorrencia text

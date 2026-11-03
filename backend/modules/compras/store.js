@@ -1,4 +1,4 @@
-import { supabase } from '../../core/db/supabaseClient.js';
+import { banco } from '../../core/db/banco.js';
 import { check, selectAll, findRowById } from '../../core/db/helpers.js';
 
 // Itens da lista de compras (tabela `compras_itens`). Cada item fica salvo para sempre:
@@ -40,7 +40,7 @@ const itemToDb = (item) => {
 
 export const ComprasStore = {
   async list() {
-    const rows = await selectAll(() => supabase.from('compras_itens').select('*'));
+    const rows = await selectAll(() => banco.from('compras_itens').select('*'));
     return rows.map(itemFromDb);
   },
   async findById(id) {
@@ -53,15 +53,15 @@ export const ComprasStore = {
     return (await this.list()).find(item => normalizarNome(item.nome) === alvo && String(item.id) !== String(excludeId)) || null;
   },
   async create(item) {
-    const row = check(await supabase.from('compras_itens').insert(itemToDb(item)).select().single());
+    const row = check(await banco.from('compras_itens').insert(itemToDb(item)).select().single());
     return itemFromDb(row);
   },
   async update(id, changes) {
-    const row = check(await supabase.from('compras_itens').update(itemToDb(changes)).eq('id', id).select().maybeSingle());
+    const row = check(await banco.from('compras_itens').update(itemToDb(changes)).eq('id', id).select().maybeSingle());
     return row ? itemFromDb(row) : null;
   },
   async remove(id) {
-    const rows = check(await supabase.from('compras_itens').delete().eq('id', id).select());
+    const rows = check(await banco.from('compras_itens').delete().eq('id', id).select());
     return rows.length > 0;
   }
 };

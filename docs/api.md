@@ -2,7 +2,16 @@
 
 O backend expõe a API sob o prefixo `/api`. Requisições com corpo usam `Content-Type: application/json`, exceto os uploads, que usam `multipart/form-data`. Erros de validação retornam `400` com `{ "error": string }`.
 
-Cada rota exige uma permissão (veja [Módulos e Permissões](architecture.md#-módulos-e-permissões)). No modo atual (`AUTH_MODO=aberto`, sem login) todo acesso tem todas as permissões; quando houver login, a falta de login retorna `401` e a falta de permissão retorna `403`.
+Cada rota exige uma permissão (veja [Módulos e Permissões](architecture.md#-módulos-e-permissões)). Com `AUTH_MODO=senha` (produção), toda rota responde `401` (`{ "error": "Entre com a senha da casa." }`) sem o cookie de login, menos `/api/auth/*`, `GET /api/versao` e o agendador das finanças; quem entrou tem todas as permissões. Com `AUTH_MODO=aberto` (testes locais) não há login. A falta de permissão retorna `403`.
+
+---
+
+## 🔑 Entrada (`/api/auth`, só com `AUTH_MODO=senha`)
+
+| Método | Endpoint | Descrição | Corpo / Retorno |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/api/auth/entrar` | Confere a senha da casa e grava o cookie de login (30 dias) | `{ "senha": string }` → `{ "ok": true }`; `401` se errada, `429` depois de 10 erros em 15 minutos |
+| `POST` | `/api/auth/sair` | Apaga o cookie deste aparelho | `{ "ok": true }` |
 
 ---
 
@@ -11,7 +20,7 @@ Cada rota exige uma permissão (veja [Módulos e Permissões](architecture.md#-m
 | Método | Endpoint | Descrição | Corpo / Retorno |
 | :--- | :--- | :--- | :--- |
 | `GET` | `/api/sessao` | Sessão atual: usuário, papel, permissões e módulos ativos | `{ "modo", "autenticado", "usuario", "papel", "permissoes", "modulos" }` |
-| `GET` | `/api/versao` | Commit em execução (na Vercel, lido das variáveis `VERCEL_GIT_*`; localmente, do git) | `{ "ambiente", "sha", "branch", "mensagem", "autor", "data", "url" }` |
+| `GET` | `/api/versao` | Commit em execução (no Render, lido das variáveis `RENDER_GIT_*`; localmente, do git) | `{ "ambiente", "sha", "branch", "mensagem", "autor", "data", "url" }` |
 
 O frontend chama `GET /api/sessao` ao abrir: ele traz o usuário, as permissões e a lista de módulos ativos que a interface monta.
 
@@ -24,7 +33,7 @@ O frontend chama `GET /api/sessao` ao abrir: ele traz o usuário, as permissões
 | `GET` | `/api/modulos` | Todos os módulos, ativos ou não | `[{ "id", "nome", "nucleo", "ativo" }]` |
 | `PUT` | `/api/modulos/:id` | Liga ou desliga um módulo (os do núcleo não podem ser desligados) | `{ "ativo": boolean }` |
 
-Ambos exigem a permissão `modulos:gerenciar`. Com um módulo desligado, as rotas dele respondem 404 (`{ "error": "Rota não encontrada." }`) e ele some de `GET /api/sessao`; os dados continuam no banco. A mudança é lida com cache de 15 segundos (na Vercel pode levar esse tempo para valer em todas as instâncias).
+Ambos exigem a permissão `modulos:gerenciar`. Com um módulo desligado, as rotas dele respondem 404 (`{ "error": "Rota não encontrada." }`) e ele some de `GET /api/sessao`; os dados continuam no banco. A mudança é lida com cache de 15 segundos (com mais de uma instância do servidor, pode levar esse tempo para valer em todas as instâncias).
 
 ---
 
@@ -172,7 +181,7 @@ Valores sempre em **centavos inteiros** (saída negativa, entrada positiva). Dat
 | `GET` | `/api/financas/provedores` | Provedores de Open Finance e se estão disponíveis |
 | `GET` / `POST` / `DELETE` | `/api/financas/conexoes[/:id]` | Conectar `{ provedor, dados? }` (já sincroniza); desconectar mantém o histórico e torna as contas manuais |
 | `POST` | `/api/financas/conexoes/:id/sincronizar` | Sincroniza uma conexão |
-| `GET` / `POST` | `/api/financas/sincronizar` | Sincroniza tudo. O `GET` é o agendamento diário da Vercel (aceita `Authorization: Bearer <CRON_SECRET>`) |
+| `GET` / `POST` | `/api/financas/sincronizar` | Sincroniza tudo. O `GET` é para um agendador diário (aceita `Authorization: Bearer <CRON_SECRET>`) |
 
 ---
 

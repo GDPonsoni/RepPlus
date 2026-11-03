@@ -22,7 +22,7 @@ let modulosMontados = [];
 
 // ===== MÓDULOS DESATIVADOS =====
 // A lista fica na tabela config (coluna modulos_desativados). Cada requisição consulta o cache;
-// na Vercel há várias instâncias, então uma mudança leva até CACHE_MS para valer em todas.
+// com mais de uma instância do servidor, uma mudança leva até CACHE_MS para valer em todas.
 const CACHE_MS = 15000;
 let cache = { desativados: [], valeAte: 0 };
 

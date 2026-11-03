@@ -1,4 +1,4 @@
-import { supabase } from '../db/supabaseClient.js';
+import { banco } from '../db/banco.js';
 import { check, selectAll, findRowById, sameId, normalizeBoolean } from '../db/helpers.js';
 
 // Moradores da república (tabela `integrantes`). São do núcleo: todo módulo que envolve
@@ -48,7 +48,7 @@ const perfilToDb = (dados) => {
 
 export const IntegrantesStore = {
   async list() {
-    const rows = await selectAll(() => supabase.from('integrantes').select('*'));
+    const rows = await selectAll(() => banco.from('integrantes').select('*'));
     return rows.map(integranteFromDb);
   },
   async findById(id) {
@@ -63,7 +63,7 @@ export const IntegrantesStore = {
     ) || null;
   },
   async create({ nome, isSuite, ativo, ...perfil }) {
-    const row = check(await supabase.from('integrantes').insert({
+    const row = check(await banco.from('integrantes').insert({
       nome: nome.trim(),
       is_suite: normalizeBoolean(isSuite, false),
       ativo: normalizeBoolean(ativo, true),
@@ -77,11 +77,11 @@ export const IntegrantesStore = {
     if (changes.isSuite !== undefined) dbChanges.is_suite = changes.isSuite;
     if (changes.ativo !== undefined) dbChanges.ativo = changes.ativo;
 
-    const row = check(await supabase.from('integrantes').update(dbChanges).eq('id', id).select().maybeSingle());
+    const row = check(await banco.from('integrantes').update(dbChanges).eq('id', id).select().maybeSingle());
     return row ? integranteFromDb(row) : null;
   },
   async remove(id) {
-    const rows = check(await supabase.from('integrantes').delete().eq('id', id).select());
+    const rows = check(await banco.from('integrantes').delete().eq('id', id).select());
     return rows.length > 0;
   }
 };

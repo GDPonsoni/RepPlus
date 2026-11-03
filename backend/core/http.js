@@ -21,7 +21,7 @@ export const asyncHandler = (fn) => (req, res, next) => fn(req, res, next).catch
 
 const ALLOWED_IMAGE_EXTENSIONS = /\.(png|jpe?g|webp|gif)$/i;
 
-// Upload de imagens em memória (limite de 5MB e tipos permitidos); o arquivo vai para o Storage
+// Upload de imagens em memória (limite de 5MB e tipos permitidos); o arquivo vai para o R2
 export const upload = multer({
   storage: multer.memoryStorage(),
   limits: { fileSize: 5 * 1024 * 1024 },

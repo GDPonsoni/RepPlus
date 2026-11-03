@@ -1,0 +1,38 @@
+# Render Blueprint: cria o serviço web do RepPlus (Dashboard → New → Blueprint → este repositório).
+# Os valores marcados com sync: false são pedidos na criação e ficam só no Render, nunca no git.
+services:
+  - type: web
+    name: repplus
+    runtime: node
+    plan: free
+    region: virginia          # mesma região do banco no Neon (AWS us-east-1) para as consultas serem rápidas
+    branch: feat/modulos
+    buildCommand: npm install && npm run db:migrar
+    startCommand: npm start
+    healthCheckPath: /api/versao
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      # Login pela senha da casa: sem ela, nada da API nem das imagens responde
+      - key: AUTH_MODO
+        value: senha
+      - key: SENHA_CASA
+        sync: false
+      - key: SESSAO_SEGREDO   # assina o cookie de login; trocar desconecta todos os aparelhos
+        generateValue: true
+      # Neon → Connect: a string com -pooler (app) e a direta (migrações)
+      - key: DATABASE_URL
+        sync: false
+      - key: DATABASE_URL_UNPOOLED
+        sync: false
+      # Bucket R2 privado e token com Object Read & Write só nele
+      - key: R2_ACCOUNT_ID
+        sync: false
+      - key: R2_ACCESS_KEY_ID
+        sync: false
+      - key: R2_SECRET_ACCESS_KEY
+        sync: false
+      - key: R2_BUCKET
+        sync: false
+      - key: CRON_SECRET      # protege GET /api/financas/sincronizar para um agendador externo
+        generateValue: true

@@ -1,6 +1,6 @@
 # 🏗️ Arquitetura do Sistema
 
-O **Escala** é uma aplicação monolítica leve: um servidor Node.js/Express expõe uma API REST e serve o frontend em JavaScript puro. Dados e imagens ficam no Supabase.
+O **RepPlus** é uma aplicação monolítica leve: um servidor Node.js/Express expõe uma API REST e serve o frontend em JavaScript puro. Os dados ficam num banco Postgres (Neon) e as imagens no Cloudflare R2.
 
 O código é dividido em **núcleo** (o que todo módulo usa: moradores, aparência, categorias, sessão/permissões, navegação, semana, uploads) e **módulos** de funcionalidade: escala de limpeza, agenda, lista de compras, anotações, atas de reunião e finanças. Cada república liga só os módulos que usa, e um módulo novo entra sem mexer no núcleo. Veja [Módulos e Permissões](#-módulos-e-permissões).
 
@@ -27,18 +27,17 @@ O código é dividido em **núcleo** (o que todo módulo usa: moradores, aparên
 |  escala · agenda · compras · anotacoes · atas ·       |
 |  financas                                             |
 |        │                                              |
-|        ├── */store.js ─────────┐                      |
-|        └── core/storage.js ─┐  │   Multer (memória)   |
-+-----------------------------|--|----------------------+
-                              |  |
-               +--------------v--v--------------+
-               |            Supabase            |
-               |  Storage (bucket "uploads")    |
-               |  Postgres (tabelas do app)     |
-               +--------------------------------+
+|        ├── */store.js -> core/db/banco.js (pg)        |
+|        └── core/storage.js (S3)   Multer (memória)    |
++------------|-----------------------|------------------+
+             |                       |
+   +---------v----------+   +--------v---------------+
+   |  Postgres (Neon)   |   |  Cloudflare R2         |
+   |  tabelas do app    |   |  bucket das imagens    |
+   +--------------------+   +------------------------+
 ```
 
-Em produção, a Vercel roda `backend/server.js` como função serverless para `/api/*` e serve `frontend/` como arquivos estáticos (veja `vercel.json`), e agenda a sincronização diária das finanças (`crons`). Localmente, o próprio Express serve o frontend e escuta em todas as interfaces de rede, então o celular no mesmo Wi-Fi abre pelo IP do computador (o `npm start` mostra o endereço).
+Em produção, o Render roda `npm start` como um servidor sempre igual ao local, e aplica as migrações a cada deploy (veja [deploy.md](deploy.md) e `render.yaml`). O próprio Express serve o frontend e escuta em todas as interfaces de rede, então o celular no mesmo Wi-Fi abre pelo IP do computador (o `npm start` mostra o endereço).
 
 ---
 
@@ -47,16 +46,20 @@ Em produção, a Vercel roda `backend/server.js` como função serverless para `
 - **Runtime**: Node.js com ES Modules (`"type": "module"`).
 - **Framework**: Express, na porta `3000` ou na variável `PORT`.
 - **Estrutura** (`backend/`):
-  - `server.js`: ponto de entrada (sobe o servidor localmente; na Vercel, exporta o app).
+  - `server.js`: ponto de entrada (sobe o servidor, localmente e no Render).
   - `app.js`: monta o Express, a sessão e a lista de módulos (`MODULOS`).
-  - `core/`: `http.js` (asyncHandler, HttpError, upload, tratamento de erros), `semana.js` (semana ISO no horário de Brasília), `storage.js` (imagens), `db/` (cliente Supabase e helpers de consulta), `auth/` (sessão e permissões), `modulos.js` (contrato e montagem dos módulos) e os módulos do núcleo `sistema.js`, `moradores/`, `configuracao/` e `categorias/`.
+  - `core/`: `http.js` (asyncHandler, HttpError, upload, tratamento de erros), `semana.js` (semana ISO no horário de Brasília), `storage.js` (imagens), `db/` (acesso ao Postgres e helpers de consulta), `auth/` (sessão e permissões), `modulos.js` (contrato e montagem dos módulos) e os módulos do núcleo `sistema.js`, `moradores/`, `configuracao/` e `categorias/`.
   - `modules/<módulo>/`: `index.js` (definição: permissões, categorias e rotas), `store.js` (acesso às tabelas) e o que for próprio do módulo, como `rotas/` e `rodizio.js` na escala, `recorrencia.js` na agenda ou `provedores/` nas finanças.
 - **Persistência** (`store.js` de cada módulo): um objeto por tabela (ex.: `IntegrantesStore`, `ComodosStore`, `EscalasStore`, `ConfigStore`) que converte entre o formato do banco (`snake_case`) e o da API (`camelCase`).
   - A troca da escala de uma semana (`replaceSemana`) usa a função Postgres `replace_semana_escala`, que apaga e insere numa única transação.
   - Trocas e renomeações gravam várias linhas num único `upsert`.
-  - O Supabase devolve no máximo 1000 linhas por consulta, então as listagens são paginadas (`selectAll`) até vir uma página vazia. A listagem de imagens do Storage também é paginada.
-- **Imagens** (`backend/core/storage.js`): o Multer recebe o arquivo em memória (png, jpg, jpeg, webp ou gif, até 5MB) e ele é enviado ao bucket `uploads` do Supabase Storage. O banco guarda a URL pública.
-- **Fuso horário**: a "semana atual" é calculada no horário de Brasília (`America/Sao_Paulo`), seguindo a semana ISO 8601 (segunda a domingo). A Vercel roda em UTC, então isso não depende do servidor.
+  - As listagens que crescem com o tempo são paginadas (`selectAll`, 1000 linhas por vez, ordenadas pela chave). A listagem de imagens do bucket também é paginada.
+- **Banco** (`backend/core/db/banco.js`): um pool do `pg` ligado ao `DATABASE_URL` (no Neon, a conexão com `-pooler`; as migrações usam a direta, `DATABASE_URL_UNPOOLED`). As stores montam as consultas com um encadeamento curto (`banco.from('tabela').select('*').eq('id', id).maybeSingle()`), no mesmo formato que o app usava com o Supabase, e recebem `{ data, error }` (lido por `check()`).
+  - Por baixo, cada chamada vira um SQL com parâmetros (`$1`, `$2`...). Os nomes de tabela e coluna são conferidos com os do próprio banco, e os campos `jsonb` recebem JSON.
+  - Datas e horários saem como texto ISO, e números como `number`, como a API sempre devolveu.
+  - Existem só os métodos que o backend usa (`select`, `insert`, `upsert`, `update`, `delete`, `eq`, `in`, `is`, `gte`, `lt`, `or`, `order`, `range`, `single`, `maybeSingle` e `rpc`); `update` e `delete` sem filtro são recusados.
+- **Imagens** (`backend/core/storage.js`): o Multer recebe o arquivo em memória (png, jpg, jpeg, webp ou gif, até 5MB) e ele é enviado ao bucket **privado** do Cloudflare R2 pela API compatível com S3 (`@aws-sdk/client-s3`). O bucket não tem endereço público: o banco guarda o caminho `/api/midia/<chave>`, e essa rota busca o arquivo no R2 e o entrega só a quem entrou no app. Sem as variáveis `R2_*`, só os envios de imagem dão erro; o resto do app funciona.
+- **Fuso horário**: a "semana atual" é calculada no horário de Brasília (`America/Sao_Paulo`), seguindo a semana ISO 8601 (segunda a domingo). O servidor roda em UTC, então isso não depende do fuso dele.
 
 ### Algoritmo do Rodízio (`backend/modules/escala/rodizio.js`)
 
@@ -157,7 +160,7 @@ O módulo aparece na navegação e suas abas automaticamente (endereços `#/manu
 - `modules/financas/` (backend): `store.js` (tabelas `fin_*`), `regras.js` (categorização por "contém"), `sincronizacao.js` e `provedores/`.
 - **Provedores** (`provedores/index.js`) seguem um contrato único: `configurado()`, `conectar(dados)`, `contas(conexao)` e `transacoes(conexao, conta, desde)`, sempre com valores em centavos. A sincronização, a deduplicação (`externo_id`) e as regras não dependem do provedor.
 - `provedores/demo.js` simula um banco e só aparece com a variável `FINANCAS_PROVEDOR_DEMO=1` (para testes); `provedores/pluggy.js` marca onde entra a integração real com o roteiro do que implementar.
-- A Vercel chama `GET /api/financas/sincronizar` uma vez por dia (`crons` no `vercel.json`); com `CRON_SECRET` definido, a chamada do agendador é aceita mesmo quando houver login.
+- Um agendador externo pode chamar `GET /api/financas/sincronizar` uma vez por dia (veja [deploy.md](deploy.md#5-sincronização-diária-das-finanças-opcional)). Com `CRON_SECRET` definido, a chamada do agendador é aceita mesmo quando houver login.
 - Frontend (`modules/financas/`): `dados.js` (estado, API e formatação), `graficos.js` (SVG sem biblioteca), uma tela por aba (`visao.js`, `lancamentos.js`, `contas.js`, `divisoes.js`, `ajustes.js`), `inicio.js` e `avisos.js`.
 
 ### Categorias
@@ -168,7 +171,7 @@ O módulo aparece na navegação e suas abas automaticamente (endereços `#/manu
 ### Navegação e avisos
 
 - `core/shell.js` monta a navegação a partir da lista de módulos: **menu lateral** (≥ 900px) e **barra inferior** no celular (até 5 itens; a partir do 6º módulo, os últimos vão para "Mais"). A ordem é a de `MODULOS` no `main.js`; `nomeCurto` é o rótulo na barra inferior.
-- Módulos com `menu: 'usuario'` (Moradores e Ajustes) ficam no **menu do canto superior direito**, junto do avatar. É o lugar previsto para perfil e "sair" quando o login existir (`obterSessao().usuario`).
+- Módulos com `menu: 'usuario'` (Moradores e Ajustes) ficam no **menu do canto superior direito**, junto do avatar. Com a senha da casa ligada, o botão **Sair deste aparelho** fica aqui; é também o lugar previsto para o perfil quando houver login por morador (`obterSessao().usuario`).
 - `core/avisos.js` junta os `avisos()` dos módulos ativos no **sino**. Cada aviso tem `id` estável; os já vistos ficam no `localStorage` (`escala:avisos-vistos`) e o contador mostra só os novos. A lista é recarregada a cada 5 minutos e ao abrir o sino.
 
 ### Ligar e desligar módulos
@@ -177,18 +180,18 @@ O módulo aparece na navegação e suas abas automaticamente (endereços `#/manu
 - `core/modulos.js` monta cada módulo atrás de um filtro: se ele estiver desligado, a requisição pula o router do módulo e termina no 404 da API. `GET /api/sessao` devolve só os módulos ativos, e o frontend (`main.js`) monta apenas esses.
 - Um módulo que usa outro deve checar `moduloAtivo('<id>')` no frontend (ex.: as Atas só sugerem reuniões se a Agenda estiver ligada).
 
-### Sessão e permissões (pontes para o login)
+### Sessão, login e permissões
 
 - Toda requisição em `/api` recebe `req.contexto = { modo, autenticado, usuario, republicaId, permissoes }` (`backend/core/auth/sessao.js`).
 - Cada rota declara a permissão que exige com `exigirPermissao('modulo:acao')`. Usar uma permissão que nenhum módulo declarou derruba o servidor na subida, para o erro aparecer cedo.
 - Papéis: `admin` (pode tudo) e `morador` (recebe as permissões marcadas com `papeis: ['morador']`).
-- **Modo atual: `AUTH_MODO=aberto` (padrão)**. Não há login; todo acesso é tratado como admin, exatamente como o app sempre funcionou.
+- **`AUTH_MODO=senha` (produção)**: a república tem uma senha única, `SENHA_CASA`. `POST /api/auth/entrar` confere a senha e grava um cookie `HttpOnly` (`Secure` em https, `SameSite=Lax`) assinado com `SESSAO_SEGREDO`, válido por 30 dias (`core/auth/senha.js`). Sem esse cookie, toda a API e as imagens respondem `401`, menos `/api/versao` (verificação de saúde do Render) e o agendador das finanças. Quem entra é admin. Depois de 10 senhas erradas em 15 minutos, o IP espera. Trocar `SENHA_CASA` ou `SESSAO_SEGREDO` desconecta todos os aparelhos.
+- **`AUTH_MODO=aberto` (padrão, só para testes locais)**: sem login; todo acesso é tratado como admin.
 - `GET /api/sessao` informa ao frontend o usuário, as permissões e os módulos ativos. O frontend esconde os elementos com `data-permissao="..."` que o usuário não pode usar. Isso é só conveniência visual: quem barra de verdade é o backend (401 sem login, 403 sem permissão).
 - `republicaId` fica reservado (hoje `null`) para quando o app atender mais de uma república.
 
-**Para ligar o login no futuro:**
+No frontend, quando `GET /api/sessao` (ou qualquer chamada) responde `401`, `main.js` troca a página pela tela de entrada (`core/entrada.js`); depois de entrar, a página recarrega.
 
-1. Backend: criar um novo resolvedor em `core/auth/sessao.js` (ex.: `supabase`, que lê o token `Authorization: Bearer` com `supabase.auth.getUser` e busca o papel do usuário numa tabela de perfis ligada a `integrantes`), e definir `AUTH_MODO` com ele.
-2. Frontend: criar a tela de login, chamar `definirToken()` (`core/api.js`) após entrar e tratar o evento `sessao:expirada` (hoje só mostra um aviso, em `main.js`).
+**Para um login por morador no futuro:** criar outro resolvedor em `core/auth/sessao.js` (que confira a sessão numa tabela própria e busque o papel do usuário numa tabela de perfis ligada a `integrantes`) e definir `AUTH_MODO` com ele.
 
 As rotas e as telas dos módulos não precisam mudar.

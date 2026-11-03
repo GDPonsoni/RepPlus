@@ -11,8 +11,14 @@ Este guia explica como operar o **Escala** no dia a dia.
    npm install
    npm start
    ```
-2. Abra o navegador em `http://localhost:3000` (ou na URL da Vercel).
-3. **No celular**: com o celular no mesmo Wi-Fi do computador, abra o endereço que aparece no terminal ao subir o servidor (`http://192.168.x.x:3000`). O cofre de senhas só funciona pelo endereço seguro (https) da Vercel ou em `localhost`; o resto do app funciona normalmente pelo IP. Veja [Testar no celular](../README.md#-testar-no-celular).
+2. Abra o navegador em `http://localhost:3000` (ou no endereço publicado no Render).
+3. **No celular**: com o celular no mesmo Wi-Fi do computador, abra o endereço que aparece no terminal ao subir o servidor (`http://192.168.x.x:3000`). O cofre de senhas só funciona pelo endereço seguro (https) publicado no Render ou em `localhost`; o resto do app funciona normalmente pelo IP. Veja [Testar no celular](../README.md#-testar-no-celular).
+
+### Entrar no app
+
+- O app pede a **senha da casa** (a mesma para todos os moradores). Depois de entrar, o aparelho fica conectado por 30 dias.
+- Para desconectar um aparelho: menu 👤 → **Sair deste aparelho**.
+- **Alguém saiu da república?** Troque a senha da casa: no Render, em *Environment*, mude `SENHA_CASA` e salve. O app reinicia e todos os aparelhos precisam entrar de novo com a senha nova.
 
 ---
 
@@ -24,7 +30,7 @@ O app abre no **Início**, com um resumo de cada módulo ligado. Toque na **logo
 - **No computador**: o **menu lateral** à esquerda lista todos os módulos.
 - **Canto superior direito**:
   - 🔔 **Avisos**: encaminhamentos atrasados ou vencendo, o que acabou na lista de compras, eventos de hoje, aniversários do dia, escala da semana não gerada e alertas das finanças (orçamento, banco, divisões em aberto). O número mostra os avisos que você ainda não viu, e o sino balança quando chega um novo; tocar num aviso leva até ele.
-  - 👤 **Menu**: **Moradores** e **Ajustes**. Quando houver login, o perfil e o "sair" também ficarão aqui.
+  - 👤 **Menu**: **Moradores**, **Ajustes** e **Sair deste aparelho**.
 - Dentro de cada módulo, as **abas** ficam logo abaixo do topo.
 - Cada aba lembra onde você parou de rolar; tocar de novo no módulo ou na aba que já está aberta volta ao topo.
 - No celular, os painéis (formulários, Mais, Avisos) fecham também arrastando a barrinha do topo para baixo.
@@ -64,7 +70,7 @@ Os módulos:
 - Marque **"É da suíte?"** para quem mora na suíte: só essas pessoas fazem os cômodos "apenas suíte".
 - Desmarque **"Está ativo?"** se alguém estiver viajando ou ausente. A pessoa sai da próxima escala gerada (a da semana atual só muda se você gerar de novo).
 - Com a data de nascimento preenchida, o aniversário aparece em **Próximos aniversários** e na **Agenda**.
-- ⚠️ **Documentos (CPF/RG)**: enquanto o app não tiver login, qualquer pessoa com o link consegue ver esses dados. Só preencha depois que o login estiver ativo.
+- 🔒 **Documentos (CPF/RG)**: só quem sabe a senha da casa vê esses dados. Se alguém sair da república, troque a senha da casa (veja *Entrar no app*).
 
 ### B. Cômodos
 - Em **Escala de Limpeza → Ajustes → Cômodos e Tarefas**, cadastre os cômodos da casa (ex.: *Cozinha*, *Sala*, *Lavanderia*, *Sacada*). Os nomes não podem se repetir.
@@ -157,7 +163,7 @@ A semana vai de segunda a domingo e vira à 0h de segunda, no horário de Brasí
 - **Ajustes**: regras de categoria ("se contém IFOOD → Delivery"), regras sugeridas, orçamento mensal por categoria e as categorias (nome, cor, ícone).
 - O sino avisa quando um orçamento passa de 80% ou estoura, quando a atualização de um banco falha e quando uma divisão tem partes em aberto há mais de 15 dias.
 
-> Sem login, qualquer pessoa com o link vê as finanças da casa. Quando houver login, cada morador verá só o que o papel dele permitir.
+> Todos que sabem a senha da casa veem as finanças. Quando houver login por morador, cada um verá só o que o papel dele permitir.
 
 ---
 

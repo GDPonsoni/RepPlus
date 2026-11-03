@@ -1,22 +1,33 @@
 {
   "name": "escala-app",
   "version": "1.0.0",
-  "description": "App para gerenciar escalas de limpeza",
+  "description": "RepPlus: organização da república (escala de limpeza, agenda, compras, finanças e mais)",
   "main": "backend/server.js",
   "type": "module",
   "scripts": {
     "start": "node backend/server.js",
     "dev": "node backend/server.js",
-    "migrate": "node scripts/migrate-to-supabase.mjs"
+    "db:migrar": "node db/migrar.mjs",
+    "db:importar-supabase": "node db/importar-supabase.mjs"
   },
-  "keywords": ["escala", "limpeza", "república"],
+  "keywords": [
+    "escala",
+    "limpeza",
+    "república"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@supabase/supabase-js": "^2.45.4",
+    "@aws-sdk/client-s3": "3.1152.0",
+    "@neon/config": "^1.10.0",
+    "@neon/env": "^1.6.8",
+    "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.18.2",
     "multer": "^1.4.5-lts.1",
-    "cors": "^2.8.5"
+    "pg": "8.23.1"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }

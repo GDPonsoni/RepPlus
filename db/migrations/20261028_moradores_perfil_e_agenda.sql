@@ -1,5 +1,5 @@
 -- Cadastro completo de moradores e módulo de agenda.
--- Aplicar no Supabase (SQL Editor) ANTES de publicar o código que usa estes campos.
+-- Aplicar (npm run db:migrar) ANTES de publicar o código que usa estes campos.
 -- Pode ser executado mais de uma vez sem efeito colateral.
 
 -- ===== Moradores: campos do cadastro =====

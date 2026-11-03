@@ -6,9 +6,10 @@
 https://nodejs.org/ (versão LTS)
 
 ### 2. Configure e execute
-Crie o `.env` na raiz com `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` (veja o [README](README.md)), aplique as migrações de [`db/migrations/`](db/README.md) no SQL Editor do Supabase e rode:
+Copie o `.env.example` para `.env` e preencha ao menos o `DATABASE_URL` (banco no Neon; veja o [README](README.md)). Depois rode:
 ```bash
 npm install
+npm run db:migrar
 npm start
 ```
 
@@ -48,15 +49,16 @@ Próxima: cada um vai para o cômodo seguinte da sequência
 
 | Erro | Solução |
 |------|---------|
-| `Defina SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY` | Crie o `.env` na raiz do projeto |
+| `Defina DATABASE_URL` | Crie o `.env` na raiz do projeto (copie o `.env.example`) |
 | Porta em uso | Rode com outra porta: `PORT=3001 npm start` |
 | Celular não abre o app | Confira se está no mesmo Wi-Fi e libere a porta no firewall do computador (`sudo ufw allow 3000/tcp`) |
-| Cofre não destranca no celular | O cofre precisa de https: use o endereço da Vercel |
-| Erro de tabela ou coluna inexistente | Aplique as migrações de `db/migrations/` em ordem |
+| Cofre não destranca no celular | O cofre precisa de https: use o endereço publicado no Render |
+| "Envio de imagens não configurado" | Preencha as variáveis `R2_*` no `.env` (veja [docs/deploy.md](docs/deploy.md)) |
+| Erro de tabela ou coluna inexistente | Rode `npm run db:migrar` |
 | Sem módulos | `npm install` na raiz do projeto |
 | "Há N vagas para M pessoas" ao gerar | Ative mais integrantes ou desmarque cômodos obrigatórios |
 
 **Pronto!** 🎉
 
 ---
-Para arquitetura, APIs e modelo de dados, consulte a pasta [`docs/`](docs/README.md).
+Para arquitetura, APIs, modelo de dados e publicação (Render, Neon, R2), consulte a pasta [`docs/`](docs/README.md).

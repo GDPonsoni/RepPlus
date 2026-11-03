@@ -1,4 +1,4 @@
-import { supabase } from './supabaseClient.js';
+import { banco } from './banco.js';
 
 export const sameId = (a, b) => a !== undefined && a !== null && b !== undefined && b !== null && String(a) === String(b);
 
@@ -21,21 +21,20 @@ export const check = ({ data, error }) => {
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-// O Supabase devolve no máximo um número fixo de linhas por consulta (1000 por padrão), então
-// listas que crescem com o tempo são buscadas página por página até vir uma página vazia.
-// Avançar pelo tamanho recebido funciona mesmo se o limite do projeto for menor que PAGINA.
+// Listas que crescem com o tempo são buscadas página por página (ordenadas pela chave, para
+// nenhuma linha pular ou repetir entre páginas) até vir uma página menor que PAGINA.
 const PAGINA = 1000;
-export const selectAll = async (montarConsulta) => {
+export const selectAll = async (montarConsulta, { chave = 'id' } = {}) => {
   const linhas = [];
   for (;;) {
-    const pagina = check(await montarConsulta().order('id').range(linhas.length, linhas.length + PAGINA - 1));
-    if (pagina.length === 0) return linhas;
+    const pagina = check(await montarConsulta().order(chave).range(linhas.length, linhas.length + PAGINA - 1));
     linhas.push(...pagina);
+    if (pagina.length < PAGINA) return linhas;
   }
 };
 
 // Busca uma linha pelo id direto no banco (ids que não são UUID nem chegam a consultar)
 export const findRowById = async (table, id) => {
   if (!UUID_REGEX.test(String(id))) return null;
-  return check(await supabase.from(table).select('*').eq('id', id).maybeSingle());
+  return check(await banco.from(table).select('*').eq('id', id).maybeSingle());
 };

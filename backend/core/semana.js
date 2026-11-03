@@ -1,4 +1,4 @@
-// A casa fica no Brasil, mas a Vercel roda em UTC: a semana é sempre calculada no horário
+// A casa fica no Brasil, mas o servidor roda em UTC: a semana é sempre calculada no horário
 // de Brasília (sem horário de verão desde 2019, então o offset é fixo).
 const FUSO_CASA = 'America/Sao_Paulo';
 const OFFSET_CASA = '-03:00';

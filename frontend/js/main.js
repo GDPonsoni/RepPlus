@@ -4,7 +4,7 @@ import { montarInterface, iniciarNavegacao } from './core/shell.js';
 import inicio, { definirModulosDoInicio } from './core/inicio.js';
 import { definirModulosDosAvisos, iniciarAvisos } from './core/avisos.js';
 import { ouvir } from './core/eventos.js';
-import { mostrarNotificacao } from './core/ui.js';
+import { mostrarEntrada } from './core/entrada.js';
 import moradores from './core/moradores.js';
 import aparencia from './core/aparencia.js';
 import categorias from './core/categorias.js';
@@ -22,8 +22,9 @@ import financas from './modules/financas/index.js';
 const MODULOS = [inicio, escala, agenda, compras, anotacoes, atas, financas, moradores, aparencia, categorias, sistema];
 
 async function iniciar() {
-    // Sessão primeiro: define quais módulos aparecem e quais botões cada usuário vê
-    await carregarSessao();
+    // Sessão primeiro: define quais módulos aparecem e quais botões cada usuário vê.
+    // Sem sessão (login ligado e ninguém entrou), só a tela de entrada aparece
+    if (!await carregarSessao()) return mostrarEntrada();
     // Módulos só do frontend (semBackend, ex.: Início) estão sempre ativos
     const ativos = MODULOS.filter(modulo => modulo.semBackend || moduloAtivo(modulo.id));
     definirCatalogoModulos(MODULOS);
@@ -43,7 +44,7 @@ async function iniciar() {
     iniciarAvisos();
 }
 
-// Ponte para o login: quando o backend responder 401, aqui entrará o redirecionamento para a tela de entrada
-ouvir('sessao:expirada', () => mostrarNotificacao('Sua sessão expirou. Entre novamente.', 'warning'));
+// O backend respondeu 401 no meio do uso (sessão venceu ou a senha da casa mudou)
+ouvir('sessao:expirada', mostrarEntrada);
 
 iniciar();

@@ -1,4 +1,4 @@
-import { supabase } from '../../core/db/supabaseClient.js';
+import { banco } from '../../core/db/banco.js';
 import { check, selectAll, findRowById } from '../../core/db/helpers.js';
 
 // Finanças: valores sempre em centavos (inteiros). Saída < 0, entrada > 0.
@@ -33,25 +33,25 @@ const REGRA = conversor({ id: 'id', termo: 'termo', categoria: 'categoria', cria
 function tabela(nome, { deDb, paraDb }) {
   return {
     async list(filtrar = (q) => q) {
-      return (await selectAll(() => filtrar(supabase.from(nome).select('*')))).map(deDb);
+      return (await selectAll(() => filtrar(banco.from(nome).select('*')))).map(deDb);
     },
     async findById(id) {
       const row = await findRowById(nome, id);
       return row ? deDb(row) : null;
     },
     async create(obj) {
-      return deDb(check(await supabase.from(nome).insert(paraDb(obj)).select().single()));
+      return deDb(check(await banco.from(nome).insert(paraDb(obj)).select().single()));
     },
     async createMany(lista) {
       if (!lista.length) return [];
-      return check(await supabase.from(nome).insert(lista.map(paraDb)).select()).map(deDb);
+      return check(await banco.from(nome).insert(lista.map(paraDb)).select()).map(deDb);
     },
     async update(id, changes) {
-      const row = check(await supabase.from(nome).update(paraDb(changes)).eq('id', id).select().maybeSingle());
+      const row = check(await banco.from(nome).update(paraDb(changes)).eq('id', id).select().maybeSingle());
       return row ? deDb(row) : null;
     },
     async remove(id) {
-      check(await supabase.from(nome).delete().eq('id', id).select('id'));
+      check(await banco.from(nome).delete().eq('id', id).select('id'));
     }
   };
 }
@@ -73,17 +73,17 @@ export const TransacoesStore = {
   // Muda várias de uma vez (ex.: aplicar uma regra de categoria)
   async atualizarVarias(ids, changes) {
     if (!ids.length) return;
-    check(await supabase.from('fin_transacoes').update(TRANSACAO.paraDb(changes)).in('id', ids).select('id'));
+    check(await banco.from('fin_transacoes').update(TRANSACAO.paraDb(changes)).in('id', ids).select('id'));
   }
 };
 
 export const OrcamentosStore = {
   async list() {
-    return (await selectAll(() => supabase.from('fin_orcamentos').select('*')))
+    return (await selectAll(() => banco.from('fin_orcamentos').select('*'), { chave: 'categoria' }))
       .map(row => ({ categoria: row.categoria, valorMensal: row.valor_mensal }));
   },
   async definir(categoria, valorMensal) {
-    check(await supabase.from('fin_orcamentos').delete().eq('categoria', categoria).select('categoria'));
-    if (valorMensal > 0) check(await supabase.from('fin_orcamentos').insert({ categoria, valor_mensal: valorMensal }).select());
+    check(await banco.from('fin_orcamentos').delete().eq('categoria', categoria).select('categoria'));
+    if (valorMensal > 0) check(await banco.from('fin_orcamentos').insert({ categoria, valor_mensal: valorMensal }).select());
   }
 };

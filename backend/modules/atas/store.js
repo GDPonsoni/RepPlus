@@ -1,4 +1,4 @@
-import { supabase } from '../../core/db/supabaseClient.js';
+import { banco } from '../../core/db/banco.js';
 import { check, selectAll, findRowById } from '../../core/db/helpers.js';
 
 // Atas de reunião (tabela `atas`). Participantes, decisões e encaminhamentos (tarefas)
@@ -33,7 +33,7 @@ const ataToDb = (ata) => {
 
 export const AtasStore = {
   async list() {
-    const rows = await selectAll(() => supabase.from('atas').select('*'));
+    const rows = await selectAll(() => banco.from('atas').select('*'));
     return rows.map(ataFromDb);
   },
   async findById(id) {
@@ -41,16 +41,16 @@ export const AtasStore = {
     return row ? ataFromDb(row) : null;
   },
   async create(ata) {
-    const row = check(await supabase.from('atas').insert(ataToDb(ata)).select().single());
+    const row = check(await banco.from('atas').insert(ataToDb(ata)).select().single());
     return ataFromDb(row);
   },
   async update(id, changes) {
-    const row = check(await supabase.from('atas')
+    const row = check(await banco.from('atas')
       .update({ ...ataToDb(changes), atualizado_em: new Date().toISOString() })
       .eq('id', id).select().maybeSingle());
     return row ? ataFromDb(row) : null;
   },
   async remove(id) {
-    check(await supabase.from('atas').delete().eq('id', id).select());
+    check(await banco.from('atas').delete().eq('id', id).select());
   }
 };

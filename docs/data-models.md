@@ -1,6 +1,6 @@
 # 🗄️ Modelos de Dados
 
-Os dados ficam no **Supabase**: tabelas no Postgres e imagens no Storage. As mudanças no esquema ficam versionadas em [`db/migrations/`](../db/README.md). O acesso passa pelos `store.js` do núcleo (`backend/core/moradores/`, `backend/core/configuracao/`, `backend/core/categorias/`) e de cada módulo (`backend/modules/<módulo>/store.js`), que converte os nomes de coluna (`snake_case`) para os campos da API (`camelCase`).
+Os dados ficam num banco **Postgres** (Neon) e as imagens no **Cloudflare R2**. O esquema completo fica versionado em [`db/migrations/`](../db/README.md) e é aplicado com `npm run db:migrar`. O acesso passa pelos `store.js` do núcleo (`backend/core/moradores/`, `backend/core/configuracao/`, `backend/core/categorias/`) e de cada módulo (`backend/modules/<módulo>/store.js`), que converte os nomes de coluna (`snake_case`) para os campos da API (`camelCase`).
 
 ---
 
@@ -32,7 +32,7 @@ Os dados ficam no **Supabase**: tabelas no Postgres e imagens no Storage. As mud
 | :--- | :--- | :--- | :--- |
 | `id` | `id` | UUID | Identificador |
 | `nome` | `nome` | texto | Nome (único; é como o histórico identifica o cômodo) |
-| `imagem` | `imagem` | texto \| null | URL pública da foto no Storage |
+| `imagem` | `imagem` | texto \| null | Caminho da foto no R2 (`/api/midia/<chave>`) |
 | `apenas_suite_members` | `apenassuiteMembers` | boolean | Só moradores da suíte podem fazer |
 | `pessoas_necessarias` | `pessoasNecessarias` | inteiro (1–10) | Quantas pessoas o cômodo precisa por semana |
 | `obrigatorio` | `obrigatorio` | boolean | Entra na geração da escala |
@@ -215,9 +215,9 @@ As categorias dos lançamentos ficam em `categorias` (escopo `financas`). `trans
 
 ---
 
-## 🖼️ 12. Imagens (Storage, bucket `uploads`)
+## 🖼️ 12. Imagens (Cloudflare R2)
 
-Fotos de cômodos, logo, fundo e galeria de motivação ficam no bucket público `uploads`, cada uma com um nome aleatório (UUID + extensão). A galeria de motivação é tudo o que está no bucket, exceto o logo e o fundo atuais.
+Fotos de cômodos, logo, fundo e galeria de motivação ficam no bucket **privado** do R2 (`R2_BUCKET`), cada uma com um nome aleatório (UUID + extensão). O banco guarda o caminho `/api/midia/<chave>`: o servidor busca o arquivo no R2 e só entrega para quem entrou com a senha da casa. Como o nome nunca se repete, o navegador guarda a imagem com cache longo (`private, immutable`). A galeria de motivação é tudo o que está no bucket, exceto o logo e o fundo atuais.
 
 ---
 

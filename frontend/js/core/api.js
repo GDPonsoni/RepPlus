@@ -1,6 +1,6 @@
 import { emitir } from './eventos.js';
 
-// API Base URL — usa o próprio host (funciona em localhost e em produção/Vercel, onde /api roda como serverless function)
+// API Base URL — usa o próprio host (o mesmo servidor entrega o site e a API, localmente e em produção)
 export const API_URL = `${window.location.origin}/api`;
 
 // Token de login (ponte para a autenticação futura): quando existir login, a tela de entrada

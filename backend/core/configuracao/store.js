@@ -1,4 +1,4 @@
-import { supabase } from '../db/supabaseClient.js';
+import { banco } from '../db/banco.js';
 import { check } from '../db/helpers.js';
 
 // Configuração geral da república (linha única id=1 da tabela `config`)
@@ -41,11 +41,11 @@ const configFromDb = (row) => ({
 
 export const ConfigStore = {
   async get() {
-    const row = check(await supabase.from('config').select('*').eq('id', 1).single());
+    const row = check(await banco.from('config').select('*').eq('id', 1).single());
     return configFromDb(row);
   },
   async save(config) {
-    const row = check(await supabase.from('config').update({
+    const row = check(await banco.from('config').update({
       logo: config.logo,
       background: config.background,
       motivacao_destaque: config.motivacaoDestaque,

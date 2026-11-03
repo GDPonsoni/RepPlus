@@ -1,4 +1,4 @@
-import { supabase } from '../../core/db/supabaseClient.js';
+import { banco } from '../../core/db/banco.js';
 import { check, selectAll, findRowById } from '../../core/db/helpers.js';
 
 // Anotações da casa (tabela `anotacoes`): contas/senhas, contatos de prestadores e notas.
@@ -26,7 +26,7 @@ const anotacaoToDb = (anotacao) => {
 
 export const AnotacoesStore = {
   async list() {
-    const rows = await selectAll(() => supabase.from('anotacoes').select('*'));
+    const rows = await selectAll(() => banco.from('anotacoes').select('*'));
     return rows.map(anotacaoFromDb);
   },
   async findById(id) {
@@ -34,23 +34,23 @@ export const AnotacoesStore = {
     return row ? anotacaoFromDb(row) : null;
   },
   async create(anotacao) {
-    const row = check(await supabase.from('anotacoes').insert(anotacaoToDb(anotacao)).select().single());
+    const row = check(await banco.from('anotacoes').insert(anotacaoToDb(anotacao)).select().single());
     return anotacaoFromDb(row);
   },
   async update(id, changes) {
-    const row = check(await supabase.from('anotacoes')
+    const row = check(await banco.from('anotacoes')
       .update({ ...anotacaoToDb(changes), atualizado_em: new Date().toISOString() })
       .eq('id', id).select().maybeSingle());
     return row ? anotacaoFromDb(row) : null;
   },
   async remove(id) {
-    check(await supabase.from('anotacoes').delete().eq('id', id).select());
+    check(await banco.from('anotacoes').delete().eq('id', id).select());
   },
   // Cofre apagado: os segredos ficam ilegíveis, então são descartados
   async limparSegredos() {
     const comSegredo = (await this.list()).filter(anotacao => anotacao.segredo);
     if (!comSegredo.length) return 0;
-    check(await supabase.from('anotacoes').update({ segredo: null }).in('id', comSegredo.map(a => a.id)).select());
+    check(await banco.from('anotacoes').update({ segredo: null }).in('id', comSegredo.map(a => a.id)).select());
     return comSegredo.length;
   }
 };
@@ -66,17 +66,17 @@ const cofreFromDb = (row) => ({
 
 export const CofreStore = {
   async get() {
-    const row = check(await supabase.from('anotacoes_cofre').select('*').eq('id', 1).maybeSingle());
+    const row = check(await banco.from('anotacoes_cofre').select('*').eq('id', 1).maybeSingle());
     return row ? cofreFromDb(row) : null;
   },
   async save({ salt, iteracoes, chaveCifrada, verificadorHash }) {
-    const row = check(await supabase.from('anotacoes_cofre').upsert({
+    const row = check(await banco.from('anotacoes_cofre').upsert({
       id: 1, salt, iteracoes, chave_cifrada: chaveCifrada, verificador_hash: verificadorHash,
       atualizado_em: new Date().toISOString()
     }).select().single());
     return cofreFromDb(row);
   },
   async remove() {
-    check(await supabase.from('anotacoes_cofre').delete().eq('id', 1).select());
+    check(await banco.from('anotacoes_cofre').delete().eq('id', 1).select());
   }
 };

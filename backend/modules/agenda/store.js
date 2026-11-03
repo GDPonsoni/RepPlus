@@ -1,4 +1,4 @@
-import { supabase } from '../../core/db/supabaseClient.js';
+import { banco } from '../../core/db/banco.js';
 import { check, selectAll, findRowById } from '../../core/db/helpers.js';
 import { RECORRENCIAS, expandirOcorrencias } from './recorrencia.js';
 
@@ -44,12 +44,12 @@ export const EventosStore = {
     const inicioPeriodo = new Date(de).getTime();
 
     const [simples, series] = await Promise.all([
-      selectAll(() => supabase.from('eventos').select('*')
+      selectAll(() => banco.from('eventos').select('*')
         .is('recorrencia', null)
         .gte('inicio', buscarDesde)
         .lt('inicio', ate)),
       // Séries que já começaram antes do fim do período (as encerradas antes dele são filtradas abaixo)
-      selectAll(() => supabase.from('eventos').select('*')
+      selectAll(() => banco.from('eventos').select('*')
         .in('recorrencia', RECORRENCIAS)
         .lt('inicio', ate))
     ]);
@@ -68,15 +68,15 @@ export const EventosStore = {
     return row ? eventoFromDb(row) : null;
   },
   async create(evento) {
-    const row = check(await supabase.from('eventos').insert(eventoToDb(evento)).select().single());
+    const row = check(await banco.from('eventos').insert(eventoToDb(evento)).select().single());
     return eventoFromDb(row);
   },
   async update(id, changes) {
-    const row = check(await supabase.from('eventos').update(eventoToDb(changes)).eq('id', id).select().maybeSingle());
+    const row = check(await banco.from('eventos').update(eventoToDb(changes)).eq('id', id).select().maybeSingle());
     return row ? eventoFromDb(row) : null;
   },
   async remove(id) {
-    const rows = check(await supabase.from('eventos').delete().eq('id', id).select());
+    const rows = check(await banco.from('eventos').delete().eq('id', id).select());
     return rows.length > 0;
   }
 };

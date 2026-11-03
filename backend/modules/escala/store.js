@@ -1,4 +1,4 @@
-import { supabase } from '../../core/db/supabaseClient.js';
+import { banco } from '../../core/db/banco.js';
 import { check, selectAll, findRowById, normalizeBoolean, normalizeNumber } from '../../core/db/helpers.js';
 
 // ===== COMODOS =====
@@ -41,7 +41,7 @@ const comodoChangesToDb = (changes) => {
 
 export const ComodosStore = {
   async list() {
-    const rows = await selectAll(() => supabase.from('comodos').select('*'));
+    const rows = await selectAll(() => banco.from('comodos').select('*'));
     return rows.map((row, index) => normalizeComodo(comodoFromDb(row), index));
   },
   async findById(id) {
@@ -50,7 +50,7 @@ export const ComodosStore = {
   },
   async create(data) {
     const novo = normalizeComodo(data);
-    const row = check(await supabase.from('comodos').insert({
+    const row = check(await banco.from('comodos').insert({
       nome: novo.nome,
       imagem: novo.imagem,
       apenas_suite_members: novo.apenassuiteMembers,
@@ -62,11 +62,11 @@ export const ComodosStore = {
     return normalizeComodo(comodoFromDb(row));
   },
   async update(id, changes) {
-    const row = check(await supabase.from('comodos').update(comodoChangesToDb(changes)).eq('id', id).select().maybeSingle());
+    const row = check(await banco.from('comodos').update(comodoChangesToDb(changes)).eq('id', id).select().maybeSingle());
     return row ? normalizeComodo(comodoFromDb(row)) : null;
   },
   async remove(id) {
-    const rows = check(await supabase.from('comodos').delete().eq('id', id).select());
+    const rows = check(await banco.from('comodos').delete().eq('id', id).select());
     return rows.length > 0;
   }
 };
@@ -83,7 +83,7 @@ const infracaoFromDb = (row) => ({
 
 export const InfracoesStore = {
   async list() {
-    const rows = await selectAll(() => supabase.from('infracoes').select('*'));
+    const rows = await selectAll(() => banco.from('infracoes').select('*'));
     return rows.map(infracaoFromDb);
   },
   async findById(id) {
@@ -91,11 +91,11 @@ export const InfracoesStore = {
     return row ? infracaoFromDb(row) : null;
   },
   async listByIntegranteId(integranteId) {
-    const rows = await selectAll(() => supabase.from('infracoes').select('*').eq('integrante_id', String(integranteId)));
+    const rows = await selectAll(() => banco.from('infracoes').select('*').eq('integrante_id', String(integranteId)));
     return rows.map(infracaoFromDb);
   },
   async create({ integranteId, integranteNome, descricao, dataSemana }) {
-    const row = check(await supabase.from('infracoes').insert({
+    const row = check(await banco.from('infracoes').insert({
       integrante_id: String(integranteId),
       integrante_nome: integranteNome,
       descricao: descricao.trim(),
@@ -108,11 +108,11 @@ export const InfracoesStore = {
     if (changes.descricao !== undefined) dbChanges.descricao = changes.descricao;
     if (changes.dataSemana !== undefined) dbChanges.data_semana = changes.dataSemana;
 
-    const row = check(await supabase.from('infracoes').update(dbChanges).eq('id', id).select().maybeSingle());
+    const row = check(await banco.from('infracoes').update(dbChanges).eq('id', id).select().maybeSingle());
     return row ? infracaoFromDb(row) : null;
   },
   async remove(id) {
-    const rows = check(await supabase.from('infracoes').delete().eq('id', id).select());
+    const rows = check(await banco.from('infracoes').delete().eq('id', id).select());
     return rows.length > 0;
   }
 };
@@ -146,12 +146,12 @@ const escalaToDb = (escala) => ({
 
 export const EscalasStore = {
   async list() {
-    const rows = await selectAll(() => supabase.from('escalas').select('*'));
+    const rows = await selectAll(() => banco.from('escalas').select('*'));
     return rows.map(escalaFromDb);
   },
   // Escalas a partir de uma semana (inclusive), para quem só precisa do histórico recente
   async listDesde(ano, semana) {
-    const rows = await selectAll(() => supabase.from('escalas').select('*')
+    const rows = await selectAll(() => banco.from('escalas').select('*')
       .or(`ano.gt.${ano},and(ano.eq.${ano},semana.gte.${semana})`));
     return rows.map(escalaFromDb);
   },
@@ -160,14 +160,14 @@ export const EscalasStore = {
     return row ? escalaFromDb(row) : null;
   },
   async listBySemana(ano, semana) {
-    const rows = check(await supabase.from('escalas').select('*').eq('ano', ano).eq('semana', semana));
+    const rows = check(await banco.from('escalas').select('*').eq('ano', ano).eq('semana', semana));
     return rows.map(escalaFromDb);
   },
   async replaceSemana(ano, semana, novasLinhas) {
     // Delegado a uma função Postgres (replace_semana_escala) que faz delete+insert
     // dentro de uma única transação serializada por advisory lock, evitando duplicação
     // de linhas quando duas gerações de escala da mesma semana rodam ao mesmo tempo.
-    const rows = check(await supabase.rpc('replace_semana_escala', {
+    const rows = check(await banco.rpc('replace_semana_escala', {
       p_ano: ano,
       p_semana: semana,
       p_linhas: novasLinhas.map(escalaToDb)
@@ -175,7 +175,7 @@ export const EscalasStore = {
     return rows.map(escalaFromDb);
   },
   async removeSemana(ano, semana) {
-    const rows = check(await supabase.from('escalas').delete().eq('ano', ano).eq('semana', semana).select());
+    const rows = check(await banco.from('escalas').delete().eq('ano', ano).eq('semana', semana).select());
     return rows.length;
   },
   async update(id, changes) {
@@ -183,7 +183,7 @@ export const EscalasStore = {
     if (changes.comodos !== undefined) dbChanges.comodos = changes.comodos;
     if (changes.folga !== undefined) dbChanges.folga = changes.folga;
 
-    const row = check(await supabase.from('escalas').update(dbChanges).eq('id', id).select().maybeSingle());
+    const row = check(await banco.from('escalas').update(dbChanges).eq('id', id).select().maybeSingle());
     return row ? escalaFromDb(row) : null;
   },
   // O histórico guarda o nome do cômodo: ao renomear, as escalas antigas acompanham para o
@@ -199,7 +199,7 @@ export const EscalasStore = {
   },
   // Grava várias linhas completas num único upsert: ou todas mudam, ou nenhuma
   async saveMany(escalas) {
-    const rows = check(await supabase.from('escalas').upsert(escalas.map(escalaToDb)).select());
+    const rows = check(await banco.from('escalas').upsert(escalas.map(escalaToDb)).select());
     return rows.map(escalaFromDb);
   }
 };

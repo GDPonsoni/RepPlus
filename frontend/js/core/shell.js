@@ -1,5 +1,6 @@
 import { escaparHtml, iniciais, definirAccordionAberto } from './ui.js';
 import { aplicarPermissoes, temPermissao, obterSessao } from './sessao.js';
+import { sair } from './entrada.js';
 import { registrarAcoes } from './acoes.js';
 import { abrirPainel } from './painel.js';
 import { nomeDaRepublica } from './aparencia.js';
@@ -140,7 +141,7 @@ function abrirMais() {
 }
 
 // ===== MENU DO USUÁRIO (canto superior direito) =====
-// Hoje mostra o acesso aberto; com login, aqui entram "Meu perfil" e "Sair".
+// Mostra quem está usando e os módulos do menu; com a senha da casa, também o botão Sair.
 function abrirMenuUsuario() {
     const { usuario, papel, modo } = obterSessao();
     const nome = usuario?.nome || 'Visitante';
@@ -166,6 +167,7 @@ function abrirMenuUsuario() {
                 </button>
             `).join('')}</div>
             ${modo === 'aberto' ? '<p class="menu-usuario-nota"><i class="fa-solid fa-circle-info"></i> O app ainda não tem login: todos acessam como administrador.</p>' : ''}
+            ${modo === 'senha' ? '<button type="button" class="btn btn-ghost menu-usuario-sair" data-acao="sair"><i class="fa-solid fa-right-from-bracket"></i> Sair deste aparelho</button>' : ''}
         `
     });
 }
@@ -204,6 +206,7 @@ export function montarInterface(modulosAtivos) {
     registrarAcoes({
         'abrir-mais': abrirMais,
         'abrir-menu-usuario': abrirMenuUsuario,
+        sair,
         'ir-para': ({ rota }) => navegar(rota)
     });
 
@@ -218,6 +221,8 @@ export function navegar(rota) {
 // Barrinha que desliza até a aba ativa (e a aba ativa entra na tela quando a barra rola de lado)
 function posicionarIndicadorDaAba() {
     const nav = document.getElementById('nav-abas');
+    // Sem abas na página (ex.: tela de entrada)
+    if (!nav) return;
     const ativa = nav.querySelector('.tab-btn.active');
     const indicador = nav.querySelector('.tab-indicador');
     if (!ativa || !indicador) return;

@@ -1,32 +1,41 @@
-# 🏠 Escala - Organização da República
+# 🏠 RepPlus - Organização da República
 
 Aplicação web para organizar a república, dividida em módulos que cada casa liga ou desliga: **escala de limpeza** (rodízio automático de cômodos e folgas, regra do banheiro da suíte, infrações), **agenda conjunta** (eventos e aniversários), **lista de compras**, **anotações** (senhas num cofre criptografado, contatos de prestadores, notas), **atas de reunião**, **finanças** (gastos, contas, reserva e divisão de despesas, preparado para Open Finance) e **cadastro de moradores**, com personalização visual.
 
 ## ⚡ Como Rodar
 
-1. Crie um arquivo `.env` na raiz do projeto:
+1. Copie o [`.env.example`](.env.example) para `.env` na raiz do projeto e preencha:
    ```env
-   SUPABASE_URL=https://<seu-projeto>.supabase.co
-   SUPABASE_SERVICE_ROLE_KEY=<chave service_role do projeto>
-   # Opcional: protege a sincronização diária das finanças (a Vercel envia este segredo no agendamento)
-   CRON_SECRET=<texto aleatório>
+   DATABASE_URL=postgresql://...-pooler...neon.tech/neondb?sslmode=require   # banco Postgres (Neon)
+   DATABASE_URL_UNPOOLED=postgresql://...neon.tech/neondb?sslmode=require    # conexão direta, para as migrações
+   R2_ACCOUNT_ID=...            # imagens no Cloudflare R2, bucket privado (só para enviar logo, fundo e fotos)
+   R2_ACCESS_KEY_ID=...
+   R2_SECRET_ACCESS_KEY=...
+   R2_BUCKET=repplus-uploads
+   AUTH_MODO=senha              # pede a senha da casa para entrar
+   SENHA_CASA=...
+   SESSAO_SEGREDO=...           # 32+ caracteres aleatórios
    ```
-2. Instale e inicie (na raiz do projeto):
+2. Instale, crie as tabelas e inicie (na raiz do projeto):
    ```bash
    npm install
+   npm run db:migrar
    npm start
    ```
-3. Aplique as migrações de [`db/migrations/`](db/README.md) no Supabase (SQL Editor), se ainda não aplicou.
-4. Acesse **http://localhost:3000**
+3. Acesse **http://localhost:3000**
+
+Sem as variáveis `R2_*` o app funciona normalmente; só o envio de imagens avisa que não está configurado. Sem `AUTH_MODO` o app abre sem senha, o que serve só para testar no computador.
 
 ### 📱 Testar no celular
 
 Com o servidor rodando no computador e o celular **no mesmo Wi-Fi**, abra no celular o endereço que o `npm start` mostra ao subir (`No celular (mesmo Wi-Fi): http://192.168.x.x:3000`).
 
 - Se não abrir, libere a porta no firewall do computador (no Linux com ufw: `sudo ufw allow 3000/tcp`).
-- O **cofre de senhas** (Anotações) usa criptografia do navegador, que só funciona em **https** ou em `localhost`. Pelo endereço `http://192.168...` o resto do app funciona, mas o cofre não destranca. Para testar o cofre no celular, use o endereço https publicado na Vercel.
+- O **cofre de senhas** (Anotações) usa criptografia do navegador, que só funciona em **https** ou em `localhost`. Pelo endereço `http://192.168...` o resto do app funciona, mas o cofre não destranca. Para testar o cofre no celular, use o endereço https publicado no Render.
 
-Em produção o app roda na Vercel (`vercel.json`), com as mesmas variáveis de ambiente configuradas no painel. O `vercel.json` também agenda `GET /api/financas/sincronizar` uma vez por dia (06:00 de Brasília) para atualizar os bancos conectados.
+### ☁️ Publicar
+
+Em produção o app roda no **Render**, com o banco no **Neon** e as imagens no **Cloudflare R2**. O passo a passo (criar cada serviço, variáveis de ambiente e importar os dados do Supabase antigo) está em [**docs/deploy.md**](docs/deploy.md).
 
 ---
 
@@ -57,7 +66,8 @@ A documentação detalhada está na pasta [`docs/`](docs/README.md):
 
 - 🏗️ [**Arquitetura**](docs/architecture.md) — backend, frontend, banco e o algoritmo do rodízio.
 - 🔌 [**Referência da API**](docs/api.md) — endpoints REST `/api/*`.
-- 🗄️ [**Modelos de Dados**](docs/data-models.md) — tabelas do Supabase.
+- 🗄️ [**Modelos de Dados**](docs/data-models.md) — tabelas do banco.
+- ☁️ [**Deploy**](docs/deploy.md) — Render, Neon e Cloudflare R2.
 - 📖 [**Guia do Usuário**](docs/user-guide.md) — uso no dia a dia.
 - ⚡ [**Guia Rápido**](QUICK_START.md) — passo a passo resumido.
 
@@ -67,5 +77,6 @@ A documentação detalhada está na pasta [`docs/`](docs/README.md):
 
 - **Backend**: Node.js + Express + Multer (uploads em memória)
 - **Frontend**: HTML5 + CSS3 (variáveis CSS dinâmicas) + JavaScript Vanilla (módulos ES nativos, sem etapa de build) + Font Awesome
-- **Banco de dados e arquivos**: Supabase (Postgres + Storage)
-- **Deploy**: Vercel
+- **Banco de dados**: Postgres no Neon (driver `pg`, migrações em [`db/`](db/README.md))
+- **Imagens**: Cloudflare R2 (API compatível com S3)
+- **Deploy**: Render (`render.yaml`)

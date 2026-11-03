@@ -43,7 +43,7 @@ function lerConta(body, existente = null) {
   return conta;
 }
 
-// Sincronização liberada para o agendador da Vercel (CRON_SECRET) ou para quem gerencia as finanças
+// Sincronização liberada para o agendador (CRON_SECRET) ou para quem gerencia as finanças
 function exigirCronOuPermissao(req, res, next) {
   const segredo = process.env.CRON_SECRET;
   if (segredo && req.get('authorization') === `Bearer ${segredo}`) return next();
@@ -136,7 +136,7 @@ export default function rotasContas(router) {
     res.json(await sincronizarConexao(conexao));
   }));
 
-  // Agendador diário (Vercel Cron faz GET) e botão "sincronizar tudo"
+  // Agendador diário (faz GET) e botão "sincronizar tudo"
   router.get('/financas/sincronizar', exigirCronOuPermissao, asyncHandler(async (req, res) => {
     res.json(await sincronizarTudo());
   }));

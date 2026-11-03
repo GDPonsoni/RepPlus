@@ -720,6 +720,7 @@ input[type="time"],
 input[type="tel"],
 input[type="email"],
 input[type="search"],
+input[type="password"],
 select,
 textarea {
     width: 100%;
@@ -742,6 +743,7 @@ input[type="time"]:focus,
 input[type="tel"]:focus,
 input[type="email"]:focus,
 input[type="search"]:focus,
+input[type="password"]:focus,
 select:focus,
 textarea:focus {
     border-color: var(--primary-text);
@@ -5825,4 +5827,55 @@ button.evento-card:hover {
         transition-duration: 0.01ms !important;
         scroll-behavior: auto !important;
     }
+}
+
+/* ===== TELA DE ENTRADA (senha da casa) ===== */
+.entrada {
+    min-height: 100dvh;
+    display: grid;
+    place-items: center;
+    padding: 24px 16px calc(24px + env(safe-area-inset-bottom));
+}
+
+.entrada-cartao {
+    width: 100%;
+    max-width: 360px;
+    margin: 0;
+    text-align: center;
+}
+
+.entrada-logo {
+    width: 72px;
+    height: 72px;
+    margin: 0 auto 12px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.entrada-titulo {
+    font-size: 1.25rem;
+    font-weight: 800;
+    margin-bottom: 4px;
+}
+
+.entrada-texto {
+    font-size: 0.875rem;
+    color: var(--muted);
+    margin-bottom: 16px;
+}
+
+.entrada .form-stack {
+    text-align: left;
+}
+
+.menu-usuario-sair {
+    width: 100%;
+    margin-top: 14px;
+}
+
+.entrada-erro {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--primary-text);
+    min-height: 1.2em;
 }

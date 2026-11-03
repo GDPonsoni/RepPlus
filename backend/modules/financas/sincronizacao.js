@@ -2,8 +2,8 @@ import { PROVEDORES } from './provedores/index.js';
 import { ContasStore, ConexoesStore, TransacoesStore, RegrasStore } from './store.js';
 import { categorizar } from './regras.js';
 
-// Sincronização com o Open Finance: roda uma vez por dia (agendador da Vercel chamando
-// GET /api/financas/sincronizar) e também pelo botão "Sincronizar agora".
+// Sincronização com o Open Finance: roda uma vez por dia (um agendador chamando
+// GET /api/financas/sincronizar com CRON_SECRET) e também pelo botão "Sincronizar agora".
 
 const DIAS_PRIMEIRA_CARGA = 90;
 const DIAS_DE_FOLGA = 10;   // reimporta os últimos dias: bancos às vezes lançam com atraso

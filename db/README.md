@@ -1,13 +1,21 @@
 # Migrações do banco
 
-Alterações no esquema do Supabase, em ordem de data. Cada arquivo pode ser executado mais de
+Esquema do banco Postgres (Neon), em ordem de data. Cada arquivo pode ser executado mais de
 uma vez sem efeito colateral (`if not exists`).
 
-**Como aplicar:** Supabase → SQL Editor → cole o conteúdo do arquivo → Run. Aplique as migrações
-**antes** de publicar o código que depende delas.
+**Como aplicar:** `npm run db:migrar` (com `DATABASE_URL` no `.env`). O comando roda, em ordem, só
+as migrações que ainda não rodaram naquele banco e anota cada uma na tabela `migracoes_aplicadas`.
+No Render isso acontece sozinho a cada deploy (comando de build do [`render.yaml`](../render.yaml)).
+
+**Migração nova:** crie `db/migrations/AAAAMMDD_assunto.sql` usando `if not exists` e similares, e
+acrescente uma linha na tabela abaixo.
+
+**Dados do app antigo:** `npm run db:importar-supabase` copia tabelas e imagens do Supabase (veja
+[docs/deploy.md](../docs/deploy.md#4-trazer-os-dados-do-app-antigo-supabase)).
 
 | Arquivo | O que faz |
 | :--- | :--- |
+| `20261027_base.sql` | Tabelas originais: `integrantes`, `comodos`, `escalas`, `infracoes`, `config` (linha única) e a função `replace_semana_escala` |
 | `20261028_moradores_perfil_e_agenda.sql` | Campos do cadastro de moradores (nascimento, contato, documentos...) e tabela `eventos` da agenda |
 | `20261029_agenda_recorrencia.sql` | Eventos que se repetem: `recorrencia`, `recorrencia_ate` e `excecoes` |
 | `20261029_moradores_contato_emergencia.sql` | Contato de emergência dos moradores (nome, parentesco, telefone) |
@@ -19,5 +27,3 @@ uma vez sem efeito colateral (`if not exists`).
 | `20261031_categorias.sql` | Categorias gerenciáveis (nome, cor, ícone): tabela `categorias`; remove as listas fixas de `eventos` e `compras_itens` |
 | `20261031_financas.sql` | Módulo Finanças: contas, lançamentos, regras, orçamentos, divisões e conexões de Open Finance |
 
-As tabelas anteriores (`integrantes`, `comodos`, `escalas`, `infracoes`, `config` e a função
-`replace_semana_escala`) foram criadas antes deste controle e ainda não têm migração aqui.
