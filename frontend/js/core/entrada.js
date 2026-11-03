@@ -8,7 +8,7 @@ export function mostrarEntrada() {
     const logo = document.getElementById('logo-top')?.getAttribute('src') || '';
 
     document.body.innerHTML = `
-        <main class="entrada" id="entrada">
+        <main class="tela-entrada" id="entrada">
             <form class="card card-padded entrada-cartao" id="entrada-form" novalidate>
                 <img class="entrada-logo" src="${logo}" alt="">
                 <h1 class="entrada-titulo">RepPlus</h1>

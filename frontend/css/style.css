@@ -4620,6 +4620,8 @@ button.evento-card:hover {
 .grafico-linha .serie.anterior { stroke: var(--muted); stroke-dasharray: 4 4; stroke-width: 1.5; opacity: 0.7; }
 .grafico-linha .ponto-atual { fill: var(--primary-color); stroke: var(--surface); stroke-width: 2; }
 .grafico-linha .eixo { font-size: 9px; fill: var(--muted); }
+.fin-acumulado-resumo { font-size: 0.8rem; margin-bottom: 6px; }
+.fin-acumulado-resumo span { color: var(--muted); }
 
 .grafico-legenda {
     display: flex;
@@ -5830,7 +5832,7 @@ button.evento-card:hover {
 }
 
 /* ===== TELA DE ENTRADA (senha da casa) ===== */
-.entrada {
+.tela-entrada {
     min-height: 100dvh;
     display: grid;
     place-items: center;
@@ -5864,7 +5866,7 @@ button.evento-card:hover {
     margin-bottom: 16px;
 }
 
-.entrada .form-stack {
+.tela-entrada .form-stack {
     text-align: left;
 }
 

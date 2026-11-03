@@ -26,8 +26,10 @@ export function rosca(fatias, { centro = '', sub = '' } = {}) {
         </svg>`;
 }
 
-// Barras por mês: [{ rotulo, entradas, saidas, atual }]
-export function barrasMensais(meses) {
+// Barras por mês: [{ rotulo, entradas, saidas, atual }]. Meses vazios do começo (antes de haver dados) somem
+export function barrasMensais(todos) {
+    const primeiro = todos.findIndex(m => m.entradas || m.saidas || m.atual);
+    const meses = primeiro < 0 ? todos : todos.slice(primeiro);
     const maximo = Math.max(1, ...meses.flatMap(m => [m.entradas, m.saidas]));
     return `
         <div class="grafico-barras" role="img" aria-label="Entradas e gastos por mês">
@@ -58,7 +60,8 @@ export function linhaAcumulada({ atual, anterior, dias, ateDia }) {
 
     return `
         <svg class="grafico-linha" viewBox="0 0 ${largura} ${altura}" role="img" aria-label="Gasto acumulado no mês">
-            ${[0.25, 0.5, 0.75, 1].map(f => `<line class="grade" x1="${margem.esq}" x2="${largura - margem.dir}" y1="${y(maximo / 1.08 * f)}" y2="${y(maximo / 1.08 * f)}"></line>`).join('')}
+            ${[0.25, 0.5, 0.75, 1].map(f => `<line class="grade" x1="${margem.esq}" x2="${largura - margem.dir}" y1="${y(maximo / 1.08 * f)}" y2="${y(maximo / 1.08 * f)}"></line>
+                <text class="eixo" x="${largura - margem.dir}" y="${y(maximo / 1.08 * f) - 3}" text-anchor="end">${reaisCurto(maximo / 1.08 * f)}</text>`).join('')}
             <polyline class="serie anterior" points="${pontos(anterior, dias)}"></polyline>
             <polyline class="serie atual" points="${pontos(atual, ultimo)}"></polyline>
             ${ultimo ? `<circle class="ponto-atual" cx="${x(ultimo)}" cy="${y(atual[ultimo - 1])}" r="3.5"><title>Até hoje: ${reais(atual[ultimo - 1])}</title></circle>` : ''}

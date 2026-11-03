@@ -108,15 +108,24 @@ function htmlCategorias() {
 function htmlAcumulado() {
     const dias = diasNoMes(estado.mes);
     const mesAtual = estado.mes === hoje().slice(0, 7);
+    const ateDia = mesAtual ? Number(hoje().slice(8)) : dias;
+    const atual = acumulado(estado.transacoes, dias);
+    const anterior = acumulado(estado.transacoesAnterior, diasNoMes(somarMeses(estado.mes, -1)));
+    // No começo do mês a linha ainda é curta: o texto deixa a comparação clara
+    const anteriorNoDia = anterior[Math.min(ateDia, anterior.length) - 1] || 0;
+    if (!atual[dias - 1] && !anterior[anterior.length - 1]) {
+        return `
+            <section class="card card-padded fin-bloco">
+                <h3 class="card-title"><i class="fa-solid fa-chart-line"></i> Gasto acumulado no mês</h3>
+                <p class="empty-state">Nenhum gasto neste mês nem no anterior.</p>
+            </section>`;
+    }
     return `
         <section class="card card-padded fin-bloco">
             <h3 class="card-title"><i class="fa-solid fa-chart-line"></i> Gasto acumulado no mês</h3>
-            ${linhaAcumulada({
-                atual: acumulado(estado.transacoes, dias),
-                anterior: acumulado(estado.transacoesAnterior, diasNoMes(somarMeses(estado.mes, -1))),
-                dias,
-                ateDia: mesAtual ? Number(hoje().slice(8)) : dias
-            })}
+            <p class="fin-acumulado-resumo">${mesAtual ? `Até o dia ${ateDia}` : 'No mês'}: <strong>${reais(atual[ateDia - 1])}</strong>
+                <span>· mês anterior ${mesAtual ? 'no mesmo dia' : 'inteiro'}: ${reais(anteriorNoDia)}</span></p>
+            ${linhaAcumulada({ atual, anterior, dias, ateDia })}
         </section>`;
 }
 
@@ -161,7 +170,9 @@ function htmlHistorico() {
     return `
         <section class="card card-padded fin-bloco">
             <h3 class="card-title"><i class="fa-solid fa-chart-column"></i> Últimos 6 meses</h3>
-            ${barrasMensais(estado.resumo.map(m => ({ rotulo: nomeDoMes(m.mes, 'short'), entradas: m.entradas, saidas: m.saidas, atual: m.mes === estado.mes })))}
+            ${estado.resumo.some(m => m.entradas || m.saidas)
+                ? barrasMensais(estado.resumo.map(m => ({ rotulo: nomeDoMes(m.mes, 'short'), entradas: m.entradas, saidas: m.saidas, atual: m.mes === estado.mes })))
+                : '<p class="empty-state">Sem movimentação nos últimos meses.</p>'}
         </section>`;
 }
 
