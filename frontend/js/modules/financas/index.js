@@ -4,12 +4,13 @@ import { navegar } from '../../core/shell.js';
 import { mostrarNotificacao } from '../../core/ui.js';
 import { hoje } from '../../core/datas.js';
 import { carregarCategorias } from '../../core/categorias.js';
-import { estado, ESCOPO, somarMeses, carregarMes, carregarDivisoes, carregarAjustes, carregarContas } from './dados.js';
+import { estado, ESCOPO, somarMeses, limparFiltros, carregarMes, carregarDivisoes, carregarAjustes, carregarContas } from './dados.js';
 import { HTML_ABA_VISAO, renderizarVisao } from './visao.js';
 import { HTML_ABA_LANCAMENTOS, renderizarLancamentos, abrirLancamento } from './lancamentos.js';
 import { HTML_ABA_CONTAS, renderizarContas, abrirConta, ajustarSaldo, abrirConectar, sincronizar, desconectar } from './contas.js';
 import { HTML_ABA_DIVISOES, renderizarDivisoes, abrirDivisao, marcarParte, acertar } from './divisoes.js';
-import { SECOES_AJUSTES, renderizarAjustes, adicionarRegra, regrasSugeridas, excluirRegra, salvarOrcamento } from './ajustes.js';
+import { SECOES_AJUSTES, renderizarAjustes, filtrarRegras, regrasSugeridas, salvarOrcamento } from './ajustes.js';
+import { abrirEditorRegra, excluirRegra } from './regras.js';
 import inicio from './inicio.js';
 import avisos from './avisos.js';
 
@@ -70,9 +71,28 @@ export default {
             'fin-mes': ({ passo }) => { estado.mes = somarMeses(estado.mes, Number(passo)); recarregar(); },
             'fin-mes-atual': () => { estado.mes = hoje().slice(0, 7); recarregar(); },
             'fin-filtrar-categoria': ({ categoria }) => {
-                Object.assign(estado.filtros, { categoria, tipo: 'gastos', conta: '', busca: '' });
+                limparFiltros({ categoria, tipo: 'gastos' });
                 navegar('financas/lancamentos');
             },
+            'fin-filtrar-dia': ({ dia }) => {
+                const numero = String(Number(dia.slice(8)));
+                limparFiltros({ diaDe: numero, diaAte: numero, tipo: 'gastos' });
+                navegar('financas/lancamentos');
+            },
+            // Filtros dos lançamentos
+            'fin-mais-filtros': (dados, botao) => {
+                const painel = document.getElementById('fin-filtros-mais');
+                painel.hidden = !painel.hidden;
+                botao.setAttribute('aria-expanded', String(!painel.hidden));
+            },
+            'fin-limpar-filtro': ({ chave }) => {
+                const campos = { dias: ['diaDe', 'diaAte'], valor: ['valorMin', 'valorMax'], ordem: [] }[chave] || [chave];
+                campos.forEach(campo => { estado.filtros[campo] = ''; });
+                if (chave === 'ordem') estado.filtros.ordem = 'recentes';
+                renderizarLancamentos();
+            },
+            'fin-limpar-filtros': () => { limparFiltros(); renderizarLancamentos(); },
+            'fin-filtrar-sem-categoria': () => { estado.filtros.categoria = 'sem'; renderizarLancamentos(); },
             // Lançamentos
             'fin-novo-lancamento': () => abrirLancamento({ aoMudar: recarregar }),
             'fin-abrir-lancamento': ({ id }) => abrirLancamento({ id, aoMudar: recarregar, aoDividir: dividir }),
@@ -90,24 +110,26 @@ export default {
             'fin-desconectar': executar(desconectar),
             // Ajustes
             'fin-regras-sugeridas': executar(regrasSugeridas),
+            'fin-nova-regra': ({ termo = '', sentido = '', categoria = '' }) => abrirEditorRegra({ termo, sentido, categoria, aoMudar: recarregar }),
+            'fin-editar-regra': ({ id }) => {
+                const regra = estado.regras.find(r => r.id === id);
+                if (regra) abrirEditorRegra({ regra, aoMudar: recarregar });
+            },
             'fin-excluir-regra': executar(excluirRegra)
         });
 
-        // Filtros dos lançamentos
-        const filtrar = (campo, chave, evento) => document.getElementById(campo)?.addEventListener(evento, (e) => {
+        // Filtros dos lançamentos: qualquer campo com data-filtro guarda o valor e redesenha a lista
+        const aoFiltrar = (e) => {
+            const chave = e.target.dataset?.filtro;
+            if (!chave || estado.filtros[chave] === e.target.value) return;
             estado.filtros[chave] = e.target.value;
             renderizarLancamentos();
-        });
-        filtrar('fin-busca', 'busca', 'input');
-        filtrar('fin-filtro-conta', 'conta', 'change');
-        filtrar('fin-filtro-categoria', 'categoria', 'change');
-        filtrar('fin-filtro-tipo', 'tipo', 'change');
+        };
+        document.getElementById('fin-filtros')?.addEventListener('input', aoFiltrar);
+        document.getElementById('fin-filtros')?.addEventListener('change', aoFiltrar);
+        document.getElementById('fin-regras-busca')?.addEventListener('input', filtrarRegras);
 
         document.querySelector('[name="fin-divisoes-filtro"]')?.closest('.chips').addEventListener('change', renderizarDivisoes);
-        document.getElementById('form-fin-regra')?.addEventListener('submit', (e) => {
-            e.preventDefault();
-            executar(() => adicionarRegra(e.target))();
-        });
         document.getElementById('fin-orcamentos-campos')?.addEventListener('change', (e) => {
             if (e.target.dataset.categoria) executar(() => salvarOrcamento(e.target))();
         });

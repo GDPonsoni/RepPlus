@@ -157,11 +157,12 @@ O módulo aparece na navegação e suas abas automaticamente (endereços `#/manu
 
 ### Finanças e Open Finance
 
-- `modules/financas/` (backend): `store.js` (tabelas `fin_*`), `regras.js` (categorização por "contém"), `sincronizacao.js` e `provedores/`.
+- `modules/financas/` (backend): `store.js` (tabelas `fin_*`), `regras.js` (categorização por "contém" com `sentido` opcional; vence o termo mais longo; `termoDoGrupo` agrupa descrições parecidas para as sugestões), `sincronizacao.js` e `provedores/`.
+- Regras: `GET /financas/regras` traz quantos lançamentos cada uma categoriza; `GET /financas/regras/sugestoes` agrupa os sem categoria; `POST /financas/regras/previa` calcula o efeito de uma regra antes de salvar. Criar, editar ou excluir reaplica as regras a tudo que não foi categorizado à mão.
 - **Provedores** (`provedores/index.js`) seguem um contrato único: `configurado()`, `conectar(dados)`, `contas(conexao)` e `transacoes(conexao, conta, desde)`, sempre com valores em centavos. A sincronização, a deduplicação (`externo_id`) e as regras não dependem do provedor.
-- `provedores/demo.js` simula um banco e só aparece com a variável `FINANCAS_PROVEDOR_DEMO=1` (para testes); `provedores/pluggy.js` marca onde entra a integração real com o roteiro do que implementar.
+- `provedores/demo.js` simula um banco e só aparece com a variável `FINANCAS_PROVEDOR_DEMO=1` (para testes); `provedores/pluggy.js` lê bancos do **Meu Pluggy** (plano gratuito): o app abre o widget **Pluggy Connect** (`widget()` devolve o script e um connect token de 30 min, limitado ao conector MeuPluggy) e recebe o `itemId` no `onSuccess`; também aceita colar o `itemId` (declarado em `campos`, que a tela de conectar mostra como formulário). A sincronização lê `/accounts`, `/investments` e `/transactions` da API da Pluggy. Lançamentos pendentes ficam de fora (ganham outro id ao confirmar); o valor usa o sinal de `amount` (saída negativa, como no app; o `type` não serve, porque compra no cartão chega como CREDIT), e um cartão com fatura positiva tem os sinais invertidos, por garantia.
 - Um agendador externo pode chamar `GET /api/financas/sincronizar` uma vez por dia (veja [deploy.md](deploy.md#5-sincronização-diária-das-finanças-opcional)). Com `CRON_SECRET` definido, a chamada do agendador é aceita mesmo quando houver login.
-- Frontend (`modules/financas/`): `dados.js` (estado, API e formatação), `graficos.js` (SVG sem biblioteca), uma tela por aba (`visao.js`, `lancamentos.js`, `contas.js`, `divisoes.js`, `ajustes.js`), `inicio.js` e `avisos.js`.
+- Frontend (`modules/financas/`): `dados.js` (estado, API e formatação), `graficos.js` (SVG sem biblioteca), uma tela por aba (`visao.js`, `lancamentos.js`, `contas.js`, `divisoes.js`, `ajustes.js`), `regras.js` (editor de regra com prévia), `inicio.js` e `avisos.js`.
 
 ### Categorias
 

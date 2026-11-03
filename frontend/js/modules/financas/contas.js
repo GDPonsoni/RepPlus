@@ -188,6 +188,51 @@ export async function ajustarSaldo({ id }) {
 }
 
 // ===== CONEXÕES =====
+const htmlCampo = (campo) => `
+    <label class="field"><span>${escaparHtml(campo.rotulo)}${campo.obrigatorio ? ' *' : ''}</span>
+        <input type="text" name="${escaparHtml(campo.id)}" maxlength="80" autocomplete="off" ${campo.obrigatorio ? 'required' : ''}>
+        ${campo.ajuda ? `<small>${escaparHtml(campo.ajuda)}</small>` : ''}</label>`;
+
+function htmlCampos(p) {
+    if (!p.disponivel || !p.campos.length) return '';
+    const avancados = p.campos.filter(c => c.avancado);
+    return `<div class="fin-provedor-campos">
+        ${p.campos.filter(c => !c.avancado).map(htmlCampo).join('')}
+        ${avancados.length ? `<details class="fin-provedor-avancado"><summary>Já tenho o Item ID</summary>${avancados.map(htmlCampo).join('')}</details>` : ''}
+    </div>`;
+}
+
+// Script do widget do provedor (ex.: Pluggy Connect), carregado só quando alguém vai conectar
+const scripts = new Map();
+function carregarScript(src) {
+    if (!scripts.has(src)) {
+        scripts.set(src, new Promise((resolve, reject) => {
+            const tag = Object.assign(document.createElement('script'), { src, async: true, onload: resolve });
+            tag.onerror = () => { scripts.delete(src); tag.remove(); reject(new Error('Não foi possível carregar o widget do banco. Verifique a internet.')); };
+            document.head.appendChild(tag);
+        }));
+    }
+    return scripts.get(src);
+}
+
+// Abre o Pluggy Connect e resolve com o itemId criado (null se a pessoa fechar sem conectar)
+async function itemPeloWidget(provedor) {
+    const { script, opcoes } = await api(`/financas/provedores/${provedor}/widget`, { metodo: 'POST' });
+    await carregarScript(script);
+    return new Promise((resolve, reject) => {
+        const widget = new window.PluggyConnect({
+            ...opcoes,
+            theme: document.documentElement.dataset.tema === 'escuro' ? 'dark' : 'light',
+            onSuccess: (dados) => resolve(dados?.item?.id || null),
+            onError: (erro) => reject(new Error(JSON.stringify(erro || {}).includes('ALREADY_EXISTS')
+                ? 'Este banco já tem um item na Pluggy. Abra "Já tenho o Item ID" e cole o ID dele (Dashboard da Pluggy → Demo → Itens conectados).'
+                : erro?.message || 'O banco não conectou.')),
+            onClose: () => resolve(null)
+        });
+        widget.init().catch(reject);
+    });
+}
+
 export function abrirConectar({ aoMudar } = {}) {
     const { corpo, fechar } = abrirPainel({
         titulo: 'Conectar banco',
@@ -196,14 +241,33 @@ export function abrirConectar({ aoMudar } = {}) {
             <div class="menu-usuario-itens">${estado.provedores.map(p => `
                 <div class="fin-provedor ${p.disponivel ? '' : 'indisponivel'}">
                     <span class="fin-provedor-texto"><strong>${escaparHtml(p.nome)}</strong><small>${escaparHtml(p.disponivel ? p.descricao : p.comoConfigurar)}</small></span>
-                    ${p.disponivel ? `<button type="button" class="btn btn-primary btn-sm" data-provedor="${escaparHtml(p.id)}">Conectar</button>` : '<span class="fin-em-breve">Em breve</span>'}
+                    ${p.disponivel ? `<button type="button" class="btn btn-primary btn-sm" data-provedor="${escaparHtml(p.id)}">Conectar</button>` : '<span class="fin-em-breve">Não configurado</span>'}
+                    ${htmlCampos(p)}
                 </div>`).join('')}
             </div>`
     });
     corpo.querySelectorAll('[data-provedor]').forEach(botao => botao.addEventListener('click', async () => {
+        const provedor = estado.provedores.find(p => p.id === botao.dataset.provedor);
+        // Campos pedidos pelo provedor (ex.: nome e itemId da Pluggy) vão como `dados`
+        const campos = [...botao.closest('.fin-provedor').querySelectorAll('input[name]')];
+        const faltando = campos.find(campo => campo.required && !campo.value.trim());
+        if (faltando) {
+            faltando.focus();
+            mostrarNotificacao('Preencha os campos obrigatórios', 'warning');
+            return;
+        }
+        const dados = Object.fromEntries(campos.map(campo => [campo.name, campo.value.trim()]));
         definirCarregando(botao, true, '⏳');
         try {
-            const { resultado } = await api('/financas/conexoes', { metodo: 'POST', corpo: { provedor: botao.dataset.provedor } });
+            // Sem itemId colado, o widget do provedor cria o item
+            if (provedor.widget && !dados.itemId) {
+                dados.itemId = await itemPeloWidget(provedor.id);
+                if (!dados.itemId) {
+                    definirCarregando(botao, false);
+                    return;
+                }
+            }
+            const { resultado } = await api('/financas/conexoes', { metodo: 'POST', corpo: { provedor: provedor.id, dados } });
             mostrarNotificacao(resultado.erro ? `Conectado, mas a sincronização falhou: ${resultado.erro}` : `Banco conectado! ${resultado.novas} lançamento(s) importados`, resultado.erro ? 'warning' : 'success');
             fechar();
             aoMudar?.();

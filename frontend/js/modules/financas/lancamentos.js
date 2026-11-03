@@ -7,45 +7,86 @@ import { hoje, formatarDia } from '../../core/datas.js';
 import { estiloCategoria, categoriasDe, htmlEscolhaCategoria } from '../../core/categorias.js';
 import { estado, ESCOPO, reais, lerReais, paraCampo, categoriaFin, buscarConta, conta, NEUTRAS } from './dados.js';
 import { htmlNavegadorMes } from './visao.js';
+import { termoParecido } from './regras.js';
 
 export const HTML_ABA_LANCAMENTOS = `
     <div class="fin-topo">
         <div id="fin-lanc-mes"></div>
         <button type="button" class="btn btn-primary btn-sm" data-acao="fin-novo-lancamento" data-permissao="financas:lancar"><i class="fa-solid fa-plus"></i> Lançar</button>
     </div>
-    <div class="fin-filtros">
-        <input type="search" id="fin-busca" placeholder="Buscar descrição..." aria-label="Buscar" autocomplete="off">
-        <select id="fin-filtro-conta" aria-label="Conta"></select>
-        <select id="fin-filtro-categoria" aria-label="Categoria"></select>
-        <select id="fin-filtro-tipo" aria-label="Tipo">
+    <div class="fin-filtros" id="fin-filtros">
+        <input type="search" data-filtro="busca" placeholder="Buscar descrição ou observação..." aria-label="Buscar" autocomplete="off">
+        <select data-filtro="conta" aria-label="Conta"></select>
+        <select data-filtro="categoria" aria-label="Categoria"></select>
+        <select data-filtro="tipo" aria-label="Tipo">
             <option value="">Gastos e entradas</option>
             <option value="gastos">Só gastos</option>
             <option value="entradas">Só entradas</option>
             <option value="neutros">Transferências e ajustes</option>
             <option value="ignorados">Ignorados</option>
         </select>
+        <button type="button" class="btn btn-ghost btn-sm fin-btn-filtros" data-acao="fin-mais-filtros" aria-expanded="false" aria-controls="fin-filtros-mais">
+            <i class="fa-solid fa-sliders"></i> Filtros <span class="fin-filtros-contador" hidden></span>
+        </button>
+        <div class="fin-filtros-mais" id="fin-filtros-mais" hidden>
+            <fieldset><legend>Dias do mês</legend>
+                <input type="number" data-filtro="diaDe" min="1" max="31" inputmode="numeric" placeholder="de" aria-label="Do dia">
+                <span>a</span>
+                <input type="number" data-filtro="diaAte" min="1" max="31" inputmode="numeric" placeholder="até" aria-label="Até o dia">
+            </fieldset>
+            <fieldset><legend>Valor (R$)</legend>
+                <input type="text" data-filtro="valorMin" inputmode="decimal" placeholder="mínimo" aria-label="Valor mínimo">
+                <span>a</span>
+                <input type="text" data-filtro="valorMax" inputmode="decimal" placeholder="máximo" aria-label="Valor máximo">
+            </fieldset>
+            <label class="field"><span>Origem</span>
+                <select data-filtro="origem">
+                    <option value="">Banco e manuais</option>
+                    <option value="importado">Só do banco</option>
+                    <option value="manual">Só manuais</option>
+                </select></label>
+            <label class="field"><span>Ordenar</span>
+                <select data-filtro="ordem">
+                    <option value="recentes">Mais recentes primeiro</option>
+                    <option value="antigos">Mais antigos primeiro</option>
+                    <option value="maiores-gastos">Maiores gastos</option>
+                    <option value="maiores-entradas">Maiores entradas</option>
+                    <option value="valor">Maior valor (gasto ou entrada)</option>
+                </select></label>
+        </div>
     </div>
+    <div id="fin-filtros-ativos" class="fin-filtros-ativos"></div>
     <div id="fin-lanc-resumo" class="fin-lanc-resumo"></div>
     <div id="fin-lancamentos"></div>
 `;
 
 const semAcento = (texto) => String(texto || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+const ROTULOS_TIPO = { gastos: 'Só gastos', entradas: 'Só entradas', neutros: 'Transferências e ajustes', ignorados: 'Ignorados' };
+const ROTULOS_ORDEM = { antigos: 'Mais antigos', 'maiores-gastos': 'Maiores gastos', 'maiores-entradas': 'Maiores entradas', valor: 'Maior valor' };
+const ORDENAR = {
+    antigos: (a, b) => a.data.localeCompare(b.data),
+    'maiores-gastos': (a, b) => a.valor - b.valor,
+    'maiores-entradas': (a, b) => b.valor - a.valor,
+    valor: (a, b) => Math.abs(b.valor) - Math.abs(a.valor)
+};
 
 function preencherFiltros() {
     const { filtros } = estado;
-    const selectConta = document.getElementById('fin-filtro-conta');
-    selectConta.innerHTML = `<option value="">Todas as contas</option>${estado.contas.map(c => `<option value="${c.id}">${escaparHtml(c.nome)}</option>`).join('')}`;
-    selectConta.value = filtros.conta;
-    const selectCategoria = document.getElementById('fin-filtro-categoria');
-    selectCategoria.innerHTML = `<option value="">Todas as categorias</option><option value="sem">Sem categoria</option>${categoriasDe(ESCOPO).map(c => `<option value="${escaparHtml(c.chave)}">${escaparHtml(c.nome)}</option>`).join('')}`;
-    selectCategoria.value = filtros.categoria;
-    document.getElementById('fin-filtro-tipo').value = filtros.tipo;
-    document.getElementById('fin-busca').value = filtros.busca;
+    const raiz = document.getElementById('fin-filtros');
+    raiz.querySelector('[data-filtro="conta"]').innerHTML = `<option value="">Todas as contas</option>${estado.contas.map(c => `<option value="${c.id}">${escaparHtml(c.nome)}</option>`).join('')}`;
+    raiz.querySelector('[data-filtro="categoria"]').innerHTML = `<option value="">Todas as categorias</option><option value="sem">Sem categoria</option>${categoriasDe(ESCOPO).map(c => `<option value="${escaparHtml(c.chave)}">${escaparHtml(c.nome)}</option>`).join('')}`;
+    // Só reescreve o que mudou, para não atrapalhar quem está digitando
+    raiz.querySelectorAll('[data-filtro]').forEach(campo => {
+        const valor = filtros[campo.dataset.filtro] ?? '';
+        if (campo.value !== valor) campo.value = valor;
+    });
 }
 
 function filtrar() {
-    const { busca, conta: contaId, categoria, tipo } = estado.filtros;
+    const { busca, conta: contaId, categoria, tipo, diaDe, diaAte, valorMin, valorMax, origem } = estado.filtros;
     const termo = semAcento(busca);
+    const minimo = valorMin ? lerReais(valorMin) : null;
+    const maximo = valorMax ? lerReais(valorMax) : null;
     return estado.transacoes.filter(t => {
         if (tipo === 'ignorados' ? !t.ignorada : t.ignorada) return false;
         if (tipo === 'gastos' && !(conta(t) && t.valor < 0)) return false;
@@ -53,11 +94,41 @@ function filtrar() {
         if (tipo === 'neutros' && !NEUTRAS.includes(t.categoria)) return false;
         if (contaId && t.contaId !== contaId) return false;
         if (categoria && (categoria === 'sem' ? t.categoria : t.categoria !== categoria)) return false;
+        const dia = Number(t.data.slice(8));
+        if (diaDe && dia < Number(diaDe)) return false;
+        if (diaAte && dia > Number(diaAte)) return false;
+        if (minimo !== null && Math.abs(t.valor) < minimo) return false;
+        if (maximo !== null && Math.abs(t.valor) > maximo) return false;
+        if (origem && t.origem !== origem) return false;
         return !termo || semAcento(`${t.descricao} ${t.observacao || ''}`).includes(termo);
     });
 }
 
-function htmlLancamento(t) {
+// Filtros em uso viram chips removíveis; os do painel "Filtros" também contam no botão
+function htmlFiltrosAtivos() {
+    const f = estado.filtros;
+    const chips = [];
+    if (f.busca) chips.push(['busca', `“${f.busca}”`]);
+    if (f.conta) chips.push(['conta', buscarConta(f.conta)?.nome || 'Conta']);
+    if (f.categoria) chips.push(['categoria', f.categoria === 'sem' ? 'Sem categoria' : categoriaFin(f.categoria).nome]);
+    if (f.tipo) chips.push(['tipo', ROTULOS_TIPO[f.tipo]]);
+    if (f.diaDe || f.diaAte) chips.push(['dias', f.diaDe && f.diaDe === f.diaAte ? `Dia ${f.diaDe}` : `Dias ${f.diaDe || 1} a ${f.diaAte || 31}`]);
+    if (f.valorMin || f.valorMax) chips.push(['valor', f.valorMin && f.valorMax ? `R$ ${f.valorMin} a R$ ${f.valorMax}` : f.valorMin ? `A partir de R$ ${f.valorMin}` : `Até R$ ${f.valorMax}`]);
+    if (f.origem) chips.push(['origem', f.origem === 'importado' ? 'Só do banco' : 'Só manuais']);
+    if (f.ordem !== 'recentes') chips.push(['ordem', `Ordem: ${ROTULOS_ORDEM[f.ordem]}`]);
+
+    const doPainel = ['dias', 'valor', 'origem', 'ordem'].filter(chave => chips.some(([c]) => c === chave)).length;
+    const contador = document.querySelector('.fin-filtros-contador');
+    contador.hidden = !doPainel;
+    contador.textContent = doPainel;
+    if (!chips.length) return '';
+    return `${chips.map(([chave, rotulo]) => `
+        <button type="button" class="fin-filtro-ativo" data-acao="fin-limpar-filtro" data-chave="${chave}" aria-label="Remover filtro ${escaparHtml(rotulo)}">
+            ${escaparHtml(rotulo)} <i class="fa-solid fa-xmark"></i></button>`).join('')}
+        ${chips.length > 1 ? '<button type="button" class="btn btn-ghost btn-sm" data-acao="fin-limpar-filtros">Limpar tudo</button>' : ''}`;
+}
+
+function htmlLancamento(t, { comData = false } = {}) {
     const c = categoriaFin(t.categoria);
     const contaDoLancamento = buscarConta(t.contaId);
     const neutro = NEUTRAS.includes(t.categoria);
@@ -67,7 +138,7 @@ function htmlLancamento(t) {
             <span class="fin-lancamento-texto">
                 <span class="fin-lancamento-descricao">${escaparHtml(t.descricao)}</span>
                 <span class="fin-lancamento-meta">
-                    ${escaparHtml(c.nome)} · ${escaparHtml(contaDoLancamento?.nome || 'Conta removida')}
+                    ${comData ? `${formatarDia(t.data, { day: '2-digit', month: 'short' }).replace('.', '')} · ` : ''}${escaparHtml(c.nome)} · ${escaparHtml(contaDoLancamento?.nome || 'Conta removida')}
                     ${t.origem === 'importado' ? '<i class="fa-solid fa-building-columns" title="Veio do banco"></i>' : ''}
                     ${t.observacao ? '<i class="fa-regular fa-comment" title="Tem observação"></i>' : ''}
                 </span>
@@ -81,49 +152,51 @@ export function renderizarLancamentos() {
     if (!container) return;
     document.getElementById('fin-lanc-mes').innerHTML = htmlNavegadorMes();
     preencherFiltros();
+    document.getElementById('fin-filtros-ativos').innerHTML = htmlFiltrosAtivos();
 
     const lista = filtrar();
     const gastos = lista.filter(t => conta(t) && t.valor < 0).reduce((s, t) => s - t.valor, 0);
     const entradas = lista.filter(t => conta(t) && t.valor > 0).reduce((s, t) => s + t.valor, 0);
+    const semCategoria = lista.filter(t => !t.categoria && !t.ignorada).length;
+    const termo = estado.filtros.busca.trim();
     document.getElementById('fin-lanc-resumo').innerHTML = `
         <span>${lista.length} lançamento(s)</span>
         <span class="fin-valor saida">${reais(-gastos)}</span>
-        <span class="fin-valor entrada">+${reais(entradas)}</span>`;
+        <span class="fin-valor entrada">+${reais(entradas)}</span>
+        ${semCategoria && estado.filtros.categoria !== 'sem' ? `<button type="button" class="fin-link" data-acao="fin-filtrar-sem-categoria">${semCategoria} sem categoria</button>` : ''}
+        ${termo.length >= 3 && lista.length ? `<button type="button" class="fin-link" data-acao="fin-nova-regra" data-termo="${escaparHtml(termo)}" data-permissao="financas:gerenciar"><i class="fa-solid fa-wand-magic-sparkles"></i> Criar regra com “${escaparHtml(termo)}”</button>` : ''}`;
+    aplicarPermissoes(document.getElementById('fin-lanc-resumo'));
 
     if (!lista.length) {
         container.innerHTML = `<div class="card"><p class="empty-state">${estado.transacoes.length ? 'Nenhum lançamento com esses filtros.' : 'Nenhum lançamento neste mês.'}</p></div>`;
         return;
     }
 
-    // Agrupado por dia, do mais recente para o mais antigo, com o total gasto no dia
+    // Ordenado por valor: uma lista só, com a data em cada lançamento
+    const { ordem } = estado.filtros;
+    if (ordem !== 'recentes' && ordem !== 'antigos') {
+        container.innerHTML = `<div class="card fin-dia-itens">${[...lista].sort(ORDENAR[ordem]).map(t => htmlLancamento(t, { comData: true })).join('')}</div>`;
+        return;
+    }
+
+    // Agrupado por dia, com o total gasto no dia
     const dias = new Map();
     lista.forEach(t => {
         if (!dias.has(t.data)) dias.set(t.data, []);
         dias.get(t.data).push(t);
     });
-    container.innerHTML = [...dias.entries()].sort(([a], [b]) => b.localeCompare(a)).map(([dia, itens]) => {
+    container.innerHTML = [...dias.entries()].sort(([a], [b]) => (ordem === 'antigos' ? a.localeCompare(b) : b.localeCompare(a))).map(([dia, itens]) => {
         const totalDia = itens.filter(t => conta(t) && t.valor < 0).reduce((s, t) => s - t.valor, 0);
         const titulo = formatarDia(dia, { weekday: 'short', day: '2-digit', month: 'short' }).replace(/\./g, '');
         return `
             <section class="fin-dia">
                 <h3 class="fin-dia-titulo"><span>${dia === hoje() ? 'Hoje' : titulo}</span>${totalDia ? `<span>${reais(-totalDia)}</span>` : ''}</h3>
-                <div class="card fin-dia-itens">${itens.map(htmlLancamento).join('')}</div>
+                <div class="card fin-dia-itens">${itens.map(t => htmlLancamento(t)).join('')}</div>
             </section>`;
     }).join('');
 }
 
 // ===== FORMULÁRIO =====
-// Sugestão de termo para a regra: o começo da descrição (até 3 palavras), parando antes de
-// números ou "*" — precisa ser um trecho contínuo para a regra "contém" funcionar
-function termoSugerido(descricao) {
-    const palavras = [];
-    for (const palavra of descricao.trim().split(/\s+/)) {
-        if (/[\d*]/.test(palavra) || palavras.length === 3) break;
-        palavras.push(palavra);
-    }
-    return palavras.join(' ') || descricao.slice(0, 20);
-}
-
 export function abrirLancamento({ id, aoMudar, aoDividir } = {}) {
     const t = id ? estado.transacoes.find(x => x.id === id) || estado.transacoesAnterior.find(x => x.id === id) : null;
     if (id && !t) return;
@@ -170,7 +243,7 @@ export function abrirLancamento({ id, aoMudar, aoDividir } = {}) {
                 ${importado && temPermissao('financas:gerenciar') ? `
                     <div class="fin-regra-rapida" hidden>
                         <label class="checkbox-label"><input type="checkbox" name="criarRegra"> Classificar sempre assim o que contém:</label>
-                        <input type="text" name="termoRegra" maxlength="60" value="${escaparHtml(termoSugerido(t.descricao))}">
+                        <input type="text" name="termoRegra" maxlength="60" value="${escaparHtml(termoParecido(t.descricao))}">
                     </div>` : ''}
                 <label class="field"><span>Observação</span>
                     <input type="text" name="observacao" maxlength="300" value="${escaparHtml(t?.observacao || '')}" placeholder="Ex.: parte da festa do dia 12" ${d}></label>

@@ -8,6 +8,8 @@ import pluggy from './pluggy.js';
 //     id: 'pluggy', nome: 'Pluggy', descricao: '...',
 //     configurado(): boolean,                       // credenciais presentes (variáveis de ambiente)
 //     comoConfigurar: '...',                        // texto exibido quando não está configurado
+//     campos: [{ id, rotulo, ajuda, obrigatorio, avancado }], // opcional: o que o app pede ao conectar (vira `dados`)
+//     async widget() -> { script, opcoes },         // opcional: widget do provedor (Pluggy Connect) que devolve o itemId
 //     async conectar(dados) -> { externoId, instituicao },
 //                                                   // dados vindos do app (ex.: itemId do widget Pluggy Connect)
 //     async contas(conexao) -> [{ externoId, nome, instituicao, tipo, saldo }],
@@ -21,4 +23,4 @@ export const PROVEDORES = Object.fromEntries([demo, pluggy].map(provedor => [pro
 
 export const listarProvedores = () => Object.values(PROVEDORES)
   .filter(provedor => !provedor.oculto?.())
-  .map(({ id, nome, descricao, comoConfigurar, configurado }) => ({ id, nome, descricao, comoConfigurar, disponivel: configurado() }));
+  .map(({ id, nome, descricao, comoConfigurar, configurado, campos = [], widget }) => ({ id, nome, descricao, comoConfigurar, campos, widget: Boolean(widget), disponivel: configurado() }));

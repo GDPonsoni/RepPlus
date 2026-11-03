@@ -53,7 +53,7 @@ export default function rotasLancamentos(router) {
   router.post('/financas/transacoes', exigirPermissao('financas:lancar'), asyncHandler(async (req, res) => {
     const t = await lerTransacao(req.body || {});
     // Sem categoria escolhida: tenta pelas regras
-    if (!t.categoria) t.categoria = categorizar(t.descricao, await RegrasStore.list());
+    if (!t.categoria) t.categoria = categorizar(t, await RegrasStore.list());
     res.status(201).json(await TransacoesStore.create({ ...t, origem: 'manual' }));
   }));
 
@@ -62,7 +62,7 @@ export default function rotasLancamentos(router) {
     if (!existente) throw new HttpError(404, 'Lançamento não encontrado.');
     const t = await lerTransacao(req.body || {}, existente);
     // Tirou a categoria: volta a valer o que as regras disserem
-    if (t.categoria === null) t.categoria = categorizar(t.descricao ?? existente.descricao, await RegrasStore.list());
+    if (t.categoria === null) t.categoria = categorizar({ ...existente, ...t }, await RegrasStore.list());
     res.json(await TransacoesStore.update(existente.id, t));
   }));
 

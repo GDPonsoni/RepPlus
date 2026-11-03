@@ -97,6 +97,18 @@ export default function rotasContas(router) {
     res.json(listarProvedores());
   });
 
+  // Dados para abrir o widget do provedor (ex.: connect token da Pluggy, vale 30 minutos)
+  router.post('/financas/provedores/:id/widget', exigirPermissao('financas:gerenciar'), asyncHandler(async (req, res) => {
+    const provedor = PROVEDORES[req.params.id];
+    if (!provedor?.widget || provedor.oculto?.()) throw new HttpError(400, 'Este provedor não tem widget.');
+    if (!provedor.configurado()) throw new HttpError(400, provedor.comoConfigurar);
+    try {
+      res.json(await provedor.widget());
+    } catch (error) {
+      throw error instanceof HttpError ? error : new HttpError(502, error.message);
+    }
+  }));
+
   router.get('/financas/conexoes', exigirPermissao('financas:ver'), asyncHandler(async (req, res) => {
     res.json(await ConexoesStore.list());
   }));
@@ -105,7 +117,15 @@ export default function rotasContas(router) {
     const provedor = PROVEDORES[req.body?.provedor];
     if (!provedor || provedor.oculto?.()) throw new HttpError(400, 'Provedor desconhecido.');
     if (!provedor.configurado()) throw new HttpError(400, provedor.comoConfigurar);
-    const { externoId, instituicao } = await provedor.conectar(req.body?.dados || {});
+    let externoId, instituicao;
+    try {
+      ({ externoId, instituicao } = await provedor.conectar(req.body?.dados || {}));
+    } catch (error) {
+      // Recusa do provedor (credenciais, item com erro) chega ao app com a mensagem dele
+      throw error instanceof HttpError ? error : new HttpError(502, error.message);
+    }
+    const repetida = (await ConexoesStore.list()).find(c => c.provedor === provedor.id && c.externoId === externoId && c.status !== 'desconectada');
+    if (repetida) throw new HttpError(400, `Este banco já está conectado (${repetida.instituicao || provedor.nome}).`);
     const conexao = await ConexoesStore.create({ provedor: provedor.id, externoId, instituicao, status: 'ativa' });
     const resultado = await sincronizarConexao(conexao);
     res.status(201).json({ conexao: await ConexoesStore.findById(conexao.id), resultado });

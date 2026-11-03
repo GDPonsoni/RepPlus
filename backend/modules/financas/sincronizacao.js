@@ -39,7 +39,7 @@ export async function sincronizarConexao(conexao) {
       const chegaram = (await provedor.transacoes(conexao, conta, desde)).filter(t => !jaImportadas.has(t.externoId));
       await TransacoesStore.createMany(chegaram.map(t => ({
         contaId: conta.id, data: t.data, descricao: t.descricao, valor: t.valor,
-        categoria: categorizar(t.descricao, regras), origem: 'importado', externoId: t.externoId
+        categoria: categorizar(t, regras), origem: 'importado', externoId: t.externoId
       })));
       novas += chegaram.length;
     }

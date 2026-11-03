@@ -27,7 +27,7 @@ const DIVISAO = conversor({
   id: 'id', descricao: 'descricao', data: 'data', valorTotal: 'valor_total', pagoPor: 'pago_por',
   participantes: 'participantes', transacaoId: 'transacao_id', categoria: 'categoria', criadoEm: 'criado_em'
 });
-const REGRA = conversor({ id: 'id', termo: 'termo', categoria: 'categoria', criadoEm: 'criado_em' });
+const REGRA = conversor({ id: 'id', termo: 'termo', categoria: 'categoria', sentido: 'sentido', criadoEm: 'criado_em' });
 
 // CRUD genérico de uma tabela
 function tabela(nome, { deDb, paraDb }) {

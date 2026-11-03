@@ -27,8 +27,14 @@ export const estado = {
     orcamentos: [],
     provedores: [],
     conexoes: [],
-    filtros: { busca: '', conta: '', categoria: '', tipo: '' }
+    regrasSugestoes: [],           // grupos de lançamentos parecidos sem categoria (Ajustes)
+    filtros: {}
 };
+
+// Filtros dos lançamentos. Dias são números (1 a 31) e valores em texto de reais, como digitados
+export const FILTROS_PADRAO = { busca: '', conta: '', categoria: '', tipo: '', diaDe: '', diaAte: '', valorMin: '', valorMax: '', origem: '', ordem: 'recentes' };
+export const limparFiltros = (mudancas = {}) => { estado.filtros = { ...FILTROS_PADRAO, ...mudancas }; };
+limparFiltros();
 
 // ===== FORMATAÇÃO =====
 const formatador = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -95,8 +101,8 @@ export async function carregarDivisoes() {
 }
 
 export async function carregarAjustes() {
-    [estado.regras, estado.orcamentos, estado.provedores, estado.conexoes] = await Promise.all([
-        api('/financas/regras'), api('/financas/orcamentos'), api('/financas/provedores'), api('/financas/conexoes')
+    [estado.regras, estado.regrasSugestoes, estado.orcamentos, estado.provedores, estado.conexoes] = await Promise.all([
+        api('/financas/regras'), api('/financas/regras/sugestoes'), api('/financas/orcamentos'), api('/financas/provedores'), api('/financas/conexoes')
     ]);
 }
 

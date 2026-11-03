@@ -2,7 +2,7 @@ import { escaparHtml } from '../../core/ui.js';
 import { hoje, formatarDia } from '../../core/datas.js';
 import { estiloCategoria } from '../../core/categorias.js';
 import { estado, reais, reaisCurto, nomeDoMes, somarMeses, categoriaFin, conta } from './dados.js';
-import { rosca, barrasMensais, linhaAcumulada } from './graficos.js';
+import { rosca, barrasMensais, linhaAcumulada, barrasDiarias, ativarDicas } from './graficos.js';
 import { contarAte } from '../../core/movimento.js';
 
 // Barra de navegação de mês (usada na Visão geral e nos Lançamentos)
@@ -129,6 +129,42 @@ function htmlAcumulado() {
         </section>`;
 }
 
+// Gasto de cada dia, com média, dia mais caro e, no mês corrente, a projeção para o mês inteiro
+function htmlPorDia() {
+    const dias = diasNoMes(estado.mes);
+    const mesAtual = estado.mes === hoje().slice(0, 7);
+    const ateDia = mesAtual ? Number(hoje().slice(8)) : dias;
+    const porDia = Array.from({ length: dias }, (_, i) => ({ dia: `${estado.mes}-${String(i + 1).padStart(2, '0')}`, valor: 0, quantidade: 0 }));
+    gastos(estado.transacoes).forEach(t => {
+        const d = porDia[Number(t.data.slice(8)) - 1];
+        d.valor -= t.valor;
+        d.quantidade++;
+    });
+    const total = porDia.reduce((s, d) => s + d.valor, 0);
+    if (!total) {
+        return `
+            <section class="card card-padded fin-bloco">
+                <h3 class="card-title"><i class="fa-solid fa-calendar-day"></i> Gasto por dia</h3>
+                <p class="empty-state">Nenhum gasto neste mês.</p>
+            </section>`;
+    }
+    const pico = porDia.reduce((a, b) => (b.valor > a.valor ? b : a));
+    const comGasto = porDia.slice(0, ateDia).filter(d => d.valor).length;
+    const media = total / ateDia;
+    return `
+        <section class="card card-padded fin-bloco">
+            <h3 class="card-title"><i class="fa-solid fa-calendar-day"></i> Gasto por dia</h3>
+            <div class="fin-dias-resumo">
+                <span><small>Média por dia</small><strong>${reais(media)}</strong></span>
+                <span><small>Dia mais caro</small><strong>${reais(pico.valor)}</strong><small>dia ${Number(pico.dia.slice(8))}</small></span>
+                <span><small>Dias com gasto</small><strong>${comGasto} de ${ateDia}</strong></span>
+                ${mesAtual && ateDia < dias ? `<span><small>No ritmo atual</small><strong>${reais(media * dias)}</strong><small>no mês</small></span>` : ''}
+            </div>
+            ${barrasDiarias({ dias: porDia, ateDia })}
+            <p class="fin-ajuda">Toque num dia para ver os lançamentos. Barras mais claras são fins de semana.</p>
+        </section>`;
+}
+
 function htmlOrcamentos() {
     if (!estado.orcamentos.length) {
         return `
@@ -199,10 +235,12 @@ export function renderizarVisao() {
         <div class="fin-grade">
             ${htmlCategorias()}
             ${htmlAcumulado()}
+            ${htmlPorDia()}
             ${htmlOrcamentos()}
             ${htmlHistorico()}
             ${htmlMaiores()}
         </div>`;
+    ativarDicas(container);
     // Ao abrir a aba, os valores do topo "sobem" até o total
     if (container.closest('.entrando')) {
         container.querySelectorAll('[data-centavos]').forEach(el => contarAte(el, Number(el.dataset.centavos), reais));

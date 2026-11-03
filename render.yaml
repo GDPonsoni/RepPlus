@@ -34,5 +34,10 @@ services:
         sync: false
       - key: R2_BUCKET
         sync: false
+      # Open Finance pela Pluggy (Meu Pluggy): Dashboard da Pluggy → Applications
+      - key: PLUGGY_CLIENT_ID
+        sync: false
+      - key: PLUGGY_CLIENT_SECRET
+        sync: false
       - key: CRON_SECRET      # protege GET /api/financas/sincronizar para um agendador externo
         generateValue: true
