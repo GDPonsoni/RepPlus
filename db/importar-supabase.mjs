@@ -23,6 +23,11 @@ const TABELAS = [
 ];
 const LOTE = 200;
 
+// Tabelas que o banco novo já pode ter preenchido com outro id: as categorias padrão são
+// criadas pelo backend na primeira vez que cada grupo abre. Os registros apontam para a
+// categoria pela chave (texto), não pelo id, então a linha antiga substitui a nova pela chave.
+const CHAVE_NATURAL = { categorias: ['escopo', 'chave'] };
+
 const cabecalhos = { apikey: SUPABASE_SERVICE_ROLE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` };
 
 async function supabase(caminho, opcoes = {}) {
@@ -77,7 +82,7 @@ async function copiarTabela(tabela) {
       }
       return nova;
     });
-    check(await banco.from(tabela).upsert(copia, { onConflict: chave.join(',') }));
+    check(await banco.from(tabela).upsert(copia, { onConflict: (CHAVE_NATURAL[tabela] || chave).join(',') }));
     total += linhas.length;
   }
   console.log(`  ${tabela}: ${total} linha(s)${ignoradas.size ? ` (colunas antigas ignoradas: ${[...ignoradas].join(', ')})` : ''}`);
