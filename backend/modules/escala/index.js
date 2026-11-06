@@ -9,6 +9,7 @@ export default {
   nome: 'Escala de Limpeza',
   permissoes: {
     'escala:ver': { descricao: 'Ver a escala atual, o histórico e os cômodos', papeis: ['morador'] },
+    'escala:marcar': { descricao: 'Marcar cômodos da escala como limpos', papeis: ['morador'] },
     'escala:gerar': { descricao: 'Gerar a escala da semana', papeis: [] },
     'escala:gerenciar': { descricao: 'Editar, trocar ou excluir semanas da escala', papeis: [] },
     'comodos:gerenciar': { descricao: 'Adicionar, editar e remover cômodos', papeis: [] },

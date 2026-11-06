@@ -28,4 +28,4 @@ acrescente uma linha na tabela abaixo.
 | `20261031_financas.sql` | Módulo Finanças: contas, lançamentos, regras, orçamentos, divisões e conexões de Open Finance |
 | `20261104_categorias_subcategorias.sql` | Subcategorias (coluna `pai` em `categorias`); nas Finanças: Mercado, Contas da casa e Serviços ganham subcategorias |
 | `20261103_financas_regras_sentido.sql` | Regras de categoria só para saídas ou só para entradas: coluna `sentido` em `fin_regras` |
-
+| `20261106_escala_limpeza.sql` | Controle de limpeza da escala: coluna `cumpridos` (cômodos já limpos) em `escalas` |

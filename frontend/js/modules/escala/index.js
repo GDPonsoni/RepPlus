@@ -3,7 +3,7 @@ import { ouvir } from '../../core/eventos.js';
 import { obterConfig } from '../../core/aparencia.js';
 import { estado } from './estado.js';
 import { HTML_ABA_ESCALA, HTML_ABA_HISTORICO, HTML_ABA_INFRACOES, HTML_SECAO_COMODOS, HTML_SECAO_GALERIA } from './views.js';
-import { carregarEscalaAtual, gerarNovaEscala } from './atual.js';
+import { carregarEscalaAtual, gerarNovaEscala, alternarLimpeza } from './atual.js';
 import { carregarHistorico, deletarHistoricoSemana } from './historico.js';
 import { carregarInfracoes, registrarInfracao, marcarInfracaoRapido, deletarInfracao, atualizarSelectInfracao } from './infracoes.js';
 import { carregarComodos, adicionarOuEditarComodo, editarComodo, cancelarEdicaoComodo, deletarComodo, uploadImagemComodo, removerImagemComodo } from './comodos.js';
@@ -47,6 +47,7 @@ export default {
         document.getElementById('motivacao-imagem').addEventListener('change', mostrarNomeArquivoMotivacao);
 
         registrarAcoes({
+            'marcar-limpeza': ({ id }) => alternarLimpeza(id),
             'marcar-x': ({ id }) => marcarInfracaoRapido(id),
             'excluir-semana': ({ ano, semana }) => deletarHistoricoSemana(Number(ano), Number(semana)),
             'remover-infracao': ({ id }) => deletarInfracao(id),

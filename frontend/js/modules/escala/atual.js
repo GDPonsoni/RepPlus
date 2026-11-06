@@ -52,6 +52,9 @@ function renderizarEscalaTabela(escalas, anterior = null) {
     container.innerHTML = '';
     const resumoInfracoes = estado.infracoes || {};
     const totalFolgas = escalas.filter(escala => Array.isArray(escala.comodos) && escala.comodos.includes('FOLGA')).length;
+    const tarefasDe = (e) => (Array.isArray(e.comodos) ? e.comodos.filter(item => item !== 'FOLGA') : []);
+    const totalTarefas = escalas.reduce((soma, e) => soma + tarefasDe(e).length, 0);
+    const totalFeitas = escalas.reduce((soma, e) => soma + tarefasDe(e).filter(nome => (e.cumpridos || []).includes(nome)).length, 0);
     const totalXs = Object.values(resumoInfracoes).reduce((sum, dados) => sum + (dados?.total || 0), 0);
     const destaqueMotivacao = estado.motivacaoDestaque || estado.motivacoes[0]?.path || null;
 
@@ -60,6 +63,7 @@ function renderizarEscalaTabela(escalas, anterior = null) {
     // Guardado no estado para que renderizarMotivacaoDestaque() redesenhe os chips sobre a imagem
     estado.statsEscala = `
         <span class="stat-chip highlight"><i class="fa-solid fa-users"></i> ${escalas.length} pessoas</span>
+        <span class="stat-chip ${totalTarefas > 0 && totalFeitas === totalTarefas ? 'highlight' : ''}" title="Cômodos já limpos nesta semana"><i class="fa-solid fa-broom"></i> ${totalFeitas}/${totalTarefas} limpo${totalFeitas === 1 ? '' : 's'}</span>
         <span class="stat-chip"><i class="fa-solid fa-mug-hot"></i> ${totalFolgas} folga${totalFolgas === 1 ? '' : 's'}</span>
         <span class="stat-chip" title="Total acumulado no histórico, não apenas desta semana"><i class="fa-solid fa-xmark"></i> ${totalXs} acumulado${totalXs === 1 ? '' : 's'}</span>
     `;
@@ -71,12 +75,14 @@ function renderizarEscalaTabela(escalas, anterior = null) {
 
         const mudou = anterior !== null && tarefaAnterior.get(String(escala.integranteId)) !== (escala.comodos || []).join('|');
 
+        const cumpridos = escala.cumpridos || [];
+        const completo = !isFolga && tarefas.length > 0 && tarefas.every(nome => cumpridos.includes(nome));
         const rotulo = isFolga
             ? '<i class="fa-solid fa-mug-hot"></i> Folga'
             : escaparHtml(tarefas.length > 0 ? tarefas.join(' + ') : 'Nenhum cômodo');
 
         return `
-            <article class="escala-card ${isFolga ? 'folga' : ''} ${!isFolga && totalInfracoes > 0 ? 'com-x' : ''} ${anterior !== null ? 'recem-gerado' : ''} ${mudou ? 'mudou' : ''}">
+            <article class="escala-card ${isFolga ? 'folga' : ''} ${completo ? 'limpo' : ''} ${anterior !== null ? 'recem-gerado' : ''} ${mudou ? 'mudou' : ''}">
                 <div class="escala-card-info">
                     <span class="escala-card-name">
                         ${escaparHtml(escala.integranteNome)}
@@ -84,8 +90,12 @@ function renderizarEscalaTabela(escalas, anterior = null) {
                         ${mudou ? '<span class="escala-card-novo">novo</span>' : ''}
                     </span>
                     <span class="escala-card-comodo ${isFolga ? 'is-folga' : ''}">${rotulo}</span>
+                    ${!isFolga && tarefas.length > 0 ? `<span class="escala-card-status ${completo ? 'ok' : 'pendente'}">${completo ? '<i class="fa-solid fa-check"></i> Concluído' : `<i class="fa-regular fa-clock"></i> Pendente (${tarefas.filter(nome => cumpridos.includes(nome)).length}/${tarefas.length})`}</span>` : ''}
                 </div>
-                ${!isFolga ? `<button class="escala-card-x-btn" title="Marcar X" aria-label="Marcar infração para ${escaparHtml(escala.integranteNome)}" data-acao="marcar-x" data-id="${escaparHtml(escala.integranteId)}" data-permissao="infracoes:registrar"><i class="fa-solid fa-xmark"></i></button>` : ''}
+                ${!isFolga ? `<div class="escala-card-acoes">
+                    ${tarefas.length > 0 ? `<button class="escala-card-ok-btn ${completo ? 'feito' : ''}" title="${completo ? 'Desmarcar limpeza' : 'Marcar como limpo'}" aria-label="${completo ? 'Desmarcar limpeza de' : 'Marcar como limpo:'} ${escaparHtml(escala.integranteNome)}" aria-pressed="${completo}" data-acao="marcar-limpeza" data-id="${escaparHtml(escala.id)}"><i class="fa-solid fa-check"></i></button>` : ''}
+                    <button class="escala-card-x-btn" title="Marcar X" aria-label="Marcar infração para ${escaparHtml(escala.integranteNome)}" data-acao="marcar-x" data-id="${escaparHtml(escala.integranteId)}" data-permissao="infracoes:registrar"><i class="fa-solid fa-xmark"></i></button>
+                </div>` : ''}
             </article>
         `;
     }).join('');
@@ -102,6 +112,23 @@ function renderizarEscalaTabela(escalas, anterior = null) {
     aplicarPermissoes(container);
     renderizarMotivacaoDestaque(destaqueMotivacao);
     carregarMotivacoes();
+}
+
+// Marca ou desmarca a pessoa como tendo limpado tudo e redesenha os cards
+export async function alternarLimpeza(id) {
+    const linha = estado.escalaAtual.find(e => String(e.id) === String(id));
+    if (!linha) return;
+    const tarefas = (linha.comodos || []).filter(nome => nome !== 'FOLGA');
+    const feito = !tarefas.every(nome => (linha.cumpridos || []).includes(nome));
+
+    try {
+        const atualizado = await api(`/escala/${encodeURIComponent(id)}/limpeza`, { metodo: 'POST', corpo: { feito } });
+        linha.cumpridos = atualizado.cumpridos || [];
+        renderizarEscalaTabela(estado.escalaAtual);
+    } catch (error) {
+        console.error('Erro:', error);
+        mostrarNotificacao(error.message || 'Erro ao marcar a limpeza', 'error');
+    }
 }
 
 function renderizarCriticasEscala(criticas, tipo = 'warning') {

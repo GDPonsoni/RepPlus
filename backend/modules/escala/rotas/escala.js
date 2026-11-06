@@ -65,6 +65,7 @@ export function rotasEscala(router) {
         return res.status(400).json({ error: 'comodos deve ser uma lista de textos' });
       }
       changes.comodos = req.body.comodos;
+      changes.cumpridos = existente.cumpridos.filter(nome => req.body.comodos.includes(nome));
       changes.folga = req.body.comodos.includes('FOLGA');
     }
     if (req.body.folga !== undefined && changes.folga === undefined) {
@@ -73,6 +74,32 @@ export function rotasEscala(router) {
 
     const atualizado = await EscalasStore.update(req.params.id, changes);
     res.json(atualizado);
+  }));
+
+  // Marca (ou desmarca) como limpos os cômodos de uma pessoa na escala da semana atual.
+  // Sem `comodo`, vale para todos os cômodos dela.
+  router.post('/escala/:id/limpeza', exigirPermissao('escala:marcar'), asyncHandler(async (req, res) => {
+    const { comodo, feito } = req.body;
+
+    const existente = await EscalasStore.findById(req.params.id);
+    if (!existente) {
+      return res.status(404).json({ error: 'Registro de escala não encontrado' });
+    }
+
+    const semanaAtual = getSemanaAtual();
+    if (existente.ano !== semanaAtual.ano || existente.semana !== semanaAtual.semana) {
+      return res.status(400).json({ error: 'Só é possível marcar a limpeza da semana atual' });
+    }
+
+    const tarefas = existente.comodos.filter(nome => nome !== 'FOLGA');
+    const alvo = comodo === undefined ? tarefas : [comodo];
+    if (alvo.length === 0 || alvo.some(nome => typeof nome !== 'string' || !tarefas.includes(nome))) {
+      return res.status(400).json({ error: 'Essa pessoa não tem cômodo para limpar nesta semana' });
+    }
+
+    const outros = existente.cumpridos.filter(nome => !alvo.includes(nome));
+    const cumpridos = normalizeBoolean(feito, true) ? [...outros, ...alvo] : outros;
+    res.json(await EscalasStore.update(req.params.id, { cumpridos }));
   }));
 
   router.post('/escala/atual/trocar', exigirPermissao('escala:gerenciar'), asyncHandler(async (req, res) => {
@@ -95,8 +122,8 @@ export function rotasEscala(router) {
     }
 
     const resultados = await EscalasStore.saveMany([
-      { ...linhaA, comodos: linhaB.comodos, folga: linhaB.folga },
-      { ...linhaB, comodos: linhaA.comodos, folga: linhaA.folga }
+      { ...linhaA, comodos: linhaB.comodos, folga: linhaB.folga, cumpridos: [] },
+      { ...linhaB, comodos: linhaA.comodos, folga: linhaA.folga, cumpridos: [] }
     ]);
 
     res.json({ success: true, escala: resultados });
@@ -150,6 +177,7 @@ export function rotasEscala(router) {
         integranteNome: integrante.nome,
         folga: comodosIntegrante.includes('FOLGA'),
         comodos: comodosIntegrante,
+        cumpridos: [],
         dataInicio: new Date(semanaAtual.dataInicio),
         dataFim: new Date(semanaAtual.dataFim),
         alerta: null

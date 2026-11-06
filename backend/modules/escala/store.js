@@ -126,6 +126,7 @@ const escalaFromDb = (row) => ({
   integranteNome: row.integrante_nome,
   folga: row.folga,
   comodos: row.comodos,
+  cumpridos: Array.isArray(row.cumpridos) ? row.cumpridos : [],
   dataInicio: row.data_inicio,
   dataFim: row.data_fim,
   alerta: row.alerta
@@ -139,6 +140,7 @@ const escalaToDb = (escala) => ({
   integrante_nome: escala.integranteNome,
   folga: escala.folga,
   comodos: escala.comodos,
+  cumpridos: escala.cumpridos || [],
   data_inicio: escala.dataInicio,
   data_fim: escala.dataFim,
   alerta: escala.alerta
@@ -182,6 +184,7 @@ export const EscalasStore = {
     const dbChanges = {};
     if (changes.comodos !== undefined) dbChanges.comodos = changes.comodos;
     if (changes.folga !== undefined) dbChanges.folga = changes.folga;
+    if (changes.cumpridos !== undefined) dbChanges.cumpridos = changes.cumpridos;
 
     const row = check(await banco.from('escalas').update(dbChanges).eq('id', id).select().maybeSingle());
     return row ? escalaFromDb(row) : null;
@@ -193,7 +196,8 @@ export const EscalasStore = {
       .filter(escala => Array.isArray(escala.comodos) && escala.comodos.includes(nomeAntigo))
       .map(escala => ({
         ...escala,
-        comodos: escala.comodos.map(nome => (nome === nomeAntigo ? nomeNovo : nome))
+        comodos: escala.comodos.map(nome => (nome === nomeAntigo ? nomeNovo : nome)),
+        cumpridos: (escala.cumpridos || []).map(nome => (nome === nomeAntigo ? nomeNovo : nome))
       }));
     return afetadas.length > 0 ? this.saveMany(afetadas) : [];
   },

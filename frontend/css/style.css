@@ -1043,9 +1043,18 @@ input[type="file"]::file-selector-button {
     border-left-color: var(--secondary-color);
 }
 
-.escala-card.com-x {
-    background: var(--primary-soft);
-    border-color: var(--primary-line);
+.escala-card-status {
+    display: block;
+    margin-top: 4px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.escala-card-status.ok { color: var(--secondary-text); }
+.escala-card-status.pendente { opacity: 0.7; }
+
+.escala-card.limpo {
+    border-left-color: var(--secondary-color);
 }
 
 .escala-card-info {
@@ -1112,19 +1121,43 @@ input[type="file"]::file-selector-button {
     100% { opacity: 1; transform: scale(1); }
 }
 
+.escala-card-acoes {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+    align-self: center;
+}
+
+/* Botões de check e de X: mesmo tamanho e formato */
+.escala-card-ok-btn,
 .escala-card-x-btn {
-    width: 42px;
-    height: 42px;
+    width: 46px;
+    height: 46px;
     flex-shrink: 0;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     border-radius: var(--radius-sm);
-    border: 1px solid var(--border);
-    background: var(--surface);
-    color: var(--muted);
-    font-size: 1rem;
+    border: 1.5px solid var(--primary-line);
+    background: var(--primary-soft);
+    color: var(--primary-text);
+    font-size: 1.15rem;
+    cursor: pointer;
     transition: all 0.2s;
+}
+
+.escala-card-ok-btn {
+    border-color: var(--secondary-line);
+    background: var(--secondary-soft);
+    color: var(--secondary-text);
+}
+
+.escala-card-ok-btn:hover,
+.escala-card-ok-btn:active,
+.escala-card-ok-btn.feito {
+    border-color: var(--secondary-color);
+    background: var(--secondary-color);
+    color: var(--on-secondary);
 }
 
 .escala-card-x-btn:hover,
@@ -3998,6 +4031,28 @@ button.evento-card:hover {
 
 .inicio-escala li.folga span:last-child {
     color: var(--secondary-text);
+}
+
+.inicio-escala li span:last-child {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.inicio-estado {
+    width: 1.1em;
+    flex-shrink: 0;
+    text-align: center;
+}
+
+.inicio-escala li.limpo .inicio-tarefa,
+.inicio-limpo {
+    color: var(--success, #2e9e5b);
+}
+
+.inicio-pendente {
+    color: var(--text-muted, #888);
 }
 
 /* Agenda */
