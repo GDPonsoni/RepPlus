@@ -2,244 +2,78 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Escala - Escala de Limpeza</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#DC0000">
+    <title>República</title>
+    <!-- Ícone da guia: trocado pelo logo da república em js/core/aparencia.js -->
+    <link rel="icon" id="favicon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'><circle cx='100' cy='100' r='95' fill='%23FFD700' stroke='%23000' stroke-width='4'/><rect x='40' y='50' width='120' height='100' fill='%23DC0000'/><text x='100' y='130' font-size='80' font-weight='bold' text-anchor='middle' font-family='Arial' fill='%23FFD700'>B</text><circle cx='75' cy='75' r='15' fill='%23FFF'/><circle cx='125' cy='75' r='15' fill='%23FFF'/><circle cx='75' cy='80' r='8' fill='%23000'/><circle cx='125' cy='80' r='8' fill='%23000'/></svg>">
+    <script>
+        // Preferências deste aparelho antes de desenhar a tela (sem piscar claro no tema escuro).
+        // A lógica completa e as mudanças ficam em js/core/aparencia.js
+        try {
+            var prefs = JSON.parse(localStorage.getItem('escala:aparelho') || '{}');
+            // Último ícone da guia gerado a partir do logo (evita mostrar o padrão antes de carregar)
+            var favicon = localStorage.getItem('escala:favicon');
+            if (favicon) document.getElementById('favicon').href = favicon;
+            var escuro = prefs.tema === 'escuro' || (prefs.tema !== 'claro' && matchMedia('(prefers-color-scheme: dark)').matches);
+            document.documentElement.dataset.tema = escuro ? 'escuro' : 'claro';
+            document.documentElement.dataset.texto = prefs.texto || 'normal';
+            document.documentElement.dataset.animacoes = prefs.animacoes || 'completas';
+            document.documentElement.dataset.vibracao = prefs.vibracao || 'sim';
+        } catch (e) { /* sem armazenamento: tema padrão */ }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <div class="container">
-        <!-- HEADER -->
-        <header class="header">
-            <div class="header-content">
+    <!-- CABEÇALHO: logo (volta ao Início), nome do módulo atual e, no canto, avisos e menu do usuário -->
+    <header class="header">
+        <div class="header-content">
+            <button type="button" class="logo-ring" data-acao="ir-para" data-rota="inicio" aria-label="Ir para o início">
                 <img id="logo-top" class="logo-top" alt="Logo da República" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'><circle cx='100' cy='100' r='95' fill='%23FFD700' stroke='%23000' stroke-width='4'/><rect x='40' y='50' width='120' height='100' fill='%23DC0000'/><text x='100' y='130' font-size='80' font-weight='bold' text-anchor='middle' font-family='Arial' fill='%23FFD700'>B</text><circle cx='75' cy='75' r='15' fill='%23FFF'/><circle cx='125' cy='75' r='15' fill='%23FFF'/><circle cx='75' cy='80' r='8' fill='%23000'/><circle cx='125' cy='80' r='8' fill='%23000'/></svg>">
-                <h1>🏠 Escala</h1>
-                <p class="subtitle">Escala de Limpeza da República</p>
+            </button>
+            <div class="header-titulo">
+                <span class="subtitle" id="nome-republica">República</span>
+                <h1 class="modulo-atual-nome"><i id="modulo-atual-icone" class="fa-solid fa-house"></i> <span id="modulo-atual-nome">Carregando...</span></h1>
             </div>
+            <div class="header-acoes">
+                <button type="button" class="header-btn" data-acao="abrir-avisos" aria-label="Avisos">
+                    <i class="fa-solid fa-bell"></i><span id="avisos-contador" class="header-contador" hidden></span>
+                </button>
+                <button type="button" class="header-btn header-usuario" data-acao="abrir-menu-usuario" aria-label="Menu: moradores, ajustes e conta">
+                    <span id="usuario-avatar" class="avatar-mini"><i class="fa-solid fa-user"></i></span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="app-corpo">
+        <!-- MENU LATERAL (computador): módulos, gerado em js/core/shell.js -->
+        <nav class="menu-lateral" id="menu-lateral" aria-label="Módulos"></nav>
+
+        <div class="app-conteudo">
+            <!-- ABAS do módulo atual (fixas no topo ao rolar) -->
             <nav class="nav-tabs">
-                <button class="tab-btn active" data-tab="escala">📋 Escala Atual</button>
-                <button class="tab-btn" data-tab="historico">📅 Histórico</button>
-                <button class="tab-btn" data-tab="infracoes">❌ Infrações</button>
-                <button class="tab-btn" data-tab="config">⚙️ Configurações</button>
+                <div class="nav-tabs-inner" id="nav-abas"></div>
             </nav>
-        </header>
 
-        <!-- CONTEÚDO PRINCIPAL -->
-        <main class="main-content">
+            <!-- CONTEÚDO PRINCIPAL: cada módulo injeta suas abas e suas seções de configuração -->
+            <main class="main-content" id="conteudo"></main>
 
-            <!-- ABA: ESCALA ATUAL -->
-            <section id="escala" class="tab-content active">
-                <div class="section-header">
-                    <h2>Escala da Semana</h2>
-                    <button class="btn btn-primary" id="btn-gerar-escala">🔄 Gerar Nova Escala</button>
-                </div>
-
-                <div class="escala-info">
-                    <p id="semana-info" class="semana-info"></p>
-                </div>
-
-                <div id="criticas-escala-container" class="criticas-escala-container"></div>
-
-                <div id="escala-container" class="escala-grid">
-                    <!-- Preenchido dinamicamente (inclui a imagem de motivação da semana) -->
-                </div>
-            </section>
-
-            <!-- ABA: HISTÓRICO -->
-            <section id="historico" class="tab-content">
-                <div class="section-header">
-                    <h2>Histórico de Escalas</h2>
-                </div>
-
-                <div id="historico-container" class="historico-list">
-                    <!-- Preenchido dinamicamente -->
-                </div>
-            </section>
-
-            <!-- ABA: INFRAÇÕES -->
-            <section id="infracoes" class="tab-content">
-                <div class="section-header">
-                    <h2>Registro de Infrações</h2>
-                </div>
-
-                <div class="infracoes-resumo">
-                    <h3>📊 Resumo de Infrações por Integrante</h3>
-                    <div id="infracoes-resumo-container" class="resumo-container">
-                        <!-- Preenchido dinamicamente -->
-                    </div>
-                </div>
-
-                <div class="registrar-infracao-section">
-                    <h3>➕ Registrar Infração</h3>
-                    <form id="form-infracao" class="form-infracao">
-                        <select id="infracao-integrante" required>
-                            <option value="">Selecione o integrante...</option>
-                        </select>
-                        <textarea id="infracao-descricao" placeholder="Descrição da infração..." required></textarea>
-                        <button type="submit" class="btn btn-success">Registrar Infração</button>
-                    </form>
-                </div>
-            </section>
-
-            <!-- ABA: CONFIGURAÇÕES -->
-            <section id="config" class="tab-content">
-                <div class="section-header">
-                    <h2>Configurações</h2>
-                </div>
-
-                <div class="config-section">
-                    <div class="config-box">
-                        <h3>👥 Integrantes da República</h3>
-                        <div id="integrantes-list" class="integrantes-list">
-                            <!-- Preenchido dinamicamente -->
-                        </div>
-                        <form id="form-integrante" class="form-config">
-                            <input type="hidden" id="integrante-id">
-                            <input type="text" id="integrante-nome" placeholder="Nome do integrante" required>
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="integrante-suite">
-                                É da suíte?
-                            </label>
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="integrante-ativo" checked>
-                                Está ativo?
-                            </label>
-                            <button type="submit" class="btn btn-success" id="btn-integrante-submit">Adicionar Integrante</button>
-                            <button type="button" class="btn btn-secondary" id="btn-integrante-cancel" style="display:none;">Cancelar</button>
-                        </form>
-                    </div>
-
-                    <div class="config-box">
-                        <h3>🚪 Cômodos/Tarefas</h3>
-                        <div id="comodos-list" class="comodos-list">
-                            <!-- Preenchido dinamicamente -->
-                        </div>
-                        <form id="form-comodo" class="form-config">
-                            <input type="hidden" id="comodo-id">
-                            <input type="text" id="comodo-nome" placeholder="Nome do cômodo/tarefa" required>
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="comodo-suite">
-                                Apenas suite members?
-                            </label>
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="comodo-obrigatorio" checked>
-                                Cômodo obrigatório?
-                            </label>
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="comodo-multiplas">
-                                Permitir múltiplas atribuições?
-                            </label>
-                            <label>
-                                Quantas pessoas? 
-                                <input type="number" id="comodo-pessoas" min="1" max="5" value="1" style="width:60px;">
-                            </label>
-                            <label>
-                                Ordem na rotação:
-                                <input type="number" id="comodo-ordem" min="0" step="1" value="0" style="width:70px;">
-                            </label>
-                            <div class="upload-section">
-                                <label for="comodo-imagem">Foto (opcional):</label>
-                                <input type="file" id="comodo-imagem" accept="image/*">
-                                <span id="upload-status"></span>
-                                <div id="comodo-imagem-preview" class="image-preview"></div>
-                                <button type="button" id="btn-comodo-imagem-remover" class="btn btn-secondary" style="display:none;">🗑️ Remover imagem</button>
-                            </div>
-                            <button type="submit" class="btn btn-success" id="btn-comodo-submit">Adicionar Cômodo</button>
-                            <button type="button" class="btn btn-secondary" id="btn-comodo-cancel" style="display:none;">Cancelar</button>
-                        </form>
-                    </div>
-
-                    <div class="config-box">
-                        <h3>📸 Upload de Imagens Motivacionais</h3>
-                        <form id="form-motivacao" class="form-config">
-                            <label for="motivacao-imagem">Selecione uma imagem:</label>
-                            <input type="file" id="motivacao-imagem" accept="image/*" required>
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="motivacao-definir-destaque" checked>
-                                Usar como imagem em destaque na escala?
-                            </label>
-                            <button type="submit" class="btn btn-success">Upload Motivação</button>
-                        </form>
-                    </div>
-
-                    <div class="config-box">
-                        <h3>🗂️ Galeria de Motivação</h3>
-                        <p class="config-help">Escolha uma imagem para destacar na escala ou exclua arquivos que não serão mais usados.</p>
-                        <div id="motivacao-admin-galeria" class="motivacao-admin-galeria">
-                            <!-- Preenchido dinamicamente -->
-                        </div>
-                    </div>
-
-                    <div class="config-box">
-                        <h3>🎨 Logo da República</h3>
-                        <div id="logo-preview" class="image-preview">
-                            <p style="color: #999; font-size: 14px;">Nenhuma logo definida</p>
-                        </div>
-                        <form id="form-logo" class="form-config">
-                            <label for="logo-upload">Selecione o logo (PNG/JPG):</label>
-                            <input type="file" id="logo-upload" accept="image/png,image/jpeg" required>
-                            <button type="submit" class="btn btn-success">Enviar Logo</button>
-                        </form>
-                    </div>
-
-                    <div class="config-box">
-                        <h3>🖼️ Fundo da Aplicação</h3>
-                        <div id="background-preview" class="image-preview">
-                            <p style="color: #999; font-size: 14px;">Nenhum fundo definido</p>
-                        </div>
-                        <form id="form-background" class="form-config">
-                            <label for="background-upload">Selecione a imagem de fundo:</label>
-                            <input type="file" id="background-upload" accept="image/*" required>
-                            <button type="submit" class="btn btn-success">Enviar Fundo</button>
-                        </form>
-                    </div>
-
-                    <div class="config-box">
-                        <h3>🎨 Esquema de Cores</h3>
-                        <form id="form-cores" class="form-config">
-                            <div class="color-group">
-                                <label for="cor-primaria">Cor Primária:</label>
-                                <div style="display: flex; gap: 10px;">
-                                    <input type="color" id="cor-primaria" value="#DC0000">
-                                    <input type="text" id="cor-primaria-hex" value="#DC0000" style="width: 100px;" readonly>
-                                </div>
-                            </div>
-                            <div class="color-group">
-                                <label for="cor-secundaria">Cor Secundária:</label>
-                                <div style="display: flex; gap: 10px;">
-                                    <input type="color" id="cor-secundaria" value="#FFD700">
-                                    <input type="text" id="cor-secundaria-hex" value="#FFD700" style="width: 100px;" readonly>
-                                </div>
-                            </div>
-                            <div class="color-group">
-                                <label for="cor-branca">Cor Clara:</label>
-                                <div style="display: flex; gap: 10px;">
-                                    <input type="color" id="cor-branca" value="#FFFFFF">
-                                    <input type="text" id="cor-branca-hex" value="#FFFFFF" style="width: 100px;" readonly>
-                                </div>
-                            </div>
-                            <div class="color-group">
-                                <label for="cor-preta">Cor Escura:</label>
-                                <div style="display: flex; gap: 10px;">
-                                    <input type="color" id="cor-preta" value="#000000">
-                                    <input type="text" id="cor-preta-hex" value="#000000" style="width: 100px;" readonly>
-                                </div>
-                            </div>
-                            <button type="submit" class="btn btn-success">Salvar Cores</button>
-                            <button type="button" class="btn btn-secondary" onclick="resetarCores()">Restaurar Padrão</button>
-                        </form>
-                    </div>
-                </div>
-            </section>
-
-        </main>
-
-        <!-- FOOTER -->
-        <footer class="footer">
-            <p>Escala © 2024 | Limpeza com responsabilidade! 🧹</p>
-        </footer>
+            <footer class="footer">
+                <p id="rodape-texto">República · Organização com responsabilidade! 🏠</p>
+            </footer>
+        </div>
     </div>
 
-    <script src="js/modal.js"></script>
-    <script src="js/app.js"></script>
+    <!-- BARRA INFERIOR (celular): Início, módulos principais e "Mais" -->
+    <nav class="nav-inferior" id="nav-inferior" aria-label="Módulos"></nav>
+
+    <div id="toast-area" class="toast-area" aria-live="polite"></div>
+
+    <script type="module" src="js/main.js"></script>
 </body>
 </html>
