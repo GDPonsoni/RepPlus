@@ -58,6 +58,16 @@ O Blueprint publica a branch `main` (campo `branch:` no `render.yaml`, ou em Set
 
 **Trocar a senha da casa:** em **Environment**, mude `SENHA_CASA` e salve. Todos os aparelhos precisam entrar de novo.
 
+## 3b. Cópia na Vercel (opcional)
+
+O mesmo app também roda na Vercel (https://repplus-one.vercel.app), com o mesmo banco e o mesmo bucket. O `vercel.json` publica `frontend/` pela CDN e manda `/api/*` para a função `api/index.js`, que usa o mesmo `createApp()` do Render.
+
+- **Branch de produção:** `main` (Settings → Environments → Production). Cada push na `main` publica no Render e na Vercel.
+- **Variáveis:** as mesmas do Render (Settings → Environment Variables). Sem `DATABASE_URL` ou, no `AUTH_MODO=senha`, sem `SENHA_CASA`/`SESSAO_SEGREDO`, a função falha ao subir.
+- **Migrações:** só o build do Render roda `db:migrar`. Num deploy com migração nova, a Vercel pode ficar no ar alguns instantes antes do banco ser atualizado.
+- **Limites da função:** o corpo da requisição na Vercel vai até 4,5 MB, então imagens entre 4,5 MB e 5 MB só sobem pelo Render. O bloqueio de tentativas de login fica na memória de cada instância.
+- O login vale por endereço: entrar no Render não entra na Vercel, e vice-versa.
+
 ## 4. Trazer os dados do app antigo (Supabase)
 
 Rode uma vez, **no computador**, antes de a casa começar a usar o endereço novo:

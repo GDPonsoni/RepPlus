@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Projeto
 
-RepPlus: app web (pt-BR) para organizar uma república. Node ≥20 + Express (ES Modules) no backend, JavaScript puro sem build no frontend, Postgres no Neon, imagens no Cloudflare R2. Produção no Render (`render.yaml`, branch `main`). Docs, comentários e UI estão em português; siga isso.
+RepPlus: app web (pt-BR) para organizar uma república. Node ≥20 + Express (ES Modules) no backend, JavaScript puro sem build no frontend, Postgres no Neon, imagens no Cloudflare R2. Produção no Render (`render.yaml`) e na Vercel (`vercel.json` + `api/index.js`), as duas pela branch `main` e com o mesmo banco. Docs, comentários e UI estão em português; siga isso.
 
 ## Comandos
 
