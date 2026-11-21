@@ -51,15 +51,30 @@ export async function registrarInfracao(e) {
     }
 }
 
+// Textos prontos para quem marca o X sem querer escrever (o primeiro vale se o campo ficar vazio)
+function sugestoesDeX(escala) {
+    const tarefas = (escala?.comodos || []).filter(nome => nome !== 'FOLGA');
+    return [
+        tarefas.length ? `Não limpou ${tarefas.join(' + ')}` : 'Não fez a limpeza da semana',
+        'Limpeza mal feita',
+        'Limpou fora do prazo',
+        'Deixou louça ou lixo acumulado'
+    ];
+}
+
 export async function marcarInfracaoRapido(integranteId) {
     const integranteNome = obterIntegrantes().find(i => String(i.id) === String(integranteId))?.nome || '';
-    const descricao = await mostrarPrompt(`Infração de ${integranteNome}:`, '', { titulo: 'Registrar infração', placeholder: 'Descreva brevemente...' });
-    if (descricao === null) return;
-
-    if (!descricao.trim()) {
-        mostrarNotificacao('Digite uma descrição', 'warning');
-        return;
-    }
+    // A linha da escala atual: o X entra na semana dela (e o card deixa de ficar "pendente")
+    const escala = estado.escalaAtual.find(e => String(e.integranteId) === String(integranteId));
+    const sugestoes = sugestoesDeX(escala);
+    const texto = await mostrarPrompt(`Infração de ${integranteNome}. Toque num motivo pronto ou escreva o seu:`, '', {
+        titulo: 'Registrar X',
+        placeholder: `Vazio = "${sugestoes[0]}"`,
+        confirmarTexto: 'Marcar X',
+        sugestoes
+    });
+    if (texto === null) return;
+    const descricao = texto.trim() || sugestoes[0];
 
     try {
         await api('/infracoes', {
@@ -67,18 +82,18 @@ export async function marcarInfracaoRapido(integranteId) {
             corpo: {
                 integranteId,
                 integranteNome,
-                descricao: descricao.trim(),
-                dataSemana: new Date().toISOString()
+                descricao,
+                dataSemana: escala?.dataInicio || new Date().toISOString()
             }
         });
 
-        mostrarNotificacao('Infração registrada! ❌', 'success');
-        // Recarrega a escala também, para o contador de X do card atualizar na hora
+        mostrarNotificacao(`X marcado para ${integranteNome}`, 'success');
+        // Recarrega a escala também, para o contador e a situação do card atualizarem na hora
         await carregarInfracoes();
         carregarEscalaAtual();
     } catch (error) {
         console.error('Erro:', error);
-        mostrarNotificacao('Erro ao registrar', 'error');
+        mostrarNotificacao(error.message || 'Erro ao registrar', 'error');
     }
 }
 
@@ -147,7 +162,8 @@ export async function deletarInfracao(id) {
 
     try {
         await api(`/infracoes/${id}`, { metodo: 'DELETE' });
-        carregarInfracoes();
+        await carregarInfracoes();
+        carregarEscalaAtual();
         mostrarNotificacao('Infração removida', 'success');
     } catch (error) {
         console.error('Erro:', error);

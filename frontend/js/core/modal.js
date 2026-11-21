@@ -60,13 +60,15 @@ export function mostrarConfirmacao(mensagem, { titulo = 'Confirmar ação', conf
     });
 }
 
-export function mostrarPrompt(mensagem, valorInicial = '', { titulo = 'Informe um valor', confirmarTexto = 'Confirmar', cancelarTexto = 'Cancelar', placeholder = '' } = {}) {
+// `sugestoes` (opcional): textos prontos que preenchem o campo com um toque
+export function mostrarPrompt(mensagem, valorInicial = '', { titulo = 'Informe um valor', confirmarTexto = 'Confirmar', cancelarTexto = 'Cancelar', placeholder = '', sugestoes = [] } = {}) {
     return new Promise((resolve) => {
         const { overlay, card } = criarOverlay();
 
         card.innerHTML = `
             <h3 class="app-modal-title">${escaparHtml(titulo)}</h3>
             <p class="app-modal-message"></p>
+            ${sugestoes.length ? `<div class="app-modal-sugestoes">${sugestoes.map((texto, i) => `<button type="button" class="chip" data-sugestao="${i}"><span>${escaparHtml(texto)}</span></button>`).join('')}</div>` : ''}
             <textarea class="app-modal-input" rows="3"></textarea>
             <div class="app-modal-actions">
                 <button type="button" class="btn btn-secondary" data-action="cancelar">${escaparHtml(cancelarTexto)}</button>
@@ -77,6 +79,13 @@ export function mostrarPrompt(mensagem, valorInicial = '', { titulo = 'Informe u
         const input = card.querySelector('.app-modal-input');
         input.value = valorInicial || '';
         input.placeholder = placeholder;
+        card.querySelectorAll('[data-sugestao]').forEach(botao => {
+            botao.addEventListener('click', () => {
+                input.value = sugestoes[Number(botao.dataset.sugestao)];
+                card.querySelectorAll('[data-sugestao]').forEach(outro => outro.classList.toggle('ativa', outro === botao));
+                input.focus();
+            });
+        });
 
         const resolver = (valor) => {
             fecharOverlay(overlay);

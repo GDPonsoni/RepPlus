@@ -125,6 +125,27 @@
     margin-bottom: 14px;
 }
 
+/* Textos prontos do prompt: um toque preenche o campo */
+.app-modal-sugestoes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 10px;
+}
+
+.app-modal-sugestoes .chip {
+    padding: 0;
+    border: none;
+    background: none;
+    font: inherit;
+}
+
+.app-modal-sugestoes .chip.ativa span {
+    border-color: var(--primary-color);
+    background: var(--primary-soft);
+    color: var(--primary-text);
+}
+
 .app-modal-actions {
     display: flex;
     flex-direction: column-reverse;

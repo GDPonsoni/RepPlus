@@ -44,6 +44,27 @@ function atualizarInfoSemana(primeira) {
     datas.textContent = `${dataInicio} a ${dataFim}`;
 }
 
+const SEMANA_MS = 7 * 24 * 60 * 60 * 1000;
+
+// X que a pessoa levou na semana desta escala (a infração guarda o início da semana em dataSemana)
+export function xsNaSemana(escala, resumo = estado.infracoes) {
+    const inicio = new Date(escala.dataInicio).getTime();
+    return (resumo?.[escala.integranteId]?.infracoes || []).filter(inf => {
+        const quando = new Date(inf.dataSemana || inf.dataRegistro).getTime();
+        return quando >= inicio && quando < inicio + SEMANA_MS;
+    });
+}
+
+// Situação do card: limpo, levou X (não fica mais "pendente") ou pendente com o progresso
+function htmlStatus(tarefas, cumpridos, completo, xs) {
+    if (completo) return '<span class="escala-card-status ok"><i class="fa-solid fa-check"></i> Concluído</span>';
+    if (xs.length) {
+        const motivo = xs[xs.length - 1].descricao;
+        return `<span class="escala-card-status com-x" title="${escaparHtml(motivo)}"><i class="fa-solid fa-xmark"></i> Levou X: ${escaparHtml(motivo)}</span>`;
+    }
+    return `<span class="escala-card-status pendente"><i class="fa-regular fa-clock"></i> Pendente (${tarefas.filter(nome => cumpridos.includes(nome)).length}/${tarefas.length})</span>`;
+}
+
 // `anterior` (opcional): escala de antes de gerar, para destacar quem mudou de tarefa
 function renderizarEscalaTabela(escalas, anterior = null) {
     estado.escalaAtual = escalas;
@@ -77,12 +98,13 @@ function renderizarEscalaTabela(escalas, anterior = null) {
 
         const cumpridos = escala.cumpridos || [];
         const completo = !isFolga && tarefas.length > 0 && tarefas.every(nome => cumpridos.includes(nome));
+        const xs = isFolga ? [] : xsNaSemana(escala);
         const rotulo = isFolga
             ? '<i class="fa-solid fa-mug-hot"></i> Folga'
             : escaparHtml(tarefas.length > 0 ? tarefas.join(' + ') : 'Nenhum cômodo');
 
         return `
-            <article class="escala-card ${isFolga ? 'folga' : ''} ${completo ? 'limpo' : ''} ${anterior !== null ? 'recem-gerado' : ''} ${mudou ? 'mudou' : ''}">
+            <article class="escala-card ${isFolga ? 'folga' : ''} ${completo ? 'limpo' : ''} ${!completo && xs.length ? 'com-x' : ''} ${anterior !== null ? 'recem-gerado' : ''} ${mudou ? 'mudou' : ''}">
                 <div class="escala-card-info">
                     <span class="escala-card-name">
                         ${escaparHtml(escala.integranteNome)}
@@ -90,11 +112,11 @@ function renderizarEscalaTabela(escalas, anterior = null) {
                         ${mudou ? '<span class="escala-card-novo">novo</span>' : ''}
                     </span>
                     <span class="escala-card-comodo ${isFolga ? 'is-folga' : ''}">${rotulo}</span>
-                    ${!isFolga && tarefas.length > 0 ? `<span class="escala-card-status ${completo ? 'ok' : 'pendente'}">${completo ? '<i class="fa-solid fa-check"></i> Concluído' : `<i class="fa-regular fa-clock"></i> Pendente (${tarefas.filter(nome => cumpridos.includes(nome)).length}/${tarefas.length})`}</span>` : ''}
+                    ${!isFolga && tarefas.length > 0 ? htmlStatus(tarefas, cumpridos, completo, xs) : ''}
                 </div>
                 ${!isFolga ? `<div class="escala-card-acoes">
                     ${tarefas.length > 0 ? `<button class="escala-card-ok-btn ${completo ? 'feito' : ''}" title="${completo ? 'Desmarcar limpeza' : 'Marcar como limpo'}" aria-label="${completo ? 'Desmarcar limpeza de' : 'Marcar como limpo:'} ${escaparHtml(escala.integranteNome)}" aria-pressed="${completo}" data-acao="marcar-limpeza" data-id="${escaparHtml(escala.id)}"><i class="fa-solid fa-check"></i></button>` : ''}
-                    <button class="escala-card-x-btn" title="Marcar X" aria-label="Marcar infração para ${escaparHtml(escala.integranteNome)}" data-acao="marcar-x" data-id="${escaparHtml(escala.integranteId)}" data-permissao="infracoes:registrar"><i class="fa-solid fa-xmark"></i></button>
+                    <button class="escala-card-x-btn ${xs.length ? 'marcado' : ''}" title="${xs.length ? `${xs.length} X nesta semana: marcar outro` : 'Marcar X'}" aria-label="Marcar infração para ${escaparHtml(escala.integranteNome)}" data-acao="marcar-x" data-id="${escaparHtml(escala.integranteId)}" data-permissao="infracoes:registrar"><i class="fa-solid fa-xmark"></i></button>
                 </div>` : ''}
             </article>
         `;
