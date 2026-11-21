@@ -1,0 +1,145 @@
+/* ===== PERSONALIZAÇÃO (Ajustes) ===== */
+.opcoes-visuais {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+    gap: 8px;
+}
+
+.opcao-visual {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-height: 64px;
+    padding: 10px 6px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+}
+
+.opcao-visual input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.opcao-visual:has(input:checked) {
+    border-color: var(--primary-text);
+    background: var(--primary-soft);
+    box-shadow: inset 0 0 0 1px var(--primary-color);
+}
+
+.opcao-visual:has(input:focus-visible) {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+.opcao-fonte-amostra {
+    font-size: 1.35rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.opcao-cantos-amostra {
+    width: 30px;
+    height: 22px;
+    border: 2px solid var(--primary-color);
+    background: var(--primary-soft);
+}
+
+.opcao-cabecalho-amostra {
+    width: 100%;
+    max-width: 72px;
+    height: 22px;
+    border-radius: 4px;
+}
+
+.amostra-solido { background: var(--primary-color); }
+.amostra-degrade { background: linear-gradient(120deg, var(--primary-color), color-mix(in srgb, var(--primary-color) 55%, var(--secondary-color)) 130%); }
+.amostra-escuro { background: color-mix(in srgb, var(--cor-escura) 88%, #2a2a2a); border-bottom: 3px solid var(--primary-color); }
+
+.opcao-tema-amostra {
+    font-size: 1.2rem;
+}
+
+.campo-faixa {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.campo-faixa input[type="range"] {
+    flex: 1;
+    accent-color: var(--primary-text);
+    min-height: 32px;
+}
+
+.campo-faixa output {
+    min-width: 40px;
+    text-align: right;
+    font-weight: 700;
+    color: var(--text);
+}
+
+.contador-texto {
+    align-self: flex-end;
+    font-weight: 500;
+}
+
+.paletas {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scrollbar-width: thin;
+}
+
+.paleta {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    padding: 8px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 0.7rem;
+    font-weight: 600;
+}
+
+.paleta:hover {
+    border-color: var(--primary-text);
+}
+
+.paleta-cores {
+    display: flex;
+    width: 64px;
+    height: 22px;
+    border-radius: var(--radius-xs);
+    overflow: hidden;
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12);
+}
+
+.paleta-cores span {
+    flex: 1;
+}
+
+.aviso-previa {
+    font-size: 0.75rem;
+    color: var(--muted);
+}
+
+.opcao-cantos-amostra[data-amostra-cantos="reto"] { border-radius: 2px; }
+.opcao-cantos-amostra[data-amostra-cantos="suave"] { border-radius: 5px; }
+.opcao-cantos-amostra[data-amostra-cantos="arredondado"] { border-radius: 8px; }
+.opcao-cantos-amostra[data-amostra-cantos="redondo"] { border-radius: 12px; }

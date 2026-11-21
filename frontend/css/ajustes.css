@@ -1,0 +1,324 @@
+/* ===== CONFIGURAÇÕES (accordion) ===== */
+.settings-list .acc + .acc {
+    border-top: 1px solid var(--border);
+}
+
+.acc-header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    min-height: 60px;
+    border: 0;
+    background: transparent;
+    text-align: left;
+    transition: background 0.2s;
+}
+
+.acc-header:hover {
+    background: var(--subtle);
+}
+
+.acc-icon {
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+    border-radius: var(--radius-xs);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.95rem;
+}
+
+.icon-blue { background: #dbeafe; color: #2563eb; }
+.icon-green { background: #dcfce7; color: #16a34a; }
+.icon-purple { background: #f3e8ff; color: #9333ea; }
+.icon-orange { background: #ffedd5; color: #ea580c; }
+.icon-gray { background: #f3f4f6; color: #4b5563; }
+.icon-teal { background: #ccfbf1; color: #0d9488; }
+
+.acc-label {
+    flex: 1;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.acc-chevron {
+    color: var(--muted);
+    font-size: 0.8rem;
+    transition: transform 0.3s;
+}
+
+.acc.open .acc-chevron {
+    transform: rotate(180deg);
+}
+
+/* Truque do grid 0fr → 1fr: anima a altura sem limite fixo de max-height */
+.acc-body {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.3s ease;
+}
+
+.acc.open .acc-body {
+    grid-template-rows: 1fr;
+}
+
+.acc-inner {
+    overflow: hidden;
+    min-height: 0;
+}
+
+.acc.open .acc-inner {
+    border-top: 1px solid var(--border);
+    background: var(--subtle);
+    padding: 16px;
+}
+
+.item-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.list-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 6px 4px 6px 12px;
+    min-height: 52px;
+}
+
+/* Item que está aberto no formulário de edição */
+.list-item.editando {
+    border-color: var(--primary-text);
+    background: var(--primary-soft);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary-color) 25%, transparent);
+    opacity: 1;
+}
+
+.list-item-badge.badge-editando {
+    background: var(--primary-color);
+    color: #fff;
+    gap: 4px;
+}
+
+.list-item-badge.badge-editando i {
+    font-size: 0.55rem;
+}
+
+/* Formulário em modo edição: card destacado para não confundir com "adicionar novo" */
+.form-editando {
+    background: var(--primary-soft);
+    border: 2px solid var(--primary-color);
+    border-radius: var(--radius);
+    padding: 14px;
+    margin-top: 14px;
+}
+
+.form-editando .form-title {
+    color: var(--primary-text);
+    font-size: 0.85rem;
+    text-transform: none;
+    letter-spacing: 0;
+}
+
+.form-editando .form-title::before {
+    content: '\f303';
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    margin-right: 6px;
+}
+
+.list-item.inativo {
+    opacity: 0.6;
+}
+
+.list-item.inativo .list-item-name {
+    text-decoration: line-through;
+}
+
+.list-item-info {
+    min-width: 0;
+    flex: 1;
+}
+
+.list-item-name {
+    font-size: 0.9rem;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+.list-item-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 3px;
+}
+
+.list-item-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 1px 6px;
+    border-radius: 5px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    background: var(--primary-line);
+    color: var(--primary-text-forte);
+}
+
+.list-item-badge-muted {
+    background: var(--subtle);
+    color: var(--muted);
+    border: 1px solid var(--border);
+}
+
+.list-item-actions {
+    display: flex;
+    flex-shrink: 0;
+}
+
+.list-item-thumb {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-xs);
+    object-fit: cover;
+    flex-shrink: 0;
+    border: 1px solid var(--border);
+}
+
+/* Galeria de motivação */
+.motivacao-admin-galeria {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.motivacao-admin-galeria > .empty-state {
+    grid-column: 1 / -1;
+}
+
+.motivacao-admin-item {
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.motivacao-admin-item.active {
+    border-color: var(--secondary-color);
+    box-shadow: 0 0 0 2px var(--secondary-line);
+}
+
+.motivacao-admin-item img {
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    display: block;
+}
+
+.motivacao-admin-item figcaption {
+    padding: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.motivacao-admin-status {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-align: center;
+    color: var(--muted);
+}
+
+.motivacao-admin-item.active .motivacao-admin-status {
+    color: var(--secondary-text);
+}
+
+.motivacao-admin-actions {
+    display: flex;
+    gap: 6px;
+}
+
+.motivacao-admin-actions .btn {
+    flex: 1;
+    min-height: 36px;
+    padding: 6px;
+    font-size: 0.75rem;
+}
+
+/* Cores */
+.color-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.color-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 8px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.color-group span {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.color-group input[type="color"] {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xs);
+    padding: 2px;
+    background: var(--surface);
+    cursor: pointer;
+}
+
+.color-group input[type="text"] {
+    border: 0;
+    min-height: 0;
+    padding: 0;
+    background: transparent;
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: var(--muted);
+    text-transform: uppercase;
+    pointer-events: none;
+}
+
+.color-group input[type="text"]:focus {
+    box-shadow: none;
+}
+
+/* Versão */
+.versao-info {
+    font-size: 0.85rem;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    overflow-wrap: anywhere;
+}
+
+.versao-info code {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 1px 5px;
+}

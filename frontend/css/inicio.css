@@ -1,0 +1,356 @@
+/* ===== INÍCIO ===== */
+.inicio-saudacao {
+    margin-bottom: 14px;
+}
+
+.inicio-saudacao h2 {
+    font-size: 1.35rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+}
+
+.inicio-saudacao p {
+    font-size: 0.85rem;
+    color: var(--muted);
+}
+
+/* Uma coluna no celular; duas no computador, cada cartão com a sua altura */
+.inicio-cartoes {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+@media (min-width: 900px) {
+    .inicio-cartoes {
+        display: block;
+        columns: 2;
+        column-gap: 14px;
+    }
+
+    .inicio-cartoes > .inicio-cartao {
+        break-inside: avoid;
+        margin-bottom: 14px;
+    }
+}
+
+.inicio-cartao {
+    margin-bottom: 0;
+    padding: 12px 14px 14px;
+}
+
+.inicio-cartao-topo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.inicio-cartao-topo h3 {
+    flex: 1;
+    min-width: 0;
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.inicio-abrir {
+    flex-shrink: 0;
+    font-size: 0.75rem;
+}
+
+.inicio-abrir i {
+    font-size: 0.65rem;
+}
+
+.inicio-cartao-corpo {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 0.88rem;
+}
+
+.inicio-carregando,
+.inicio-vazio {
+    color: var(--muted);
+    font-size: 0.85rem;
+}
+
+.inicio-sub {
+    font-size: 0.8rem;
+    color: var(--muted);
+}
+
+.inicio-sub strong {
+    color: var(--text);
+    font-size: 0.95rem;
+}
+
+.inicio-mais,
+.inicio-rodape-cartao {
+    font-size: 0.78rem;
+    color: var(--muted);
+}
+
+.inicio-link {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--primary-text);
+    font-weight: 600;
+    text-align: left;
+}
+
+.inicio-alerta {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #b45309;
+}
+
+/* Escala */
+.inicio-escala {
+    list-style: none;
+    display: grid;
+    gap: 2px;
+}
+
+.inicio-escala li {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 5px 8px;
+    border-radius: var(--radius-xs);
+}
+
+.inicio-escala li:nth-child(odd) {
+    background: var(--subtle);
+}
+
+.inicio-escala li span:first-child {
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.inicio-escala li span:last-child {
+    text-align: right;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--primary-text);
+    overflow-wrap: anywhere;
+}
+
+.inicio-escala li.folga span:last-child {
+    color: var(--secondary-text);
+}
+
+.inicio-escala li span:last-child {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.inicio-estado {
+    width: 1.1em;
+    flex-shrink: 0;
+    text-align: center;
+}
+
+.inicio-escala li.limpo .inicio-tarefa,
+.inicio-limpo {
+    color: var(--success, #2e9e5b);
+}
+
+.inicio-pendente {
+    color: var(--text-muted, #888);
+}
+
+/* Agenda */
+.inicio-eventos {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.inicio-eventos li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 8px;
+    border-left: 3px solid var(--cat, var(--border));
+    border-radius: var(--radius-xs);
+    background: color-mix(in srgb, var(--cat, var(--border)) 7%, var(--surface));
+}
+
+.inicio-evento-quando {
+    flex-shrink: 0;
+    width: 64px;
+    display: flex;
+    flex-direction: column;
+    font-size: 0.72rem;
+    color: var(--muted);
+    line-height: 1.2;
+}
+
+.inicio-evento-quando strong {
+    font-size: 0.8rem;
+    color: var(--text);
+    text-transform: capitalize;
+}
+
+.inicio-evento-titulo {
+    min-width: 0;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+.inicio-evento-titulo i {
+    color: var(--cat);
+    font-size: 0.8rem;
+}
+
+/* Compras: mesmas linhas da aba Lista, um pouco mais compactas */
+.inicio-compras {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+}
+
+.inicio-compras .compra-item {
+    min-height: 48px;
+    padding: 2px 10px 2px 2px;
+}
+
+.inicio-compras .compra-nome {
+    font-size: 0.9rem;
+}
+
+.inicio-mais {
+    align-self: flex-start;
+}
+
+.inicio-form-rapido {
+    display: flex;
+    gap: 8px;
+    margin-top: 2px;
+}
+
+.inicio-form-rapido input {
+    flex: 1;
+    min-width: 0;
+}
+
+.inicio-form-rapido .btn {
+    flex-shrink: 0;
+    width: 48px;
+    padding: 0;
+}
+
+/* Atas */
+.inicio-tarefas {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.inicio-tarefas li {
+    display: flex;
+    flex-direction: column;
+    padding-left: 10px;
+    border-left: 3px solid #0d9488;
+}
+
+.inicio-tarefa-texto {
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+.inicio-tarefa-meta {
+    font-size: 0.75rem;
+    color: var(--muted);
+}
+
+/* Anotações */
+.inicio-nota {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 8px 10px;
+    border-radius: var(--radius-sm);
+    background: var(--secondary-soft);
+}
+
+.inicio-nota strong i {
+    font-size: 0.75rem;
+    color: var(--secondary-text);
+}
+
+.inicio-nota-texto {
+    font-size: 0.8rem;
+    color: var(--muted);
+    white-space: pre-wrap;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.inicio-atalhos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.inicio-atalhos small {
+    margin-left: 2px;
+    color: var(--muted);
+}
+
+/* Moradores */
+.inicio-aniversarios {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.inicio-aniversarios i {
+    color: #db2777;
+    margin-right: 4px;
+}
+
+.inicio-rodape {
+    display: flex;
+    justify-content: center;
+    margin-top: 16px;
+}
+
+/* Personalizar início */
+.inicio-config {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.inicio-config-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+}
+
+.inicio-config-nome {
+    flex: 1;
+    min-width: 0;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.inicio-config-item .icon-btn:disabled {
+    opacity: 0.3;
+    cursor: default;
+}

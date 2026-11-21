@@ -51,7 +51,8 @@ escala/
 │   └── server.js                 # Ponto de entrada (local e Render)
 ├── frontend/
 │   ├── css/
-│   │   └── style.css             # Estilos responsivos e tema com variáveis CSS
+│   │   └── *.css                 # Estilos por área (base, escala, agenda, finanças...); a ordem
+│   │                             # de carga fica no index.html e define a cascata
 │   ├── js/
 │   │   ├── core/                 # Núcleo: navegação (shell), tela de entrada, início, avisos, painéis,
 │   │   │                         # animações, categorias, moradores, aparência, ajustes do sistema...

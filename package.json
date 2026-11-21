@@ -1,5 +1,5 @@
 {
-  "name": "escala-app",
+  "name": "repplus",
   "version": "1.0.0",
   "description": "RepPlus: organização da república (escala de limpeza, agenda, compras, finanças e mais)",
   "main": "backend/server.js",
@@ -21,7 +21,6 @@
     "@aws-sdk/client-s3": "3.1152.0",
     "@neon/config": "^1.10.0",
     "@neon/env": "^1.6.8",
-    "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.18.2",
     "multer": "^1.4.5-lts.1",

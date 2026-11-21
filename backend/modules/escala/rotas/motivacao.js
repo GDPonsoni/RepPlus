@@ -22,7 +22,7 @@ export function rotasMotivacao(router) {
     if (!req.file) {
       return res.status(400).json({ error: 'Nenhuma imagem enviada' });
     }
-    const { filename, path: imagePath } = await uploadImage(req.file.buffer, req.file.originalname, req.file.mimetype);
+    const { filename, path: imagePath } = await uploadImage(req.file.buffer);
     res.json({ filename, path: imagePath });
   }));
 

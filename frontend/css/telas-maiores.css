@@ -1,0 +1,253 @@
+/* ===== TELAS MAIORES ===== */
+@media (min-width: 640px) {
+    .main-content {
+        padding: 24px 24px 40px;
+    }
+
+    .logo-ring {
+        width: 50px;
+        height: 50px;
+    }
+
+    .modulo-atual-nome {
+        font-size: 1.3rem;
+    }
+
+    .escala-topo {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .escala-cards-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .historico-semana-itens {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .motivacao-admin-galeria {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .tab-content.pagina-estreita {
+        max-width: 760px;
+    }
+
+    .app-modal-overlay {
+        align-items: center;
+        padding: 16px;
+    }
+
+    .app-modal-card {
+        max-width: 420px;
+        border-radius: var(--radius);
+        padding: 22px;
+    }
+
+    .app-modal-actions {
+        flex-direction: row;
+        justify-content: flex-end;
+    }
+
+    .app-modal-actions .btn {
+        width: auto;
+        min-height: 44px;
+    }
+
+    .toast-area {
+        left: auto;
+        align-items: flex-end;
+    }
+}
+
+@media (min-width: 900px) {
+    /* Imagem em destaque à esquerda e tarefas à direita */
+    .escala-dashboard {
+        display: grid;
+        grid-template-columns: 320px 1fr;
+        align-items: start;
+        gap: 24px;
+    }
+
+    .escala-dashboard.sem-imagem {
+        grid-template-columns: 1fr;
+    }
+
+    .escala-dashboard.sem-imagem .motivacao-destaque-container {
+        position: static;
+    }
+
+    .motivacao-destaque-container {
+        position: sticky;
+        top: 80px;
+    }
+
+    .motivacao-destaque-card {
+        width: 100%;
+    }
+
+    .escala-cards-grid {
+        align-content: start;
+    }
+
+    .historico-semana-itens {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+
+@media (min-width: 480px) {
+    .modulo-grade {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (min-width: 640px) {
+    .app-modal-card.painel {
+        max-width: 540px;
+        max-height: 88vh;
+        padding: 0;
+    }
+
+    .painel-seletor.app-modal-card {
+        max-width: 620px;
+    }
+
+    .painel-acoes {
+        bottom: -16px;
+        margin-bottom: -16px;
+        padding-bottom: 12px;
+    }
+
+    .painel-acoes .btn {
+        flex: 0 1 auto;
+    }
+
+    .painel-acoes .btn[type="submit"] {
+        margin-left: auto;
+    }
+
+    /* Calendário com o título dos eventos fixados em cada dia */
+    .cal-dia {
+        align-items: stretch;
+        min-height: 96px;
+        padding: 4px;
+        border-color: var(--border);
+        overflow: hidden;
+    }
+
+    .cal-dia-numero {
+        align-self: flex-start;
+        width: 26px;
+        height: 26px;
+        font-size: 0.8rem;
+    }
+
+    .cal-pins {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 2px;
+    }
+
+    .cal-pin {
+        min-width: 0;
+        max-width: 100%;
+        overflow: hidden;
+        width: auto;
+        height: auto;
+        border-radius: 5px;
+        padding: 1px 5px;
+        background: color-mix(in srgb, var(--cat) 15%, var(--surface));
+        border-left: 3px solid var(--cat);
+    }
+
+    .cal-pin-texto {
+        display: block;
+        font-size: 0.68rem;
+        font-weight: 600;
+        line-height: 1.35;
+        color: var(--text);
+        text-align: left;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .cal-mais {
+        text-align: left;
+        padding-left: 4px;
+    }
+}
+
+@media (min-width: 900px) {
+    /* Mês: calendário à esquerda e o dia selecionado à direita */
+    #aba-agenda-mes.active {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 320px;
+        grid-template-areas: "barra barra" "calendario detalhe";
+        column-gap: 20px;
+        align-items: start;
+    }
+
+    #aba-agenda-mes .agenda-toolbar { grid-area: barra; }
+    #aba-agenda-mes .calendario { grid-area: calendario; margin-bottom: 0; }
+    #aba-agenda-mes .agenda-dia-detalhe { grid-area: detalhe; margin-top: 0; position: sticky; top: 80px; }
+
+    /* Semana: os 7 dias lado a lado */
+    .semana-lista {
+        display: grid;
+        grid-template-columns: repeat(7, minmax(0, 1fr));
+        gap: 8px;
+        align-items: start;
+    }
+
+    .semana-dia {
+        min-height: 220px;
+        padding: 8px;
+    }
+
+    .semana-dia-topo {
+        gap: 6px;
+    }
+
+    .semana-dia-numero {
+        width: 30px;
+        height: 30px;
+        font-size: 0.9rem;
+    }
+
+    .semana-dia-nome {
+        min-width: 0;
+        font-size: 0.8rem;
+        line-height: 1.2;
+    }
+
+    .semana-dia-nome .badge-hoje {
+        display: block;
+        width: fit-content;
+        margin: 2px 0 0;
+    }
+
+    .semana-dia-topo .icon-btn {
+        width: 30px;
+        height: 30px;
+        font-size: 0.8rem;
+    }
+
+    .semana-dia.vazio .evento-lista {
+        margin-left: 0;
+    }
+
+    .semana-dia .evento-card {
+        flex-direction: column;
+        gap: 4px;
+        padding: 8px;
+    }
+
+    .semana-dia .evento-hora {
+        width: auto;
+        flex-direction: row;
+        gap: 4px;
+    }
+}

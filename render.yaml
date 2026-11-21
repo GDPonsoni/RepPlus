@@ -6,7 +6,7 @@ services:
     runtime: node
     plan: free
     region: virginia          # mesma região do banco no Neon (AWS us-east-1) para as consultas serem rápidas
-    branch: feat/modulos
+    branch: main
     buildCommand: npm install && npm run db:migrar
     startCommand: npm start
     healthCheckPath: /api/versao

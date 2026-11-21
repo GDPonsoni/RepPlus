@@ -52,7 +52,7 @@ O repositório já tem um [`render.yaml`](../render.yaml) (Blueprint) com:
    - Outra opção: em **Environment → Add from .env**, cole o seu `.env` local **sem** as linhas do Supabase.
 3. Confirme. O primeiro deploy cria as tabelas no Neon e publica o app em `https://repplus.onrender.com` (o endereço atual), ou em um nome parecido se esse já estiver em uso.
 
-O Blueprint publica a branch `feat/modulos`. Quando ela for unida ao `main`, troque `branch:` no `render.yaml` (ou em Settings no Render). Cada push na branch publica sozinho.
+O Blueprint publica a branch `main` (campo `branch:` no `render.yaml`, ou em Settings no Render). Cada push nela publica sozinho.
 
 **Plano gratuito:** o servidor dorme depois de 15 minutos sem acesso, e o primeiro acesso depois disso leva cerca de 1 minuto. Os dados não se perdem, porque ficam no Neon e no R2.
 

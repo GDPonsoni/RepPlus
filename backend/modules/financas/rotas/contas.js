@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import { asyncHandler, HttpError } from '../../../core/http.js';
 import { exigirPermissao } from '../../../core/auth/permissoes.js';
 import { normalizeBoolean } from '../../../core/db/helpers.js';
@@ -44,9 +45,12 @@ function lerConta(body, existente = null) {
 }
 
 // Sincronização liberada para o agendador (CRON_SECRET) ou para quem gerencia as finanças
+// Compara os resumos (mesmo tamanho) para não vazar o segredo pelo tempo de resposta
+const resumo = (texto) => crypto.createHash('sha256').update(String(texto)).digest();
+
 function exigirCronOuPermissao(req, res, next) {
   const segredo = process.env.CRON_SECRET;
-  if (segredo && req.get('authorization') === `Bearer ${segredo}`) return next();
+  if (segredo && crypto.timingSafeEqual(resumo(req.get('authorization') || ''), resumo(`Bearer ${segredo}`))) return next();
   return exigirPermissao('financas:gerenciar')(req, res, next);
 }
 

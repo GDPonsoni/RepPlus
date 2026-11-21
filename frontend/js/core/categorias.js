@@ -209,7 +209,7 @@ async function excluirCategoria(escopo, alvo) {
         }
         const substituta = await mostrarEscolha(`${error.message}`, {
             titulo: `Mover para outra categoria`,
-            opcoes: categoriasDe(escopo).filter(c => c.id !== alvo.id).map(c => ({ valor: c.chave, texto: escaparHtml(c.nome) }))
+            opcoes: categoriasDe(escopo).filter(c => c.id !== alvo.id).map(c => ({ valor: c.chave, texto: c.nome }))
         });
         if (!substituta) return false;
         try {

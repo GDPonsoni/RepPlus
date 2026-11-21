@@ -1,4 +1,7 @@
+import { escaparHtml } from './ui.js';
+
 // Substitui confirm()/prompt() nativos por modais no tema da aplicação.
+// Título, botões e mensagem são sempre texto: quem chama pode passar nomes vindos do banco.
 function criarOverlay() {
     const overlay = document.createElement('div');
     overlay.className = 'app-modal-overlay';
@@ -24,11 +27,11 @@ export function mostrarConfirmacao(mensagem, { titulo = 'Confirmar ação', conf
         const { overlay, card } = criarOverlay();
 
         card.innerHTML = `
-            <h3 class="app-modal-title">${titulo}</h3>
+            <h3 class="app-modal-title">${escaparHtml(titulo)}</h3>
             <p class="app-modal-message"></p>
             <div class="app-modal-actions">
-                <button type="button" class="btn btn-secondary" data-action="cancelar">${cancelarTexto}</button>
-                <button type="button" class="btn btn-danger" data-action="confirmar">${confirmarTexto}</button>
+                <button type="button" class="btn btn-secondary" data-action="cancelar">${escaparHtml(cancelarTexto)}</button>
+                <button type="button" class="btn btn-danger" data-action="confirmar">${escaparHtml(confirmarTexto)}</button>
             </div>
         `;
         card.querySelector('.app-modal-message').textContent = mensagem;
@@ -62,12 +65,12 @@ export function mostrarPrompt(mensagem, valorInicial = '', { titulo = 'Informe u
         const { overlay, card } = criarOverlay();
 
         card.innerHTML = `
-            <h3 class="app-modal-title">${titulo}</h3>
+            <h3 class="app-modal-title">${escaparHtml(titulo)}</h3>
             <p class="app-modal-message"></p>
             <textarea class="app-modal-input" rows="3"></textarea>
             <div class="app-modal-actions">
-                <button type="button" class="btn btn-secondary" data-action="cancelar">${cancelarTexto}</button>
-                <button type="button" class="btn btn-success" data-action="confirmar">${confirmarTexto}</button>
+                <button type="button" class="btn btn-secondary" data-action="cancelar">${escaparHtml(cancelarTexto)}</button>
+                <button type="button" class="btn btn-success" data-action="confirmar">${escaparHtml(confirmarTexto)}</button>
             </div>
         `;
         card.querySelector('.app-modal-message').textContent = mensagem;
@@ -107,11 +110,11 @@ export function mostrarEscolha(mensagem, { titulo = 'Escolha uma opção', opcoe
         const { overlay, card } = criarOverlay();
 
         card.innerHTML = `
-            <h3 class="app-modal-title">${titulo}</h3>
+            <h3 class="app-modal-title">${escaparHtml(titulo)}</h3>
             <p class="app-modal-message"></p>
             <div class="app-modal-actions app-modal-escolhas">
-                <button type="button" class="btn btn-secondary" data-action="cancelar">${cancelarTexto}</button>
-                ${opcoes.map((opcao, i) => `<button type="button" class="btn ${opcao.classe || 'btn-secondary'}" data-opcao="${i}">${opcao.texto}</button>`).join('')}
+                <button type="button" class="btn btn-secondary" data-action="cancelar">${escaparHtml(cancelarTexto)}</button>
+                ${opcoes.map((opcao, i) => `<button type="button" class="btn ${escaparHtml(opcao.classe || 'btn-secondary')}" data-opcao="${i}">${escaparHtml(opcao.texto)}</button>`).join('')}
             </div>
         `;
         card.querySelector('.app-modal-message').textContent = mensagem;

@@ -16,7 +16,7 @@ export const asyncHandler = (fn) => (req, res, next) => fn(req, res, next).catch
     return res.status(err.status).json({ error: err.message, ...err.extra });
   }
   console.error(err);
-  res.status(500).json({ error: 'Erro ao acessar o banco de dados' });
+  res.status(500).json({ error: 'Erro interno no servidor. Tente de novo em instantes.' });
 });
 
 const ALLOWED_IMAGE_EXTENSIONS = /\.(png|jpe?g|webp|gif)$/i;

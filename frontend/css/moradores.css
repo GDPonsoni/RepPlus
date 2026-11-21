@@ -1,0 +1,180 @@
+/* ===== MORADORES ===== */
+.pagina-topo {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.pagina-topo .section-title {
+    margin: 0 2px;
+}
+
+.morador-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.morador-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 12px 12px 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: var(--shadow-sm);
+    text-align: left;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.morador-card:hover {
+    border-color: color-mix(in srgb, var(--primary-color) 35%, var(--border));
+    box-shadow: var(--shadow-md);
+}
+
+.morador-card.inativo {
+    opacity: 0.6;
+}
+
+.avatar-lg {
+    width: 44px;
+    height: 44px;
+    font-size: 0.85rem;
+    background: var(--primary-soft);
+    border-color: var(--primary-line);
+    color: var(--primary-text-forte);
+}
+
+.morador-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.morador-nome {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    font-weight: 700;
+    font-size: 0.95rem;
+}
+
+.morador-nome-completo {
+    font-size: 0.78rem;
+    color: var(--muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.morador-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px 12px;
+    font-size: 0.75rem;
+    color: var(--muted);
+}
+
+.morador-meta i {
+    font-size: 0.7rem;
+    margin-right: 2px;
+}
+
+.morador-seta {
+    color: var(--muted);
+    font-size: 0.8rem;
+}
+
+.morador-emergencia {
+    font-size: 0.75rem;
+    color: #b91c1c;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+.morador-emergencia i {
+    font-size: 0.7rem;
+    margin-right: 2px;
+}
+
+.morador-emergencia.faltando {
+    color: #b45309;
+}
+
+.form-grupo-emergencia {
+    border-style: solid;
+    border-color: #fecaca;
+    background: #fef2f2;
+}
+
+.form-grupo-emergencia legend {
+    color: #b91c1c;
+}
+
+.campo-com-acao {
+    display: flex;
+    gap: 8px;
+}
+
+.campo-com-acao input {
+    flex: 1;
+    min-width: 0;
+}
+
+.btn-ligar {
+    flex-shrink: 0;
+    color: #15803d;
+    border-color: #bbf7d0;
+}
+
+.aniversarios-card .card-title i {
+    color: #db2777;
+}
+
+.aniversarios-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.aniversario-item {
+    display: grid;
+    grid-template-columns: 54px 1fr;
+    grid-template-rows: auto auto;
+    column-gap: 10px;
+    align-items: center;
+}
+
+.aniversario-data {
+    grid-row: 1 / 3;
+    text-align: center;
+    padding: 6px 4px;
+    border-radius: var(--radius-sm);
+    background: #fce7f3;
+    color: #9d174d;
+    font-size: 0.78rem;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.aniversario-item.hoje .aniversario-data {
+    background: #db2777;
+    color: #fff;
+}
+
+.aniversario-nome {
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+.aniversario-quando {
+    font-size: 0.75rem;
+    color: var(--muted);
+}

@@ -77,7 +77,7 @@ export default {
 
       const config = await ConfigStore.get();
       await deleteImage(config.logo);
-      const { path: imagePath } = await uploadImage(req.file.buffer, req.file.originalname, req.file.mimetype);
+      const { path: imagePath } = await uploadImage(req.file.buffer);
       config.logo = imagePath;
       await ConfigStore.save(config);
 
@@ -95,7 +95,7 @@ export default {
 
       const config = await ConfigStore.get();
       await deleteImage(config.background);
-      const { path: imagePath } = await uploadImage(req.file.buffer, req.file.originalname, req.file.mimetype);
+      const { path: imagePath } = await uploadImage(req.file.buffer);
       config.background = imagePath;
       await ConfigStore.save(config);
 

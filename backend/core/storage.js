@@ -1,5 +1,4 @@
 import { randomUUID } from 'crypto';
-import path from 'path';
 import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand, ListObjectsV2Command } from '@aws-sdk/client-s3';
 import { HttpError } from './http.js';
 
@@ -51,9 +50,22 @@ export async function salvarArquivo(key, buffer, contentType) {
   return urlDaChave(key);
 }
 
-export async function uploadImage(buffer, originalName, mimetype) {
-  const key = `${randomUUID()}${path.extname(originalName).toLowerCase()}`;
-  return { filename: key, path: await salvarArquivo(key, buffer, mimetype) };
+// Tipo da imagem pelos primeiros bytes do arquivo: a extensão e o Content-Type vêm do navegador
+// e podem mentir. Só aceita os formatos do upload (png, jpg, webp, gif)
+function tipoDaImagem(buffer) {
+  const comeca = (bytes, inicio = 0) => bytes.every((byte, i) => buffer[inicio + i] === byte);
+  if (comeca([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])) return { extensao: '.png', mimetype: 'image/png' };
+  if (comeca([0xff, 0xd8, 0xff])) return { extensao: '.jpg', mimetype: 'image/jpeg' };
+  if (comeca([0x47, 0x49, 0x46, 0x38])) return { extensao: '.gif', mimetype: 'image/gif' };
+  if (comeca([0x52, 0x49, 0x46, 0x46]) && comeca([0x57, 0x45, 0x42, 0x50], 8)) return { extensao: '.webp', mimetype: 'image/webp' };
+  return null;
+}
+
+export async function uploadImage(buffer) {
+  const tipo = tipoDaImagem(buffer);
+  if (!tipo) throw new HttpError(400, 'O arquivo não é uma imagem válida. Envie png, jpg, webp ou gif.');
+  const key = `${randomUUID()}${tipo.extensao}`;
+  return { filename: key, path: await salvarArquivo(key, buffer, tipo.mimetype) };
 }
 
 export async function deleteImage(imagePathOrUrl) {
