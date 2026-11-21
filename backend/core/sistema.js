@@ -8,8 +8,22 @@ import { asyncHandler, HttpError } from './http.js';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 // ===== VERSÃO EM EXECUÇÃO =====
-// No Render, o commit vem das variáveis de sistema RENDER_GIT_*. Localmente, do git.
+// No Render e na Vercel, o commit vem das variáveis de sistema de cada uma. Localmente, do git.
 function lerVersao() {
+  if (process.env.VERCEL) {
+    const sha = process.env.VERCEL_GIT_COMMIT_SHA || null;
+    const repo = process.env.VERCEL_GIT_REPO_OWNER && process.env.VERCEL_GIT_REPO_SLUG
+      ? `${process.env.VERCEL_GIT_REPO_OWNER}/${process.env.VERCEL_GIT_REPO_SLUG}` : null;
+    return {
+      ambiente: 'vercel',
+      sha,
+      branch: process.env.VERCEL_GIT_COMMIT_REF || null,
+      mensagem: process.env.VERCEL_GIT_COMMIT_MESSAGE || null,
+      autor: process.env.VERCEL_GIT_COMMIT_AUTHOR_NAME || null,
+      data: null,
+      url: sha && repo ? `https://github.com/${repo}/commit/${sha}` : null
+    };
+  }
   if (process.env.RENDER) {
     const sha = process.env.RENDER_GIT_COMMIT || null;
     const repo = process.env.RENDER_GIT_REPO_SLUG;
