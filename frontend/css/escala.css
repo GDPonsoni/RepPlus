@@ -6,6 +6,17 @@
     margin-bottom: 16px;
 }
 
+/* Gerar + Adiar: empilhados no celular, lado a lado em telas maiores */
+.escala-topo-acoes {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.escala-adiar .btn {
+    width: 100%;
+}
+
 .semana-card {
     display: flex;
     align-items: center;

@@ -29,3 +29,4 @@ acrescente uma linha na tabela abaixo.
 | `20261104_categorias_subcategorias.sql` | Subcategorias (coluna `pai` em `categorias`); nas Finanças: Mercado, Contas da casa e Serviços ganham subcategorias |
 | `20261103_financas_regras_sentido.sql` | Regras de categoria só para saídas ou só para entradas: coluna `sentido` em `fin_regras` |
 | `20261106_escala_limpeza.sql` | Controle de limpeza da escala: coluna `cumpridos` (cômodos já limpos) em `escalas` |
+| `20261126_documentos.sql` | Módulo Documentos: tabelas `documentos` (mural de fotos e PDFs, anexos das atas) e `documentos_drive` (conexão com o Google Drive da rep) |

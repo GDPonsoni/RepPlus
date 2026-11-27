@@ -9,9 +9,17 @@ export const HTML_ABA_ESCALA = `
                 <span id="semana-datas" class="semana-datas"></span>
             </div>
         </div>
-        <button class="btn btn-primary btn-lg" id="btn-gerar-escala" data-permissao="escala:gerar">
-            <i class="fa-solid fa-arrows-rotate"></i> Gerar Nova Escala
-        </button>
+        <div class="escala-topo-acoes">
+            <!-- A permissão fica no envoltório: o botão em si some quando não há escala -->
+            <div class="escala-adiar" data-permissao="escala:gerenciar">
+                <button class="btn btn-ghost" id="btn-adiar-escala" data-acao="adiar-escala" title="Semana da faxineira: a escala passa para a próxima semana sem perder o rodízio" hidden>
+                    <i class="fa-solid fa-forward"></i> Adiar 1 semana
+                </button>
+            </div>
+            <button class="btn btn-primary btn-lg" id="btn-gerar-escala" data-permissao="escala:gerar">
+                <i class="fa-solid fa-arrows-rotate"></i> Gerar Nova Escala
+            </button>
+        </div>
     </div>
 
     <div id="criticas-escala-container" class="criticas-escala-container"></div>

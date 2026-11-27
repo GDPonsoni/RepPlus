@@ -70,10 +70,11 @@ Nomes de cômodos não podem se repetir.
 
 | Método | Endpoint | Descrição | Corpo / Retorno |
 | :--- | :--- | :--- | :--- |
-| `GET` | `/api/escala/atual` | Linhas da escala da semana atual | Array de `Escala` |
-| `POST` | `/api/escala/gerar` | Gera (ou refaz) a escala da semana atual | `{ "escala": Escala[], "alerta": string, "criticas": string[], "motivacaoDestaque": string }` |
-| `PUT` | `/api/escala/:id` | Edita uma linha da semana atual | `{ "comodos"?: string[], "folga"?: boolean }` |
-| `POST` | `/api/escala/atual/trocar` | Troca os cômodos de dois integrantes na semana atual | `{ "integranteAId": string, "integranteBId": string }` |
+| `GET` | `/api/escala/atual` | Linhas da escala em uso: a desta semana ou a da próxima, se já foi adiantada | Array de `Escala` |
+| `POST` | `/api/escala/gerar` | Gera a escala da semana seguinte à em uso (ou a desta semana, se não houver). Se a próxima já foi adiantada, refaz ela | `{ "escala": Escala[], "alerta": string, "criticas": string[], "motivacaoDestaque": string }` |
+| `PUT` | `/api/escala/:id` | Edita uma linha da escala em uso | `{ "comodos"?: string[], "folga"?: boolean }` |
+| `POST` | `/api/escala/atual/trocar` | Troca os cômodos de dois integrantes na escala em uso | `{ "integranteAId": string, "integranteBId": string }` |
+| `POST` | `/api/escala/atual/adiar` | Passa a escala em uso inteira para a semana seguinte (semana sem limpeza, ex.: faxineira). Zera as limpezas marcadas | `{ "escala": Escala[], "de": { "ano": number, "semana": number } }` |
 | `GET` | `/api/escala/historico` | Todas as escalas agrupadas por semana | `{ "AAAA-SS": Escala[] }` |
 | `DELETE` | `/api/escala/historico/:ano/:semana` | Apaga uma semana do histórico | `{ "success": true, "removed": number }` |
 
@@ -155,6 +156,27 @@ Ao gerar, cada integrante ativo recebe uma linha. Quem está de folga tem `comod
 | `DELETE` | `/api/atas/:id` | Apaga (permissão `atas:gerenciar`) | `{ "success": true }` |
 
 `tarefas` (encaminhamentos): `[{ "id"?, "texto", "responsavelId"?, "prazo"? (AAAA-MM-DD), "feito"? }]`. Encaminhamento sem `id` ganha um; ao editar, mande o `id` de volta para mantê-lo. Até 50 decisões e 50 encaminhamentos por ata. `eventoId` liga a ata à reunião da agenda que a originou.
+
+---
+
+## 📁 Documentos (`/api/documentos`)
+
+| Método | Endpoint | Descrição | Corpo / Retorno |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/api/documentos` | Documentos do mural, mais recentes primeiro. `?ata=<id>`: só os anexos daquela ata | Array de `Documento` |
+| `POST` | `/api/documentos` | Envia um arquivo (`multipart/form-data`, permissão `documentos:enviar`) | Campos: `arquivo` (PDF, png, jpg, webp ou gif, até 10MB, conferido pelo conteúdo), `titulo`? (padrão: nome do arquivo), `descricao`?, `categoria`?, `ataId`?. Retorna o `Documento` |
+| `PUT` | `/api/documentos/:id` | Edita (só os campos enviados) | `{ "titulo"?, "descricao"?, "categoria"?, "ataId"? (null desliga da ata) }` |
+| `DELETE` | `/api/documentos/:id` | Apaga o registro e o arquivo (permissão `documentos:gerenciar`) | `{ "success": true }` |
+| `GET` | `/api/documentos/drive/status` | Situação da conexão com o Google Drive | `{ "configurado": boolean, "conectado": boolean, "email": string \| null, "pasta": { id, nome } \| null, "erro": string \| null }` |
+| `GET` | `/api/documentos/drive/conectar` | Abre o login com Google (navegação, não fetch; permissão `documentos:gerenciar`) | Redireciona ao Google; a volta (`/callback`) redireciona para `/?drive=conectado\|cancelado\|sem-permissao\|erro#/documentos/drive` |
+| `GET` | `/api/documentos/drive/escolher` | Pastas da conta conectada, para escolher a da rep (`?pasta=root\|compartilhados\|<id>`; `documentos:gerenciar`) | `{ "pasta": { id, nome }, "itens": [...] }` |
+| `PUT` | `/api/documentos/drive/pasta` | Define a pasta da rep (`documentos:gerenciar`) | `{ "pastaId": string }`. Retorna o status |
+| `DELETE` | `/api/documentos/drive/conexao` | Desconecta e revoga o acesso no Google (`documentos:gerenciar`) | Retorna o status |
+| `GET` | `/api/documentos/drive` | Conteúdo de uma pasta da rep no Drive (`?pasta=<id>`; sem ele, a pasta escolhida) | `{ "pasta": { id, nome, link }, "caminho": [{ id, nome }], "itens": [{ id, nome, tipo, pasta, tamanho, modificadoEm, link, miniatura, visualizavel, baixavel }] }` |
+| `GET` | `/api/documentos/drive/arquivo/:id` | Conteúdo do arquivo. Documentos, planilhas e apresentações do Google saem em PDF | Imagem e PDF abrem no navegador; outros tipos são baixados |
+| `GET` | `/api/documentos/drive/miniatura/:id` | Miniatura gerada pelo Google | Imagem (404 se não houver) |
+
+`Documento`: `{ id, titulo, descricao, categoria, arquivo (/api/midia/<chave>), nomeArquivo, tipo, tamanho, ataId, ata: { id, titulo, data } | null, criadoEm }`. Apagar a ata mantém o documento (o `ataId` vira `null`). As rotas do Drive respondem `503` sem `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET`, `409` sem conexão (ou sem pasta escolhida, ou com a conexão caída) e `404` para itens fora da pasta da rep.
 
 ---
 

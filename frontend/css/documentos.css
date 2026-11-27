@@ -1,0 +1,433 @@
+/* ===== DOCUMENTOS: MURAL ===== */
+.docs-busca {
+    margin-bottom: 10px;
+}
+
+.docs-filtro {
+    margin-bottom: 12px;
+}
+
+.docs-filtro .chip small {
+    opacity: 0.7;
+    font-weight: 600;
+}
+
+.docs-grade {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.docs-grade .docs-vazio {
+    grid-column: 1 / -1;
+    margin-bottom: 0;
+}
+
+.doc-card {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    padding: 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    box-shadow: var(--shadow-sm);
+    color: var(--text);
+    text-align: left;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.doc-card:hover {
+    box-shadow: var(--shadow-md);
+}
+
+.doc-card:active {
+    transform: scale(0.98);
+}
+
+.doc-capa {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    aspect-ratio: 4 / 3;
+    background: var(--subtle);
+    color: var(--muted);
+    font-size: 2.4rem;
+}
+
+.doc-capa .fa-file-pdf {
+    color: #dc2626;
+}
+
+.doc-capa img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.doc-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 8px 10px 10px;
+    min-width: 0;
+}
+
+.doc-titulo {
+    font-size: 0.88rem;
+    font-weight: 600;
+    line-height: 1.25;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    overflow-wrap: anywhere;
+}
+
+.doc-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 8px;
+    font-size: 0.72rem;
+    color: var(--muted);
+}
+
+.doc-categoria {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 1px 7px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--cat) 14%, var(--surface));
+    color: color-mix(in srgb, var(--cat) 75%, var(--text));
+    font-weight: 600;
+}
+
+.doc-ata {
+    font-size: 0.72rem;
+    color: #0f766e;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Painel de leitura (mural e Drive) */
+.doc-visualizar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 14px;
+    border-radius: var(--radius-sm);
+    background: var(--subtle);
+    overflow: hidden;
+}
+
+.doc-visualizar img {
+    display: block;
+    max-width: 100%;
+    max-height: 60vh;
+    object-fit: contain;
+}
+
+.doc-visualizar-arquivo {
+    flex-direction: column;
+    gap: 8px;
+    padding: 28px 16px;
+    color: var(--muted);
+    font-size: 0.85rem;
+    text-align: center;
+    text-decoration: none;
+}
+
+.doc-visualizar-arquivo i {
+    font-size: 2.8rem;
+}
+
+.doc-visualizar-arquivo .fa-file-pdf {
+    color: #dc2626;
+}
+
+.doc-detalhes {
+    display: grid;
+    gap: 8px;
+    margin: 0 0 12px;
+    font-size: 0.85rem;
+}
+
+.doc-detalhes div {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.doc-detalhes dt {
+    color: var(--muted);
+    flex-shrink: 0;
+}
+
+.doc-detalhes dd {
+    margin: 0;
+    text-align: right;
+    overflow-wrap: anywhere;
+}
+
+.doc-descricao {
+    margin: 0 0 12px;
+    font-size: 0.88rem;
+    line-height: 1.5;
+}
+
+.painel-documento .painel-acoes {
+    flex-wrap: wrap;
+}
+
+/* ===== DOCUMENTOS: DRIVE ===== */
+.drive-caminho {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 6px;
+    margin: 0 2px 12px;
+    font-size: 0.85rem;
+    color: var(--muted);
+}
+
+.drive-caminho:empty {
+    display: none;
+}
+
+.drive-caminho button {
+    padding: 2px 0;
+    border: 0;
+    background: none;
+    color: var(--primary-text);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.drive-caminho [aria-current] {
+    color: var(--text);
+    font-weight: 700;
+}
+
+.drive-caminho .fa-chevron-right {
+    font-size: 0.65rem;
+}
+
+.drive-itens {
+    margin-bottom: 0;
+}
+
+.drive-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    min-height: 60px;
+    padding: 8px 12px;
+    border: 0;
+    border-bottom: 1px solid var(--border);
+    background: none;
+    color: var(--text);
+    text-align: left;
+    font: inherit;
+    cursor: pointer;
+}
+
+.drive-item:last-child {
+    border-bottom: 0;
+}
+
+.drive-item:hover {
+    background: var(--subtle);
+}
+
+.drive-capa {
+    position: relative;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-xs);
+    background: var(--subtle);
+    font-size: 1.3rem;
+    overflow: hidden;
+}
+
+/* Com miniatura, o ícone fica por baixo e só aparece se a imagem falhar */
+.drive-capa.com-miniatura i {
+    display: none;
+}
+
+.drive-capa img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.tipo-pasta .drive-capa { color: #ca8a04; }
+.tipo-pdf .drive-capa { color: #dc2626; }
+.tipo-imagem .drive-capa { color: #db2777; }
+.tipo-texto .drive-capa { color: #2563eb; }
+.tipo-planilha .drive-capa { color: #16a34a; }
+.tipo-apresentacao .drive-capa { color: #ea580c; }
+.tipo-video .drive-capa,
+.tipo-audio .drive-capa,
+.tipo-outro .drive-capa { color: var(--muted); }
+
+.drive-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+    min-width: 0;
+}
+
+.drive-nome {
+    font-size: 0.9rem;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+.drive-meta {
+    font-size: 0.75rem;
+    color: var(--muted);
+}
+
+.drive-seta {
+    color: var(--muted);
+    font-size: 0.8rem;
+}
+
+.drive-aviso p {
+    margin: 0 0 8px;
+    font-size: 0.88rem;
+    line-height: 1.5;
+}
+
+.drive-aviso code {
+    font-size: 0.8rem;
+    overflow-wrap: anywhere;
+}
+
+/* ===== ANEXOS NA ATA ===== */
+.ata-anexos {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.ata-anexo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 8px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    text-decoration: none;
+    font-size: 0.85rem;
+}
+
+.ata-anexo:hover {
+    background: var(--subtle);
+}
+
+.ata-anexo-capa {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-xs);
+    background: var(--subtle);
+    overflow: hidden;
+    color: #dc2626;
+    font-size: 1.2rem;
+}
+
+.ata-anexo-capa img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.ata-anexo-nome {
+    flex: 1;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.ata-anexos-enviar {
+    align-self: flex-start;
+}
+
+@media (min-width: 600px) {
+    .docs-grade {
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    }
+}
+
+.ata-anexos-enviar.disabled {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+/* Conta conectada (e, para a administração, trocar pasta / desconectar) */
+.drive-conta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px 10px;
+    margin: -4px 2px 10px;
+    font-size: 0.8rem;
+    color: var(--muted);
+}
+
+.drive-conta > span:first-child {
+    overflow-wrap: anywhere;
+}
+
+.drive-conta-acoes {
+    display: flex;
+    gap: 6px;
+}
+
+.drive-conectar {
+    margin-top: 4px;
+}
+
+/* Escolha da pasta da rep */
+.drive-escolha {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.drive-escolha p {
+    margin: 0;
+    font-size: 0.88rem;
+    line-height: 1.5;
+}
+
+.drive-escolha button.chip {
+    padding: 0;
+    border: 0;
+    background: none;
+    font: inherit;
+    cursor: pointer;
+}
+
+.drive-escolha .chip.ativo span {
+    border-color: var(--primary-text);
+    background: var(--primary-soft);
+    box-shadow: inset 0 0 0 1px var(--primary-text);
+}

@@ -2,7 +2,7 @@ import { randomUUID } from 'crypto';
 import { asyncHandler } from '../../../core/http.js';
 import { exigirPermissao } from '../../../core/auth/permissoes.js';
 import { normalizeBoolean, normalizeNumber } from '../../../core/db/helpers.js';
-import { getSemanaAtual, getISOWeek, DIA_MS } from '../../../core/semana.js';
+import { getSemanaAtual, getSemanaSeguinte, getISOWeek, DIA_MS } from '../../../core/semana.js';
 import { ConfigStore } from '../../../core/configuracao/store.js';
 import { IntegrantesStore } from '../../../core/moradores/store.js';
 import { ComodosStore, EscalasStore } from '../store.js';
@@ -14,10 +14,25 @@ import { sortearMotivacaoDestaque } from './motivacao.js';
 // folgas, suíte e cômodos, e mantém a geração rápida mesmo com anos de histórico
 const SEMANAS_HISTORICO_RODIZIO = 52;
 
+const chaveSemana = (ano, semana) => ano * 100 + semana;
+
+// Escala em uso: a última gerada, se for desta semana ou adiantada (gerada antes de a semana
+// começar). Sem nenhuma, fica a semana atual sem linhas.
+async function semanaVigente() {
+  const atual = getSemanaAtual();
+  const linhas = await EscalasStore.listDesde(atual.ano, atual.semana);
+  if (linhas.length === 0) return { ...atual, linhas: [] };
+  const ultima = Math.max(...linhas.map(e => chaveSemana(e.ano, e.semana)));
+  const daUltima = linhas.filter(e => chaveSemana(e.ano, e.semana) === ultima);
+  const { ano, semana, dataInicio, dataFim } = daUltima[0];
+  return { ano, semana, dataInicio: new Date(dataInicio), dataFim: new Date(dataFim), linhas: daUltima };
+}
+
+const ehDaSemana = (escala, semana) => escala.ano === semana.ano && escala.semana === semana.semana;
+
 export function rotasEscala(router) {
   router.get('/escala/atual', exigirPermissao('escala:ver'), asyncHandler(async (req, res) => {
-    const semanaAtual = getSemanaAtual();
-    res.json(await EscalasStore.listBySemana(semanaAtual.ano, semanaAtual.semana));
+    res.json((await semanaVigente()).linhas);
   }));
 
   router.get('/escala/historico', exigirPermissao('escala:ver'), asyncHandler(async (req, res) => {
@@ -54,9 +69,8 @@ export function rotasEscala(router) {
       return res.status(404).json({ error: 'Registro de escala não encontrado' });
     }
 
-    const semanaAtual = getSemanaAtual();
-    if (existente.ano !== semanaAtual.ano || existente.semana !== semanaAtual.semana) {
-      return res.status(400).json({ error: 'Só é possível editar a escala da semana atual' });
+    if (!ehDaSemana(existente, await semanaVigente())) {
+      return res.status(400).json({ error: 'Só é possível editar a escala em uso' });
     }
 
     const changes = {};
@@ -86,9 +100,8 @@ export function rotasEscala(router) {
       return res.status(404).json({ error: 'Registro de escala não encontrado' });
     }
 
-    const semanaAtual = getSemanaAtual();
-    if (existente.ano !== semanaAtual.ano || existente.semana !== semanaAtual.semana) {
-      return res.status(400).json({ error: 'Só é possível marcar a limpeza da semana atual' });
+    if (!ehDaSemana(existente, await semanaVigente())) {
+      return res.status(400).json({ error: 'Só é possível marcar a limpeza da escala em uso' });
     }
 
     const tarefas = existente.comodos.filter(nome => nome !== 'FOLGA');
@@ -112,13 +125,12 @@ export function rotasEscala(router) {
       return res.status(400).json({ error: 'Selecione dois integrantes diferentes' });
     }
 
-    const semanaAtual = getSemanaAtual();
-    const escalasSemana = await EscalasStore.listBySemana(semanaAtual.ano, semanaAtual.semana);
+    const escalasSemana = (await semanaVigente()).linhas;
     const linhaA = escalasSemana.find(e => String(e.integranteId) === String(integranteAId));
     const linhaB = escalasSemana.find(e => String(e.integranteId) === String(integranteBId));
 
     if (!linhaA || !linhaB) {
-      return res.status(404).json({ error: 'Um dos integrantes não está na escala da semana atual' });
+      return res.status(404).json({ error: 'Um dos integrantes não está na escala em uso' });
     }
 
     const resultados = await EscalasStore.saveMany([
@@ -129,15 +141,46 @@ export function rotasEscala(router) {
     res.json({ success: true, escala: resultados });
   }));
 
+  // Semana da faxineira: a escala em uso passa inteira para a semana seguinte, sem limpeza
+  // nesta. Fica um buraco no histórico, mas o rodízio conta só as semanas que têm escala
+  // (rodizio.js numera as semanas existentes), então a sequência continua de onde parou.
+  router.post('/escala/atual/adiar', exigirPermissao('escala:gerenciar'), asyncHandler(async (req, res) => {
+    const vigente = await semanaVigente();
+    if (vigente.linhas.length === 0) {
+      return res.status(404).json({ error: 'Não há escala em uso para adiar' });
+    }
+
+    // A vigente é a última gerada, então a semana seguinte está sempre vazia. Mesmo id: o
+    // upsert move as linhas de uma vez. Marcações de limpeza zeram, pois ninguém limpou.
+    const destino = getSemanaSeguinte(vigente);
+    const movidas = await EscalasStore.saveMany(vigente.linhas.map(linha => ({
+      ...linha,
+      ano: destino.ano,
+      semana: destino.semana,
+      dataInicio: destino.dataInicio,
+      dataFim: destino.dataFim,
+      cumpridos: []
+    })));
+
+    res.json({ escala: movidas, de: { ano: vigente.ano, semana: vigente.semana } });
+  }));
+
   router.post('/escala/gerar', exigirPermissao('escala:gerar'), asyncHandler(async (req, res) => {
     const integrantes = await IntegrantesStore.list();
     const comodos = (await ComodosStore.list()).sort(sortByOrderThenName);
-    const semanaAtual = getSemanaAtual();
+    // Semana gerada, sem depender do dia: a seguinte à escala desta semana, para adiantar a
+    // próxima (ex.: no domingo, com tudo limpo). Sem escala nesta semana, gera a atual. Se a
+    // próxima já foi adiantada, refaz ela em vez de pular mais uma.
+    const vigente = await semanaVigente();
+    const atual = getSemanaAtual();
+    const semanaAlvo = vigente.linhas.length === 0
+      ? atual
+      : ehDaSemana(vigente, atual) ? getSemanaSeguinte(atual) : vigente;
 
-    // Histórico = último ano de escalas, exceto a semana atual (que está sendo regerada)
-    const inicioHistorico = getISOWeek(new Date(semanaAtual.dataInicio - SEMANAS_HISTORICO_RODIZIO * 7 * DIA_MS));
+    // Histórico = último ano de escalas antes da semana gerada (a escala que está sendo refeita não conta)
+    const inicioHistorico = getISOWeek(new Date(semanaAlvo.dataInicio - SEMANAS_HISTORICO_RODIZIO * 7 * DIA_MS));
     const historico = (await EscalasStore.listDesde(inicioHistorico.year, inicioHistorico.week)).filter(e =>
-      !(e.ano === semanaAtual.ano && e.semana === semanaAtual.semana)
+      chaveSemana(e.ano, e.semana) < chaveSemana(semanaAlvo.ano, semanaAlvo.semana)
     );
 
     const integrantesAtivos = integrantes.filter(i => i.ativo);
@@ -171,20 +214,20 @@ export function rotasEscala(router) {
       const comodosIntegrante = resultado.get(integrante.id);
       return {
         id: randomUUID(),
-        ano: semanaAtual.ano,
-        semana: semanaAtual.semana,
+        ano: semanaAlvo.ano,
+        semana: semanaAlvo.semana,
         integranteId: integrante.id,
         integranteNome: integrante.nome,
         folga: comodosIntegrante.includes('FOLGA'),
         comodos: comodosIntegrante,
         cumpridos: [],
-        dataInicio: new Date(semanaAtual.dataInicio),
-        dataFim: new Date(semanaAtual.dataFim),
+        dataInicio: new Date(semanaAlvo.dataInicio),
+        dataFim: new Date(semanaAlvo.dataFim),
         alerta: null
       };
     });
 
-    await EscalasStore.replaceSemana(semanaAtual.ano, semanaAtual.semana, novaEscala);
+    await EscalasStore.replaceSemana(semanaAlvo.ano, semanaAlvo.semana, novaEscala);
 
     // Sorteia uma nova "motivação da semana" a cada geração de escala
     const config = await ConfigStore.get();

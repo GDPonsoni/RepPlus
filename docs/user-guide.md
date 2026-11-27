@@ -41,6 +41,7 @@ Os módulos:
 - **Agenda**: eventos da casa, visitas e aniversários.
 - **Lista de Compras**: o que acabou ou está acabando, para quem for ao mercado.
 - **Atas de Reunião**: o que foi discutido e decidido nas reuniões, e as pendências de cada um.
+- **Documentos**: mural de fotos e PDFs da casa (contratos, contas, atas em papel...) e a pasta da rep no Google Drive.
 - **Finanças**: gastos, contas, reserva de emergência e divisão de despesas.
 - **Anotações**: senhas e contas (num cofre criptografado), contatos de prestadores e notas da casa.
 - **Moradores** (menu do canto): cadastro de todos os moradores (usado por todos os módulos).
@@ -68,7 +69,7 @@ Os módulos:
 - Toque num morador para editar ou excluir. Com o telefone de emergência preenchido, o botão **Ligar** já faz a chamada pelo celular.
 - Moradores ativos sem contato de emergência aparecem com o aviso **"Sem contato de emergência"** na lista.
 - Marque **"É da suíte?"** para quem mora na suíte: só essas pessoas fazem os cômodos "apenas suíte".
-- Desmarque **"Está ativo?"** se alguém estiver viajando ou ausente. A pessoa sai da próxima escala gerada (a da semana atual só muda se você gerar de novo).
+- Desmarque **"Está ativo?"** se alguém estiver viajando ou ausente. A pessoa sai da próxima escala gerada.
 - Com a data de nascimento preenchida, o aniversário aparece em **Próximos aniversários** e na **Agenda**.
 - 🔒 **Documentos (CPF/RG)**: só quem sabe a senha da casa vê esses dados. Se alguém sair da república, troque a senha da casa (veja *Entrar no app*).
 
@@ -90,8 +91,12 @@ Os módulos:
    - **Folgas**: sobram `integrantes ativos − vagas obrigatórias` por semana. Vão para quem está há mais tempo sem folgar, então todos folgam o mesmo número de vezes.
    - **Banheiro da suíte**: um morador da suíte por semana, em revezamento.
    - **Demais cômodos**: cada pessoa vai para o cômodo seguinte ao último que fez. Ninguém repete o mesmo cômodo na semana seguinte.
-3. Gerar de novo na mesma semana refaz a escala da semana com o mesmo resultado (a não ser que integrantes ou cômodos tenham mudado). O aviso após gerar diz se algo mudou, e quem mudou de tarefa aparece com a etiqueta **"NOVO"**.
+3. Gerar não depende do dia: se a semana já tem escala, sai a da **próxima semana**, que passa a valer na hora. Assim dá para adiantar a escala no domingo, quando tudo já foi limpo. O rodízio segue o histórico do mesmo jeito.
+   - Sem escala nesta semana, sai a desta semana.
+   - Se a próxima já foi adiantada, gerar de novo refaz ela (com o mesmo resultado, a não ser que integrantes ou cômodos tenham mudado), em vez de pular mais uma semana.
+   - O aviso após gerar diz se algo mudou, e quem mudou de tarefa aparece com a etiqueta **"NOVO"**.
 4. Se faltar gente para as vagas, aparece um erro: ative mais integrantes ou desmarque cômodos obrigatórios.
+5. **Semana da faxineira** (ou qualquer semana sem limpeza): toque em **Adiar 1 semana**. A escala em uso passa inteira para a semana seguinte, com as mesmas pessoas e cômodos, e o rodízio continua de onde parou. As limpezas já marcadas são desmarcadas.
 
 A semana vai de segunda a domingo e vira à 0h de segunda, no horário de Brasília.
 
@@ -151,10 +156,23 @@ A semana vai de segunda a domingo e vira à 0h de segunda, no horário de Brasí
 - **Buscar**: procura no que foi discutido, nas decisões e nos encaminhamentos (ex.: "geladeira" acha a reunião em que isso foi combinado).
 - **Ler**: toque na ata. Dá para marcar encaminhamentos como feitos ali mesmo e **Enviar** a ata em texto para o grupo.
 - **Pendências**: todos os encaminhamentos ainda não feitos, de todas as atas, com os atrasados primeiro. Filtre por responsável e marque como feito com um toque.
+- **Anexos** (com o módulo Documentos ligado): ao ler a ata, toque em **Anexar foto ou PDF** para subir, por exemplo, a ata em papel digitalizada. O anexo também aparece no mural de Documentos, e continua lá se a ata for apagada.
 
 ---
 
-## 💰 10. Finanças
+## 📁 10. Documentos
+
+- **Mural**: toque em **Enviar** e escolha uma foto ou um PDF (até 10MB). O título sai do nome do arquivo, se você não escrever outro. Escolha a categoria (Reuniões, Contratos, Contas e recibos...) e, se quiser, a ata de que o arquivo faz parte.
+- **Buscar e filtrar**: a busca procura no título, na descrição, no nome do arquivo e na ata; os chips filtram por categoria.
+- **Ver**: toque no documento. Fotos abrem ali mesmo (toque de novo para o tamanho real); PDFs abrem numa nova aba. Dá para **Baixar**, **Editar** (título, categoria, descrição, ata) e **Excluir**.
+- **Drive**: a pasta da rep no Google Drive, só para ler. Entre nas pastas, veja fotos, abra PDFs e documentos do Google (em PDF) ou use **Abrir no Drive**. Para enviar ou organizar arquivos lá, use o próprio Drive.
+  - **Primeira vez** (administração): toque em **Conectar com Google**, entre com a conta da rep e escolha a pasta da rep com **Usar "..."**. Depois disso, todo mundo vê a pasta sem fazer login no Google.
+  - **Trocar pasta** e **Desconectar** ficam no topo da aba. Se a conexão cair, a aba mostra **Conectar de novo**.
+  - O servidor precisa do `GOOGLE_CLIENT_ID` e do `GOOGLE_CLIENT_SECRET` (veja `docs/deploy.md`).
+
+---
+
+## 💰 11. Finanças
 
 - **Visão geral**: gastos e entradas do mês (comparados ao mês anterior até o mesmo dia), disponível em contas, **reserva de emergência** (e quantos meses de gastos ela cobre), gastos por categoria (toque numa categoria para ver os lançamentos), gasto acumulado no mês contra o mês anterior (passe o dedo ou o mouse para ver cada dia), **gasto por dia** (média, dia mais caro, dias com gasto e, no mês atual, quanto dá no ritmo atual; toque num dia para ver os lançamentos dele), **orçamento** por categoria, últimos 6 meses e maiores gastos. As setas trocam o mês.
 - **Lançamentos**: tudo do mês, agrupado por dia, com busca e filtros por conta, categoria e tipo. Em **Filtros**: dias do mês, faixa de valor, origem (banco ou manual) e ordem (recentes, antigos, maiores gastos, maiores entradas). Os filtros em uso aparecem como etiquetas (toque no × para tirar). Com uma busca, **Criar regra com “…”** transforma o termo em regra. **Lançar** registra um gasto ou entrada à mão (em contas manuais). Num lançamento vindo do banco, dá para mudar a categoria (e marcar "classificar sempre assim" para criar uma regra), anotar ou **ignorar** (ex.: duplicado). **Dividir** transforma um gasto numa divisão.
@@ -170,7 +188,7 @@ A semana vai de segunda a domingo e vira à 0h de segunda, no horário de Brasí
 
 ---
 
-## 🎨 11. Ajustes e Personalização
+## 🎨 12. Ajustes e Personalização
 
 - **Ajustes → Categorias**: nome, **cor** e **ícone** das categorias de eventos da agenda, itens de compra, tipos de conta, serviços dos contatos e lançamentos das finanças. Crie, edite, mude a ordem (setas) ou exclua; ao excluir uma categoria em uso, escolha para qual os registros vão. Também dá para abrir pelo botão **Editar** ao lado das categorias, dentro dos próprios formulários.
   - Nas **finanças**, uma categoria pode ter **subcategorias** (um nível): Mercado → Comida, Limpeza, Higiene, Bebidas; Contas da casa → Energia, Água, Gás, Internet e telefone; Serviços → Assinaturas, Diarista / empregada. Crie mais pelo ícone <i>pasta com +</i> ao lado da categoria, ou mude uma de lugar em **Fica dentro de**. Uma categoria com subcategorias não pode ser excluída nem ficar dentro de outra até as subcategorias saírem dela.

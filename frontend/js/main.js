@@ -14,12 +14,13 @@ import agenda from './modules/agenda/index.js';
 import compras from './modules/compras/index.js';
 import anotacoes from './modules/anotacoes/index.js';
 import atas from './modules/atas/index.js';
+import documentos from './modules/documentos/index.js';
 import financas from './modules/financas/index.js';
 
 // Ordem dos módulos = ordem no seletor de módulos e das seções na página de Ajustes.
 // Para adicionar um módulo novo: criar modules/<nome>/index.js e incluí-lo aqui
 // (e o módulo correspondente no backend, em backend/app.js).
-const MODULOS = [inicio, escala, agenda, compras, anotacoes, atas, financas, moradores, aparencia, categorias, sistema];
+const MODULOS = [inicio, escala, agenda, compras, anotacoes, atas, documentos, financas, moradores, aparencia, categorias, sistema];
 
 async function iniciar() {
     // Sessão primeiro: define quais módulos aparecem e quais botões cada usuário vê.

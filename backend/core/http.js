@@ -34,11 +34,30 @@ export const upload = multer({
   }
 });
 
+const ALLOWED_DOCUMENT_EXTENSIONS = /\.(pdf|png|jpe?g|webp|gif)$/i;
+export const LIMITE_DOCUMENTO_MB = 10;
+
+// Upload de documentos do mural (PDF ou imagem, até 10MB). O conteúdo é conferido de novo em
+// storage.uploadDocumento; aqui só barra cedo o que nem tem a extensão certa
+export const uploadDocumento = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: LIMITE_DOCUMENTO_MB * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    if (!ALLOWED_DOCUMENT_EXTENSIONS.test(file.originalname)) {
+      cb(new Error('Tipo de arquivo não permitido. Envie PDF, png, jpg, webp ou gif.'));
+      return;
+    }
+    cb(null, true);
+  }
+});
+
 // Middleware de erro (converte falhas de upload — tamanho/tipo — em resposta JSON 400)
 export const errorHandler = (err, req, res, next) => {
   if (err instanceof multer.MulterError) {
     const mensagens = {
-      LIMIT_FILE_SIZE: 'Arquivo muito grande. O limite é 5MB.'
+      LIMIT_FILE_SIZE: req.path.startsWith('/api/documentos')
+        ? `Arquivo muito grande. O limite é ${LIMITE_DOCUMENTO_MB}MB.`
+        : 'Arquivo muito grande. O limite é 5MB.'
     };
     return res.status(400).json({ error: mensagens[err.code] || err.message });
   }

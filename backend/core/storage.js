@@ -61,6 +61,22 @@ function tipoDaImagem(buffer) {
   return null;
 }
 
+// Documentos do mural: imagens ou PDF, também conferidos pelo conteúdo. O prefixo "doc-" separa
+// esses arquivos da galeria de motivação, que lista as imagens soltas do bucket
+export const PREFIXO_DOCUMENTO = 'doc-';
+
+function tipoDoDocumento(buffer) {
+  if (buffer.subarray(0, 5).toString('latin1') === '%PDF-') return { extensao: '.pdf', mimetype: 'application/pdf' };
+  return tipoDaImagem(buffer);
+}
+
+export async function uploadDocumento(buffer) {
+  const tipo = tipoDoDocumento(buffer);
+  if (!tipo) throw new HttpError(400, 'Tipo de arquivo não aceito. Envie PDF, png, jpg, webp ou gif.');
+  const key = `${PREFIXO_DOCUMENTO}${randomUUID()}${tipo.extensao}`;
+  return { filename: key, path: await salvarArquivo(key, buffer, tipo.mimetype), mimetype: tipo.mimetype };
+}
+
 export async function uploadImage(buffer) {
   const tipo = tipoDaImagem(buffer);
   if (!tipo) throw new HttpError(400, 'O arquivo não é uma imagem válida. Envie png, jpg, webp ou gif.');
@@ -91,6 +107,7 @@ export async function listGalleryImages({ exclude = [] } = {}) {
 
   return chaves
     .filter((key) => IMAGE_EXTENSION_REGEX.test(key))
+    .filter((key) => !key.startsWith(PREFIXO_DOCUMENTO))
     .filter((key) => !excludedKeys.has(key))
     .map((key) => ({ filename: key, path: urlDaChave(key) }));
 }
@@ -120,10 +137,14 @@ export async function enviarMidia(req, res) {
     // A chave nunca muda de conteúdo (UUID novo a cada envio). "private": só o navegador de
     // quem entrou guarda a cópia, nenhum cache no meio do caminho
     'Cache-Control': 'private, max-age=31536000, immutable',
-    // Uma imagem (até um SVG antigo) aberta direto nunca roda script no endereço do app
-    'Content-Security-Policy': "default-src 'none'; style-src 'unsafe-inline'; sandbox",
     'X-Content-Type-Options': 'nosniff'
   });
+  // Uma imagem (até um SVG antigo) aberta direto nunca roda script no endereço do app. O PDF
+  // fica de fora: com essa política o leitor de PDF do Chrome se recusa a abrir o arquivo (e o
+  // upload só aceita PDF de verdade, conferido pelo conteúdo)
+  if (!String(objeto.ContentType).startsWith('application/pdf')) {
+    res.set('Content-Security-Policy', "default-src 'none'; style-src 'unsafe-inline'; sandbox");
+  }
   if (objeto.ETag) res.set('ETag', objeto.ETag);
   objeto.Body.on('error', () => res.destroy());
   objeto.Body.pipe(res);

@@ -28,9 +28,14 @@ export async function carregarEscalaAtual() {
     }
 }
 
+const dataCurta = (iso) => new Date(iso).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' });
+const comecaDepois = (escala) => new Date(escala.dataInicio).getTime() > Date.now();
+
 function atualizarInfoSemana(primeira) {
     const titulo = document.getElementById('semana-titulo');
     const datas = document.getElementById('semana-datas');
+    // Adiar só faz sentido com uma escala em uso
+    document.getElementById('btn-adiar-escala').hidden = !primeira;
 
     if (!primeira) {
         titulo.textContent = 'Nenhuma escala gerada ainda';
@@ -38,10 +43,9 @@ function atualizarInfoSemana(primeira) {
         return;
     }
 
-    const dataInicio = new Date(primeira.dataInicio).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' });
-    const dataFim = new Date(primeira.dataFim).toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' });
     titulo.textContent = `Semana ${primeira.semana} de ${primeira.ano}`;
-    datas.textContent = `${dataInicio} a ${dataFim}`;
+    // Escala adiantada ou adiada: avisa que ela ainda não começou
+    datas.textContent = `${dataCurta(primeira.dataInicio)} a ${dataCurta(primeira.dataFim)}${comecaDepois(primeira) ? ' · ainda não começou' : ''}`;
 }
 
 const SEMANA_MS = 7 * 24 * 60 * 60 * 1000;
@@ -171,16 +175,48 @@ function renderizarCriticasEscala(criticas, tipo = 'warning') {
     `;
 }
 
+// Semana da faxineira: a escala em uso passa para a semana seguinte, com o mesmo rodízio
+export async function adiarEscala() {
+    const emUso = estado.escalaAtual[0];
+    if (!emUso) return;
+
+    const marcadas = estado.escalaAtual.some(e => (e.cumpridos || []).length > 0);
+    const confirmar = await mostrarConfirmacao(
+        `Ninguém limpa na semana ${emUso.semana}: a escala inteira (mesmas pessoas e cômodos) passa para a semana seguinte, e o rodízio continua de onde parou.${marcadas ? ' As limpezas já marcadas serão desmarcadas.' : ''}`,
+        { titulo: 'Adiar a escala 1 semana?', confirmarTexto: 'Adiar' }
+    );
+    if (!confirmar) return;
+
+    const botao = document.getElementById('btn-adiar-escala');
+    definirCarregando(botao, true, '⏳ Adiando...');
+    try {
+        const { escala } = await api('/escala/atual/adiar', { metodo: 'POST' });
+        renderizarEscalaTabela(escala);
+        renderizarCriticasEscala([]);
+        mostrarNotificacao(`Escala adiada para a semana ${escala[0].semana} (${dataCurta(escala[0].dataInicio)} a ${dataCurta(escala[0].dataFim)}).`, 'success', 6000);
+    } catch (error) {
+        console.error('Erro:', error);
+        mostrarNotificacao(error.message || 'Erro ao adiar a escala', 'error');
+    } finally {
+        definirCarregando(botao, false);
+    }
+}
+
 export async function gerarNovaEscala() {
     if (obterIntegrantes().length === 0 || estado.comodos.length === 0) {
         mostrarNotificacao('Configure integrantes e cômodos primeiro!', 'warning');
         return;
     }
 
-    const confirmar = await mostrarConfirmacao(
-        'O rodízio é calculado pelo histórico das semanas anteriores (não é sorteio). Se integrantes e cômodos não mudaram, o resultado desta semana será o mesmo.',
-        { titulo: 'Gerar escala desta semana?', confirmarTexto: 'Gerar' }
-    );
+    // O backend gera a semana seguinte à escala em uso, sem esperar a semana começar
+    const emUso = estado.escalaAtual[0];
+    const adiantada = emUso && comecaDepois(emUso);
+    const [titulo, mensagem] = !emUso
+        ? ['Gerar escala desta semana?', 'O rodízio é calculado pelo histórico das semanas anteriores (não é sorteio).']
+        : adiantada
+            ? ['Refazer a escala adiantada?', `A escala da semana ${emUso.semana} já foi adiantada. Ela será refeita; se integrantes e cômodos não mudaram, o resultado será o mesmo.`]
+            : ['Gerar escala da próxima semana?', `A escala da semana ${emUso.semana} sai da tela e a da próxima passa a valer, mesmo antes de a semana começar. O rodízio continua pelo histórico.`];
+    const confirmar = await mostrarConfirmacao(mensagem, { titulo, confirmarTexto: 'Gerar' });
     if (!confirmar) return;
 
     const botao = document.getElementById('btn-gerar-escala');
@@ -199,6 +235,7 @@ export async function gerarNovaEscala() {
 
         const { escala: novaEscala, alerta } = resultado;
         const anterior = estado.escalaAtual;
+        const refeita = anterior.length > 0 && anterior[0].semana === novaEscala[0]?.semana && anterior[0].ano === novaEscala[0]?.ano;
 
         if (resultado.motivacaoDestaque !== undefined) {
             estado.motivacaoDestaque = resultado.motivacaoDestaque;
@@ -213,8 +250,10 @@ export async function gerarNovaEscala() {
 
         if (criticas.length > 0) {
             mostrarNotificacao('Escala gerada com críticas de configuração', 'warning');
-        } else if (anterior.length > 0 && mudancas === 0) {
+        } else if (refeita && mudancas === 0) {
             mostrarNotificacao(`Escala refeita: a distribuição continua a mesma, pois nada mudou no histórico, integrantes ou cômodos.${detalhe}`, 'info', 6000);
+        } else if (!refeita && anterior.length > 0) {
+            mostrarNotificacao(`Escala da semana ${novaEscala[0].semana} gerada!${detalhe}`, 'success', 6000);
         } else if (anterior.length > 0) {
             mostrarNotificacao(`Escala gerada! ${mudancas === 1 ? '1 pessoa mudou' : `${mudancas} pessoas mudaram`} de tarefa (marcadas como "novo").${detalhe}`, 'success', 6000);
         } else {

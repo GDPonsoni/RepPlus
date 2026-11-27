@@ -23,11 +23,25 @@ export function getISOWeek(dataUtc) {
   return { year: d.getUTCFullYear(), week };
 }
 
-export function getSemanaAtual() {
-  const hoje = hojeNaCasa();
-  const segunda = new Date(hoje - ((hoje.getUTCDay() || 7) - 1) * DIA_MS);
+// Semana (segunda a domingo) de um dia do calendário da casa (00:00 UTC, como hojeNaCasa)
+export function getSemanaDe(diaUtc) {
+  const dia = new Date(diaUtc);
+  const segunda = new Date(dia - ((dia.getUTCDay() || 7) - 1) * DIA_MS);
   const domingo = new Date(segunda.getTime() + 6 * DIA_MS);
   const meiaNoiteNaCasa = (dataUtc) => new Date(`${dataUtc.toISOString().slice(0, 10)}T00:00:00${OFFSET_CASA}`);
   const { year: ano, week: semana } = getISOWeek(segunda);
   return { ano, semana, dataInicio: meiaNoiteNaCasa(segunda), dataFim: meiaNoiteNaCasa(domingo) };
+}
+
+export function getSemanaAtual() {
+  return getSemanaDe(hojeNaCasa());
+}
+
+// Semana seguinte a uma semana devolvida por getSemanaDe/getSemanaAtual
+export function getSemanaSeguinte(semana) {
+  const [ano, mes, dia] = new Intl.DateTimeFormat('en-CA', { timeZone: FUSO_CASA })
+    .format(new Date(semana.dataInicio))
+    .split('-')
+    .map(Number);
+  return getSemanaDe(new Date(Date.UTC(ano, mes - 1, dia) + 7 * DIA_MS));
 }

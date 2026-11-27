@@ -1,4 +1,5 @@
-import { aplicarPermissoes, temPermissao } from '../../core/sessao.js';
+import { api } from '../../core/api.js';
+import { aplicarPermissoes, moduloAtivo, temPermissao } from '../../core/sessao.js';
 import { mostrarConfirmacao } from '../../core/modal.js';
 import { abrirPainel } from '../../core/painel.js';
 import { escaparHtml, mostrarNotificacao, definirCarregando } from '../../core/ui.js';
@@ -10,6 +11,79 @@ import { htmlTarefa, dataLonga } from './telas.js';
 
 // ===== LEITURA =====
 const paragrafos = (texto) => escaparHtml(texto).replace(/\n/g, '<br>');
+
+// ===== ANEXOS (módulo Documentos) =====
+// Fotos e PDFs da reunião (ex.: a ata em papel digitalizada). Ficam no mural de Documentos,
+// ligados à ata; aqui só a API dele é usada, sem importar o módulo
+const LIMITE_ANEXO_MB = 10;
+const ANEXO_ACEITO = /\.(pdf|png|jpe?g|webp|gif)$/i;
+const anexosAtivos = () => moduloAtivo('documentos') && temPermissao('documentos:ver');
+
+const htmlBlocoAnexos = () => `
+    <div class="ata-bloco"><h4>Anexos</h4>
+        <div class="ata-anexos" data-papel="anexos"><p class="atas-ajuda">Carregando...</p></div>
+        <label class="btn btn-ghost btn-sm ata-anexos-enviar" data-permissao="documentos:enviar">
+            <i class="fa-solid fa-paperclip"></i> <span>Anexar foto ou PDF</span>
+            <input type="file" accept="application/pdf,image/png,image/jpeg,image/webp,image/gif" class="visually-hidden" data-papel="anexar">
+        </label>
+    </div>`;
+
+function htmlAnexo(doc) {
+    const imagem = String(doc.tipo).startsWith('image/');
+    return `
+        <a class="ata-anexo" href="${escaparHtml(doc.arquivo)}" target="_blank" rel="noopener">
+            <span class="ata-anexo-capa">${imagem ? `<img src="${escaparHtml(doc.arquivo)}" alt="" loading="lazy">` : '<i class="fa-solid fa-file-pdf"></i>'}</span>
+            <span class="ata-anexo-nome">${escaparHtml(doc.titulo)}</span>
+            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+        </a>`;
+}
+
+async function carregarAnexos(ataId, corpo) {
+    const lista = corpo.querySelector('[data-papel="anexos"]');
+    if (!lista) return;
+    try {
+        const anexos = await api(`/documentos?${new URLSearchParams({ ata: ataId })}`);
+        lista.innerHTML = anexos.length ? anexos.map(htmlAnexo).join('') : '<p class="atas-ajuda">Nenhum anexo.</p>';
+    } catch (error) {
+        console.error('Erro ao carregar os anexos:', error);
+        lista.innerHTML = '<p class="atas-ajuda">Não foi possível carregar os anexos.</p>';
+    }
+}
+
+function ligarAnexos(ata, corpo) {
+    const campo = corpo.querySelector('[data-papel="anexar"]');
+    if (!campo) return;
+    carregarAnexos(ata.id, corpo);
+    campo.addEventListener('change', async () => {
+        const arquivo = campo.files[0];
+        campo.value = '';
+        if (!arquivo) return;
+        if (!ANEXO_ACEITO.test(arquivo.name)) return mostrarNotificacao('Envie PDF, png, jpg, webp ou gif.', 'warning');
+        if (arquivo.size > LIMITE_ANEXO_MB * 1024 * 1024) return mostrarNotificacao(`Arquivo muito grande. O limite é ${LIMITE_ANEXO_MB}MB.`, 'warning');
+
+        const rotulo = campo.closest('label');
+        const texto = rotulo.querySelector('span');
+        rotulo.classList.add('disabled');
+        campo.disabled = true;
+        texto.textContent = 'Enviando...';
+        try {
+            const formData = new FormData();
+            formData.append('arquivo', arquivo);
+            formData.append('titulo', `${ata.titulo} · ${arquivo.name.replace(/\.[^.]+$/, '')}`.slice(0, 120));
+            formData.append('ataId', ata.id);
+            await api('/documentos', { metodo: 'POST', formData });
+            mostrarNotificacao('Anexo enviado! Ele também aparece em Documentos.', 'success');
+            await carregarAnexos(ata.id, corpo);
+        } catch (error) {
+            console.error('Erro:', error);
+            mostrarNotificacao(error.message || 'Erro ao enviar o anexo', 'error');
+        } finally {
+            rotulo.classList.remove('disabled');
+            campo.disabled = false;
+            texto.textContent = 'Anexar foto ou PDF';
+        }
+    });
+}
 
 function htmlLeitura(ata) {
     const participantes = ata.participantes.map(nomeDoMorador).filter(Boolean);
@@ -25,6 +99,7 @@ function htmlLeitura(ata) {
             ${ata.tarefas.length ? `<div class="ata-bloco"><h4>Encaminhamentos</h4>
                 <div class="tarefas-lista">${ata.tarefas.map(t => htmlTarefa(t, ata)).join('')}</div></div>` : ''}
             ${!ata.pauta && !ata.conteudo && !ata.decisoes.length && !ata.tarefas.length ? '<p class="empty-state">Ata sem conteúdo ainda.</p>' : ''}
+            ${anexosAtivos() ? htmlBlocoAnexos() : ''}
         </div>
         <div class="painel-acoes">
             <button type="button" class="btn btn-ghost" data-papel="compartilhar"><i class="fa-solid fa-share-nodes"></i> Enviar</button>
@@ -69,6 +144,7 @@ export function abrirAta(id, { aoMudar } = {}) {
     if (!ata) return;
     const { corpo, fechar } = abrirPainel({ titulo: ata.titulo, html: htmlLeitura(ata), classe: 'painel-ata' });
     aplicarPermissoes(corpo);
+    ligarAnexos(ata, corpo);
     corpo.querySelector('[data-papel="compartilhar"]').addEventListener('click', () => compartilhar(buscarAta(id)));
     corpo.querySelector('[data-papel="editar"]').addEventListener('click', () => {
         fechar();
@@ -213,7 +289,8 @@ export function abrirFormularioAta({ id, evento, aoMudar } = {}) {
     });
 
     form.querySelector('[data-papel="excluir"]')?.addEventListener('click', async () => {
-        if (!(await mostrarConfirmacao(`Apagar a ata "${ata.titulo}" de ${dataLonga(ata.data)}? Não dá para desfazer.`, { titulo: 'Apagar ata', confirmarTexto: 'Apagar' }))) return;
+        const anexos = anexosAtivos() ? ' Os anexos continuam no mural de Documentos.' : '';
+        if (!(await mostrarConfirmacao(`Apagar a ata "${ata.titulo}" de ${dataLonga(ata.data)}? Não dá para desfazer.${anexos}`, { titulo: 'Apagar ata', confirmarTexto: 'Apagar' }))) return;
         try {
             await excluirAta(ata.id);
             fechar();

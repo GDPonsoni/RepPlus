@@ -7,7 +7,8 @@ Em produção o RepPlus usa três serviços, todos com plano gratuito:
 | Serviço | Para quê | Variáveis |
 | :--- | :--- | :--- |
 | **Neon** | Banco Postgres (todas as tabelas) | `DATABASE_URL`, `DATABASE_URL_UNPOOLED` |
-| **Cloudflare R2** | Imagens enviadas (logo, fundo, cômodos, galeria), num bucket **privado** | `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET` |
+| **Cloudflare R2** | Imagens enviadas (logo, fundo, cômodos, galeria) e os documentos do mural (fotos e PDFs), num bucket **privado** | `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_BUCKET` |
+| **Google Drive** (opcional) | Aba **Drive** do módulo Documentos: lê a pasta da rep, que continua privada, com login da conta Google da rep feito uma vez | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` (veja a [seção 7](#7-pasta-do-google-drive-opcional)) |
 | **Render** | Servidor Node que entrega o site, a API e as imagens | as de cima, mais `AUTH_MODO`, `SENHA_CASA`, `SESSAO_SEGREDO`, `CRON_SECRET` e, para o Open Finance, `PLUGGY_CLIENT_ID` e `PLUGGY_CLIENT_SECRET` |
 
 **Nada fica público.** O app pede a senha da casa (`SENHA_CASA`) antes de mostrar qualquer dado. O bucket do R2 não tem endereço público: o navegador pede `/api/midia/<arquivo>` ao servidor, que busca a imagem no R2 só para quem entrou.
@@ -65,7 +66,7 @@ O mesmo app também roda na Vercel (https://repplus-one.vercel.app), com o mesmo
 - **Branch de produção:** `main` (Settings → Environments → Production). Cada push na `main` publica no Render e na Vercel.
 - **Variáveis:** as mesmas do Render (Settings → Environment Variables). Sem `DATABASE_URL` ou, no `AUTH_MODO=senha`, sem `SENHA_CASA`/`SESSAO_SEGREDO`, a função falha ao subir.
 - **Migrações:** só o build do Render roda `db:migrar`. Num deploy com migração nova, a Vercel pode ficar no ar alguns instantes antes do banco ser atualizado.
-- **Limites da função:** o corpo da requisição na Vercel vai até 4,5 MB, então imagens entre 4,5 MB e 5 MB só sobem pelo Render. O bloqueio de tentativas de login fica na memória de cada instância.
+- **Limites da função:** o corpo da requisição e da resposta na Vercel vai até 4,5 MB. Imagens entre 4,5 MB e 5 MB e documentos do mural acima de 4,5 MB (o limite é 10 MB) só sobem pelo Render, e arquivos do Drive maiores que isso só abrem pelo Render (ou pelo botão **Abrir no Drive**). O bloqueio de tentativas de login fica na memória de cada instância.
 - O login vale por endereço: entrar no Render não entra na Vercel, e vice-versa.
 
 ## 4. Trazer os dados do app antigo (Supabase)
@@ -130,3 +131,37 @@ Também dá para conectar um item criado no Dashboard (**Applications → Demo �
 **Para testar sem dados reais:** com `PLUGGY_SANDBOX=1` no `.env`, o widget mostra também o **Pluggy Bank** (sandbox), com usuário `user-ok` e senha `password-ok`. Não ligue essa variável no Render.
 
 **Quando a autorização vencer** (1 ano), a conexão mostra o erro. Autorize de novo no Meu Pluggy, conecte de novo pelo app e desconecte a conexão antiga. Os lançamentos já importados continuam no app.
+
+## 7. Pasta do Google Drive (opcional)
+
+A aba **Documentos → Drive** mostra a pasta da rep no Google Drive dentro do app, **só para ler**: navegar nas pastas, ver imagens, abrir PDFs e documentos do Google (convertidos em PDF) e baixar arquivos.
+
+Funciona com **login com Google**: alguém da administração toca em **Conectar com Google**, entra **uma vez** com a conta Google da rep e escolhe a pasta. A autorização fica guardada no banco e vale para todos: os moradores não fazem login no Google. A pasta **não** precisa ficar pública: o navegador pede tudo ao servidor (`/api/documentos/drive/...`), que só responde a quem entrou com a senha da casa, e o app recusa qualquer arquivo fora da pasta escolhida.
+
+**Uma vez no Google Cloud (gratuito, uns 10 minutos), de preferência logado com a conta da rep:**
+1. Em [console.cloud.google.com](https://console.cloud.google.com), crie um projeto (ex.: `repplus`).
+2. Em **APIs e serviços → Biblioteca**, procure **Google Drive API** e clique em **Ativar**.
+3. Em **APIs e serviços → Tela de permissão OAuth** (ou **Google Auth Platform**):
+   - Tipo de usuário **Externo**, nome do app `RepPlus` e o seu e-mail de suporte.
+   - Em **Acesso a dados** (escopos), adicione `.../auth/drive.readonly`.
+   - Em **Público-alvo**, clique em **Publicar app** (status **Em produção**). **Não deixe em "Teste"**: nesse modo o Google desfaz a conexão a cada 7 dias.
+   - O app não precisa ser verificado. No login aparece o aviso "O Google não verificou este app": clique em **Avançado → Acessar RepPlus (não seguro)**. Só quem conecta vê esse aviso, uma vez.
+4. Em **APIs e serviços → Credenciais → Criar credenciais → ID do cliente OAuth**:
+   - Tipo **Aplicativo da Web**.
+   - Em **URIs de redirecionamento autorizados**, adicione um por endereço do app:
+     - `https://repplus.onrender.com/api/documentos/drive/callback`
+     - `https://repplus-one.vercel.app/api/documentos/drive/callback` (se usar a Vercel)
+     - `http://localhost:3000/api/documentos/drive/callback` (testes locais; o servidor de teste usa a porta 4000)
+   - Copie o **ID do cliente** e a **Chave secreta do cliente**.
+
+**Variáveis** (no `.env`, no Render em **Environment** e na Vercel se usar):
+- `GOOGLE_CLIENT_ID`: o ID do cliente.
+- `GOOGLE_CLIENT_SECRET`: a chave secreta. Ela também protege a autorização guardada no banco (que fica criptografada): **trocar a chave exige conectar de novo**.
+
+**No app:** **Documentos → Drive → Conectar com Google**, entre com a conta da rep, permita o acesso ao Drive e escolha a pasta (em **Meu Drive** ou **Compartilhados comigo**) com **Usar "..."**. Pronto: todos passam a ver a pasta. A conexão é feita pelo endereço em que você está (Render ou Vercel), mas vale para os dois, porque o banco é o mesmo.
+
+**Trocar a pasta ou a conta:** na aba Drive, **Trocar pasta** ou **Desconectar** (só quem tem a permissão de gerenciar documentos). Desconectar também revoga o acesso no Google. Para tirar o acesso pelo lado do Google: [myaccount.google.com/permissions](https://myaccount.google.com/permissions) → RepPlus → remover.
+
+**Se a conexão cair** (senha da conta da rep trocada, acesso removido, app em modo Teste), a aba Drive avisa e mostra **Conectar de novo**. Reconectando com a mesma conta, a pasta escolhida continua a mesma.
+
+**Atenção:** a autorização permite **ler todo o Drive da conta da rep**. O app só mostra a pasta escolhida, mas proteja o banco e o `GOOGLE_CLIENT_SECRET` como as outras senhas do servidor. Se a conta da rep tiver coisas que não são da casa, prefira usar uma conta Google só para a rep.

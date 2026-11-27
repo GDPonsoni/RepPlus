@@ -25,7 +25,7 @@ O código é dividido em **núcleo** (o que todo módulo usa: moradores, aparên
 |  core/modulos.js monta cada módulo em /api:           |
 |  sistema · moradores · configuracao · categorias ·    |
 |  escala · agenda · compras · anotacoes · atas ·       |
-|  financas                                             |
+|  documentos · financas                                |
 |        │                                              |
 |        ├── */store.js -> core/db/banco.js (pg)        |
 |        └── core/storage.js (S3)   Multer (memória)    |
@@ -59,6 +59,8 @@ Em produção, o Render roda `npm start` como um servidor sempre igual ao local,
   - Datas e horários saem como texto ISO, e números como `number`, como a API sempre devolveu.
   - Existem só os métodos que o backend usa (`select`, `insert`, `upsert`, `update`, `delete`, `eq`, `in`, `is`, `gte`, `lt`, `or`, `order`, `range`, `single`, `maybeSingle` e `rpc`); `update` e `delete` sem filtro são recusados.
 - **Imagens** (`backend/core/storage.js`): o Multer recebe o arquivo em memória (png, jpg, jpeg, webp ou gif, até 5MB) e ele é enviado ao bucket **privado** do Cloudflare R2 pela API compatível com S3 (`@aws-sdk/client-s3`). O bucket não tem endereço público: o banco guarda o caminho `/api/midia/<chave>`, e essa rota busca o arquivo no R2 e o entrega só a quem entrou no app. Sem as variáveis `R2_*`, só os envios de imagem dão erro; o resto do app funciona.
+  - Documentos do mural (`uploadDocumento`): PDF ou imagem, até 10MB, conferidos pelo conteúdo e gravados com o prefixo `doc-` (que os separa da galeria de motivação). O PDF é entregue sem a política `sandbox`, que impede o leitor de PDF do Chrome de abri-lo.
+- **Google Drive** (`modules/documentos/drive.js`): OAuth 2.0 com acesso offline, sem biblioteca do Google, escopo `drive.readonly`. Alguém com `documentos:gerenciar` conecta a conta da rep uma vez (`/drive/conectar` → Google → `/drive/callback`, com `state` num cookie) e escolhe a pasta; o refresh token fica na tabela `documentos_drive` (linha única), cifrado com AES-256-GCM por uma chave derivada de `GOOGLE_CLIENT_SECRET`, e serve a todos. Todo item pedido tem os pais conferidos até a pasta escolhida; o que estiver fora responde 404. O servidor repassa o arquivo ao navegador, então a pasta continua privada. `invalid_grant` ao renovar marca a conexão com erro e a aba pede reconexão.
 - **Fuso horário**: a "semana atual" é calculada no horário de Brasília (`America/Sao_Paulo`), seguindo a semana ISO 8601 (segunda a domingo). O servidor roda em UTC, então isso não depende do fuso dele.
 
 ### Algoritmo do Rodízio (`backend/modules/escala/rodizio.js`)
@@ -88,6 +90,7 @@ O histórico identifica cômodos pelo **nome**: por isso não é permitido ter d
   - `modules/agenda/`: abas Mês e Semana, formulário de evento e os aniversários vindos do cadastro.
   - `modules/anotacoes/`: abas Senhas, Contatos e Notas; `cofre.js` faz toda a criptografia no navegador (Web Crypto), `dados.js` o estado e a API, `telas.js` as listas e `formulario.js` os formulários e as janelas do cofre.
   - `modules/atas/`: abas Atas e Pendências; `dados.js` (estado, API e reuniões da agenda sem ata), `telas.js` (listas) e `formulario.js` (leitura, formulário e envio da ata).
+  - `modules/documentos/`: abas Mural e Drive; `dados.js` (estado e API), `mural.js` (grade, leitura e envio) e `drive.js` (navegação na pasta do Google Drive). As Atas mostram e enviam anexos pela API do módulo, sem importá-lo.
   - `modules/compras/`: abas Lista e Itens salvos; `dados.js` guarda o estado e fala com a API, `index.js` desenha as telas e o formulário.
   - `modules/financas/`: veja [Finanças e Open Finance](#finanças-e-open-finance).
   - Cada módulo pode ter `inicio.js` (cartão do Início) e `avisos.js` (avisos do sino).

@@ -16,13 +16,14 @@ import agenda from './modules/agenda/index.js';
 import compras from './modules/compras/index.js';
 import anotacoes from './modules/anotacoes/index.js';
 import atas from './modules/atas/index.js';
+import documentos from './modules/documentos/index.js';
 import financas from './modules/financas/index.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 // Núcleo primeiro, depois os módulos de funcionalidade. Para adicionar um módulo novo
 // (financeiro, eventos...), crie modules/<nome>/index.js e inclua-o aqui.
-const MODULOS = [sistema, moradores, configuracao, categorias, escala, agenda, compras, anotacoes, atas, financas];
+const MODULOS = [sistema, moradores, configuracao, categorias, escala, agenda, compras, anotacoes, atas, documentos, financas];
 
 export function createApp() {
   const app = express();
